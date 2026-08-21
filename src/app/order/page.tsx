@@ -14,7 +14,8 @@ function tiktokVideoId(url: string): string | null {
 }
 type RefAccount = {
   id: string; name: string; handle: string; industry: string; followers: number; bio: string;
-  icon_url: string; profile_url: string; video_count: number; videos: RefVideo[];
+  icon_url: string; profile_url: string; video_count: number; loaded_videos: number;
+  videos?: RefVideo[];
 };
 
 function fmtFollowers(n: number) {
@@ -28,10 +29,31 @@ export default function OrderPage() {
   const [industry, setIndustry] = useState("すべて");
   const [selected, setSelected] = useState<RefAccount | null>(null);
   const [video, setVideo] = useState<RefVideo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingVideos, setLoadingVideos] = useState(false);
 
   useEffect(() => {
-    api<RefAccount[]>("/api/ref-accounts").then(setAccounts).catch(() => {});
+    api<RefAccount[]>("/api/ref-accounts")
+      .then(setAccounts)
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
+
+  const openAccount = async (a: RefAccount) => {
+    setSelected(a);
+    if (a.videos) return;
+    setLoadingVideos(true);
+    try {
+      const full = await api<RefAccount>(`/api/ref-accounts/${a.id}`);
+      setSelected(full);
+      setAccounts((prev) => prev.map((x) => (x.id === a.id ? full : x)));
+    } catch {
+      // 取得失敗時は空のまま案内を表示
+      setSelected({ ...a, videos: [] });
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
 
   const industries = useMemo(
     () => ["すべて", ...Array.from(new Set(accounts.map((a) => a.industry)))],
@@ -89,6 +111,11 @@ export default function OrderPage() {
               {industries.map((i) => <option key={i}>{i}</option>)}
             </select>
           </div>
+          {loading && (
+            <div className="rounded-xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
+              参考アカウントを読み込んでいます...
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((a) => (
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
@@ -112,12 +139,12 @@ export default function OrderPage() {
                     <div className="text-xs text-slate-500">フォロワー</div>
                   </div>
                   <div className="rounded-lg bg-slate-50 py-2">
-                    <div className="text-lg font-bold">{a.videos.length || a.video_count}</div>
+                    <div className="text-lg font-bold">{a.loaded_videos || a.video_count}</div>
                     <div className="text-xs text-slate-500">登録動画数</div>
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-left text-xs text-slate-500">{a.bio}</p>
-                <button onClick={() => setSelected(a)} className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+                <button onClick={() => openAccount(a)} className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500">
                   動画を見る
                 </button>
               </div>
@@ -136,11 +163,16 @@ export default function OrderPage() {
             </div>
             <div className="ml-auto flex gap-4 text-sm">
               <span><b>{fmtFollowers(selected.followers)}</b> フォロワー</span>
-              <span><b>{selected.videos.length}</b> 本</span>
+              <span><b>{selected.videos?.length ?? selected.video_count}</b> 本</span>
             </div>
           </div>
           <h2 className="mb-3 text-sm font-semibold">参考動画を選択</h2>
-          {selected.videos.length === 0 && (
+          {loadingVideos && (
+            <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+              動画を読み込んでいます...
+            </div>
+          )}
+          {!loadingVideos && selected.videos?.length === 0 && (
             <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
               このアカウントの動画はまだ取り込まれていません。
               {selected.profile_url && (
@@ -152,7 +184,7 @@ export default function OrderPage() {
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {selected.videos.map((v) => (
+            {(selected.videos ?? []).map((v) => (
               <button
                 key={v.id}
                 onClick={() => setVideo(v)}

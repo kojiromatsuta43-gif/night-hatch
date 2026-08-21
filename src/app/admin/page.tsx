@@ -7,7 +7,7 @@ import { useMe } from "@/components/AppShell";
 type User = { id: string; email: string; name: string; role: string; points: number; created_at: string };
 type NgWord = { id: string; word: string };
 type MonitorMessage = { id: string; body: string; from_name: string; to_name: string; created_at: string };
-type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; videos: { id: string }[] };
+type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; loaded_videos: number };
 
 export default function AdminPage() {
   const { me } = useMe();
@@ -169,7 +169,7 @@ export default function AdminPage() {
                 <span><b>{r.name}</b> <span className="text-slate-400">{r.handle} / {r.industry}</span></span>
                 <span className="text-xs text-slate-400">
                   {r.followers.toLocaleString()}フォロワー・
-                  <b className={r.videos.length ? "text-emerald-600" : "text-slate-400"}>{r.videos.length}本</b>
+                  <b className={r.loaded_videos ? "text-emerald-600" : "text-slate-400"}>{r.loaded_videos}本</b>
                 </span>
               </div>
             ))}

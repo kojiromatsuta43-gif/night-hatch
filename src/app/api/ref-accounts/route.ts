@@ -6,15 +6,14 @@ import { requireUser } from "@/lib/server/auth";
 export async function GET() {
   await requireUser();
   const db = getDb();
-  const accounts = db.prepare("SELECT * FROM ref_accounts ORDER BY followers DESC").all() as {
-    id: string;
-  }[];
-  const videos = db.prepare("SELECT * FROM ref_videos ORDER BY created_at ASC").all() as {
-    account_id: string;
-  }[];
-  return NextResponse.json(
-    accounts.map((a) => ({ ...a, videos: videos.filter((v) => v.account_id === a.id) }))
-  );
+  // 一覧では動画本体を返さず件数のみ（ペイロード削減）
+  const accounts = db
+    .prepare(
+      `SELECT a.*, (SELECT COUNT(*) FROM ref_videos v WHERE v.account_id = a.id) AS loaded_videos
+       FROM ref_accounts a ORDER BY a.followers DESC`
+    )
+    .all();
+  return NextResponse.json(accounts);
 }
 
 async function fetchOembed(url: string): Promise<{ title: string; thumbnail: string }> {
