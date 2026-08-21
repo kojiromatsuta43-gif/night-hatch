@@ -26,21 +26,40 @@ export async function POST(req: Request) {
   if (!key) {
     return NextResponse.json({ ...MOCK, mock: true });
   }
+  // Geminiが直接読めるのはYouTube URLのみ。TikTok等は説明ベースの分析にフォールバック。
+  const isYouTube = /youtube\.com|youtu\.be/.test(url);
+  let tiktokMeta = "";
+  if (!isYouTube && url.includes("tiktok.com")) {
+    try {
+      const oe = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (oe.ok) {
+        const meta = await oe.json();
+        tiktokMeta = `\n参考情報 — 投稿者: ${meta.author_name ?? ""} / キャプション: ${meta.title ?? ""}`;
+      }
+    } catch {
+      // メタ取得に失敗しても分析は続行
+    }
+  }
+
   const body = {
     contents: [
       {
         parts: [
-          { file_data: { file_uri: url } },
+          ...(isYouTube ? [{ file_data: { file_uri: url } }] : []),
           {
-            text: "このショート動画を分析して、次のJSONだけを返してください: {\"title\":string,\"summary\":string,\"hook\":string,\"scenes\":[{\"time\":string,\"label\":string,\"note\":string}],\"retention\":[string],\"applications\":[{\"priority\":\"高\"|\"中\"|\"低\",\"note\":string}]} 。シーンはタイムスタンプ付きで分解し、画面テロップも読み取ること。日本語で。",
+            text: (isYouTube
+              ? "このショート動画を分析して、次のJSONだけを返してください:"
+              : `次のショート動画URLとキャプションから、想定される構成・フック・改善提案を推定してJSONだけを返してください。URL: ${url}${tiktokMeta}\n形式:`) + " {\"title\":string,\"summary\":string,\"hook\":string,\"scenes\":[{\"time\":string,\"label\":string,\"note\":string}],\"retention\":[string],\"applications\":[{\"priority\":\"高\"|\"中\"|\"低\",\"note\":string}]} 。シーンはタイムスタンプ付きで分解すること。日本語で。",
           },
         ],
       },
     ],
     generationConfig: { responseMimeType: "application/json" },
   };
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL ?? "gemini-3.6-flash"}:generateContent?key=${key}`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
   );
   if (!res.ok) {

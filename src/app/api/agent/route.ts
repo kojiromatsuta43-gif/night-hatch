@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import Anthropic from "@anthropic-ai/sdk";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
+import { generateText, activeProvider, NoProviderError } from "@/lib/server/llm";
 
 const SYSTEM = `あなたは「CREATE WORKSエージェント」。中小企業のSNS運用・制作発注を支援するアシスタントです。
 主な仕事: ショート動画の台本作成、構成案の提案、発注内容の整理、競合分析のアドバイス。
@@ -22,11 +22,8 @@ export async function POST(req: Request) {
   const { sessionId, message, brandProfileId } = await req.json();
   const db = getDb();
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEYが設定されていません。sodatsu-clone/.env.local に ANTHROPIC_API_KEY=sk-ant-... を追記して再起動してください。" },
-      { status: 503 }
-    );
+  if (!activeProvider()) {
+    return NextResponse.json({ error: new NoProviderError().message }, { status: 503 });
   }
 
   let session = sessionId
@@ -53,27 +50,18 @@ export async function POST(req: Request) {
       brandContext = `\n\n<brand_profile name="${bp.name}">\n確定情報: ${bp.facts}\nスタンス: ${bp.stances}\nNG事項: ${bp.ng_items}\n補足: ${bp.notes}\n</brand_profile>`;
     }
   }
-  const ngWords = (getDb().prepare("SELECT word FROM ng_words").all() as { word: string }[]).map((r) => r.word);
+  const ngWords = (db.prepare("SELECT word FROM ng_words").all() as { word: string }[]).map((r) => r.word);
+  const system =
+    SYSTEM + brandContext + (ngWords.length ? `\n\nプラットフォーム共通NGワード（絶対に使わない）: ${ngWords.join("、")}` : "");
 
-  const client = new Anthropic();
-  const response = await client.messages.create({
-    model: "claude-opus-5",
-    max_tokens: 16000,
-    system: SYSTEM + brandContext + (ngWords.length ? `\n\nプラットフォーム共通NGワード（絶対に使わない）: ${ngWords.join("、")}` : ""),
-    messages: [...history, { role: "user" as const, content: message }],
-  });
-
-  if (response.stop_reason === "refusal") {
-    return NextResponse.json({ error: "このリクエストには回答できませんでした。表現を変えてお試しください。" }, { status: 422 });
+  let text: string;
+  try {
+    text = await generateText(system, [...history, { role: "user", content: message }]);
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "生成に失敗しました" }, { status: 502 });
   }
 
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
-
   const flagged = ngWords.filter((w) => text.includes(w));
-
   const newHistory = [...history, { role: "user", content: message }, { role: "assistant", content: text }];
   db.prepare("UPDATE agent_sessions SET messages = ? WHERE id = ?").run(JSON.stringify(newHistory), session.id);
 

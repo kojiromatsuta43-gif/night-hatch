@@ -54,7 +54,7 @@ export default function VideoAnalysisPage() {
         <div className="mt-8 space-y-5">
           {result.mock && (
             <div className="rounded-lg bg-amber-50 px-4 py-2 text-xs text-amber-700">
-              これはデモ結果です。実際の動画分析には .env.local に GEMINI_API_KEY を設定してください。
+              これはデモ結果です。実際の動画を分析するには .env.local に GEMINI_API_KEY（無料）を設定してサーバーを再起動してください。
             </div>
           )}
           <div className="rounded-xl border border-slate-200 bg-white p-5">
