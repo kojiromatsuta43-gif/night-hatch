@@ -1,6 +1,58 @@
 import Database from "better-sqlite3";
 import path from "path";
 import crypto from "crypto";
+import refSeed from "./ref-seed.json";
+
+const CATEGORY_JA: Record<string, string> = {
+  kaitori: "買取・リユース",
+  beauty_clinic: "美容クリニック",
+  beauty_salon: "美容サロン",
+  fitness: "フィットネス",
+  real_estate: "不動産",
+  manufacturing: "製造業",
+  human_resources: "人材・転職",
+  construction: "建設・工務店",
+  food_service: "飲食",
+  healthcare: "医療・介護",
+};
+
+type RefSeedAccount = {
+  userId: string;
+  userName: string;
+  category?: string[];
+  followers?: number;
+  videoCount?: number;
+  bio?: string;
+  userIcon?: { url: string };
+  profileUrl?: string;
+};
+
+function syncRefAccounts(db: Database.Database) {
+  const rows = db.prepare("SELECT id, handle FROM ref_accounts").all() as { id: string; handle: string }[];
+  const byHandle = new Map(rows.map((r) => [r.handle, r.id]));
+  const insert = db.prepare(
+    "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio, icon_url, profile_url, video_count) VALUES (?,?,?,?,?,?,?,?,?)"
+  );
+  const update = db.prepare(
+    "UPDATE ref_accounts SET name=?, industry=?, followers=?, icon_url=?, profile_url=?, video_count=? WHERE id=?"
+  );
+  const tx = db.transaction(() => {
+    for (const c of (refSeed as { contents: RefSeedAccount[] }).contents) {
+      const handle = "@" + c.userId;
+      const industry = CATEGORY_JA[c.category?.[0] ?? ""] ?? "その他";
+      const icon = c.userIcon?.url ?? "";
+      const profile = (c.profileUrl ?? "").split("?")[0];
+      const existingId = byHandle.get(handle);
+      if (existingId) {
+        update.run(c.userName, industry, c.followers ?? 0, icon, profile, c.videoCount ?? 0, existingId);
+      } else {
+        insert.run(crypto.randomUUID(), c.userName, handle, industry, c.followers ?? 0, c.bio ?? "", icon, profile, c.videoCount ?? 0);
+        byHandle.set(handle, "new");
+      }
+    }
+  });
+  tx();
+}
 
 const DB_PATH = path.join(process.cwd(), "data", "app.db");
 
@@ -124,6 +176,9 @@ function init(db: Database.Database) {
     industry TEXT NOT NULL,
     followers INTEGER NOT NULL DEFAULT 0,
     bio TEXT NOT NULL DEFAULT '',
+    icon_url TEXT NOT NULL DEFAULT '',
+    profile_url TEXT NOT NULL DEFAULT '',
+    video_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS ref_videos (
@@ -173,6 +228,11 @@ function init(db: Database.Database) {
     const insertChat = db.prepare("INSERT INTO chat_messages (id, from_id, to_id, body) VALUES (?, ?, ?, ?)");
     insertChat.run(crypto.randomUUID(), freelancerId, clientId, "はじめまして、佐藤です。チラシ案件について質問があります。");
     insertChat.run(crypto.randomUUID(), clientId, freelancerId, "ありがとうございます。何でも聞いてください。");
+  }
+
+  const accCols = (db.prepare("PRAGMA table_info(ref_accounts)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [["icon_url", "TEXT NOT NULL DEFAULT ''"], ["profile_url", "TEXT NOT NULL DEFAULT ''"], ["video_count", "INTEGER NOT NULL DEFAULT 0"]] as const) {
+    if (!accCols.includes(col)) db.exec(`ALTER TABLE ref_accounts ADD COLUMN ${col} ${def}`);
   }
 
   const videoCols = (db.prepare("PRAGMA table_info(ref_videos)").all() as { name: string }[]).map((c) => c.name);
@@ -236,6 +296,7 @@ export function getDb(): Database.Database {
     fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
     global.__db = new Database(DB_PATH);
     init(global.__db);
+    syncRefAccounts(global.__db);
   }
   return global.__db;
 }

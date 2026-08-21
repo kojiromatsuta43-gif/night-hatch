@@ -13,7 +13,8 @@ function tiktokVideoId(url: string): string | null {
   return m ? m[1] : null;
 }
 type RefAccount = {
-  id: string; name: string; handle: string; industry: string; followers: number; bio: string; videos: RefVideo[];
+  id: string; name: string; handle: string; industry: string; followers: number; bio: string;
+  icon_url: string; profile_url: string; video_count: number; videos: RefVideo[];
 };
 
 function fmtFollowers(n: number) {
@@ -91,12 +92,17 @@ export default function OrderPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((a) => (
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
-                <div
-                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white"
-                  style={{ background: `linear-gradient(135deg, hsl(${(a.followers % 360)}, 60%, 55%), hsl(${(a.followers % 360) + 40}, 60%, 40%))` }}
-                >
-                  {a.name[0]}
-                </div>
+                {a.icon_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={a.icon_url} alt="" className="mx-auto h-16 w-16 rounded-full object-cover" />
+                ) : (
+                  <div
+                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white"
+                    style={{ background: `linear-gradient(135deg, hsl(${(a.followers % 360)}, 60%, 55%), hsl(${(a.followers % 360) + 40}, 60%, 40%))` }}
+                  >
+                    {a.name[0]}
+                  </div>
+                )}
                 <div className="mt-3 font-bold">{a.name}</div>
                 <div className="text-xs text-indigo-500">{a.handle}</div>
                 <span className="mt-2 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{a.industry}</span>
@@ -106,7 +112,7 @@ export default function OrderPage() {
                     <div className="text-xs text-slate-500">フォロワー</div>
                   </div>
                   <div className="rounded-lg bg-slate-50 py-2">
-                    <div className="text-lg font-bold">{a.videos.length}</div>
+                    <div className="text-lg font-bold">{a.videos.length || a.video_count}</div>
                     <div className="text-xs text-slate-500">登録動画数</div>
                   </div>
                 </div>
@@ -134,6 +140,17 @@ export default function OrderPage() {
             </div>
           </div>
           <h2 className="mb-3 text-sm font-semibold">参考動画を選択</h2>
+          {selected.videos.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+              このアカウントの動画はまだ取り込まれていません。
+              {selected.profile_url && (
+                <a href={selected.profile_url} target="_blank" rel="noreferrer" className="mx-1 text-indigo-500 hover:underline">
+                  TikTokプロフィール
+                </a>
+              )}
+              から動画URLをコピーし、管理画面の「参考アカウント」タブで追加してください（キャプション・サムネイルは自動取得）。
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {selected.videos.map((v) => (
               <button
