@@ -7,19 +7,23 @@ import { useMe } from "@/components/AppShell";
 type User = { id: string; email: string; name: string; role: string; points: number; created_at: string };
 type NgWord = { id: string; word: string };
 type MonitorMessage = { id: string; body: string; from_name: string; to_name: string; created_at: string };
+type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; videos: { id: string }[] };
 
 export default function AdminPage() {
   const { me } = useMe();
-  const [tab, setTab] = useState<"users" | "ng" | "chats">("users");
+  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs">("users");
   const [users, setUsers] = useState<User[]>([]);
   const [ngWords, setNgWords] = useState<NgWord[]>([]);
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
   const [newWord, setNewWord] = useState("");
+  const [refs, setRefs] = useState<RefAccount[]>([]);
+  const [refForm, setRefForm] = useState({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
 
   const load = useCallback(() => {
     api<User[]>("/api/admin/users").then(setUsers).catch(() => {});
     api<NgWord[]>("/api/admin/ng-words").then(setNgWords).catch(() => {});
     api<{ messages: MonitorMessage[]; ngWords: string[] }>("/api/admin/chats").then(setMonitor).catch(() => {});
+    api<RefAccount[]>("/api/ref-accounts").then(setRefs).catch(() => {});
   }, []);
   useEffect(load, [load]);
 
@@ -33,7 +37,7 @@ export default function AdminPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex gap-2 text-sm">
-        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"]] as const).map(([k, label]) => (
+        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
@@ -84,6 +88,47 @@ export default function AdminPage() {
             {ngWords.length === 0 && <div className="px-4 py-6 text-center text-sm text-slate-400">NGワードがありません</div>}
           </div>
           <p className="mt-3 text-xs text-slate-400">登録したNGワードは、AIエージェントの台本生成とチャット監視で参照されます。</p>
+        </div>
+      )}
+
+      {tab === "refs" && (
+        <div className="max-w-xl space-y-5">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+            <h3 className="text-sm font-bold">参考アカウントを追加</h3>
+            {([["name", "アカウント名"], ["handle", "@ハンドル"], ["industry", "業界（美容室・飲食など）"], ["followers", "フォロワー数（数字）"], ["bio", "紹介文"]] as const).map(([k, ph]) => (
+              <input
+                key={k}
+                value={refForm[k]}
+                onChange={(e) => setRefForm({ ...refForm, [k]: e.target.value })}
+                placeholder={ph}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            ))}
+            <textarea
+              value={refForm.videos}
+              onChange={(e) => setRefForm({ ...refForm, videos: e.target.value })}
+              rows={4}
+              placeholder={"動画（1行に1本）: キャプション | TikTok等のURL（URL省略可）\n例: ビフォーアフター動画 | https://www.tiktok.com/@xxx/video/123"}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={async () => {
+                if (!refForm.name.trim()) return;
+                await api("/api/ref-accounts", { method: "POST", body: JSON.stringify({ ...refForm, followers: Number(refForm.followers) || 0 }) });
+                setRefForm({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
+                load();
+              }}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white"
+            >追加</button>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white">
+            {refs.map((r) => (
+              <div key={r.id} className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5 text-sm last:border-0">
+                <span><b>{r.name}</b> <span className="text-slate-400">{r.handle} / {r.industry}</span></span>
+                <span className="text-xs text-slate-400">{r.followers.toLocaleString()}フォロワー・{r.videos.length}本</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

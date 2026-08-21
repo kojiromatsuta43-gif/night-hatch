@@ -1,290 +1,177 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  AGREEMENTS,
-  CATEGORIES,
-  DURATION_OPTIONS,
-  ELEMENT_OPTIONS,
-  FORMAT_OPTIONS,
-  MEDIA_OPTIONS,
-  POINTS_BY_CATEGORY,
-  PURPOSE_OPTIONS,
-  TONE_OPTIONS,
-} from "@/lib/data";
+import Link from "next/link";
 import { api } from "@/lib/client";
-import { useMe } from "@/components/AppShell";
+import { CATEGORIES } from "@/lib/data";
 
-function CheckGroup({
-  label,
-  options,
-  values,
-  onChange,
-  required,
-}: {
-  label: string;
-  options: string[];
-  values: string[];
-  onChange: (v: string[]) => void;
-  required?: boolean;
-}) {
-  return (
-    <fieldset>
-      <legend className="text-sm font-semibold mb-2">
-        {label}
-        {required && <span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span>}
-      </legend>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt) => {
-          const on = values.includes(opt);
-          return (
-            <button
-              type="button"
-              key={opt}
-              onClick={() => onChange(on ? values.filter((v) => v !== opt) : [...values, opt])}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                on ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-700 hover:border-indigo-400"
-              }`}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-    </fieldset>
-  );
+type RefVideo = { id: string; caption: string; url: string; hue: number };
+type RefAccount = {
+  id: string; name: string; handle: string; industry: string; followers: number; bio: string; videos: RefVideo[];
+};
+
+function fmtFollowers(n: number) {
+  return n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString();
 }
 
 export default function OrderPage() {
   const router = useRouter();
-  const { refresh } = useMe();
-  const [submitError, setSubmitError] = useState("");
-  const [step, setStep] = useState(0);
-  const [category, setCategory] = useState<string>("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
-  const [media, setMedia] = useState<string[]>([]);
-  const [duration, setDuration] = useState<string[]>([]);
-  const [purpose, setPurpose] = useState<string[]>([]);
-  const [target, setTarget] = useState("");
-  const [emotion, setEmotion] = useState("");
-  const [format, setFormat] = useState<string[]>([]);
-  const [tone, setTone] = useState<string[]>([]);
-  const [elements, setElements] = useState<string[]>([]);
-  const [keywords, setKeywords] = useState("");
-  const [ngWords, setNgWords] = useState("");
-  const [refUrl, setRefUrl] = useState("");
-  const [agreed, setAgreed] = useState(false);
+  const [accounts, setAccounts] = useState<RefAccount[]>([]);
+  const [category, setCategory] = useState<string>("台本作成");
+  const [industry, setIndustry] = useState("すべて");
+  const [selected, setSelected] = useState<RefAccount | null>(null);
+  const [video, setVideo] = useState<RefVideo | null>(null);
 
-  const points = useMemo(() => (category ? POINTS_BY_CATEGORY[category] ?? 10 : 0), [category]);
-  const isScript = category === "台本作成";
+  useEffect(() => {
+    api<RefAccount[]>("/api/ref-accounts").then(setAccounts).catch(() => {});
+  }, []);
 
-  const step1Ok = category && title.trim() && description.trim() && deadline;
-  const step2Ok = !isScript || (media.length && duration.length && purpose.length && target.trim() && emotion.trim() && format.length && tone.length && elements.length);
+  const industries = useMemo(
+    () => ["すべて", ...Array.from(new Set(accounts.map((a) => a.industry)))],
+    [accounts]
+  );
+  const shown = industry === "すべて" ? accounts : accounts.filter((a) => a.industry === industry);
+  const isVideoCategory = category === "台本作成" || category === "動画編集";
 
-  const submit = async () => {
-    try {
-      await api("/api/projects", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          category,
-          description,
-          points,
-          deadline,
-          detail: { media, duration, purpose, target, emotion, format, tone, elements, keywords, ngWords, refUrl },
-        }),
-      });
-      refresh();
-      router.push("/projects");
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "登録に失敗しました");
-    }
+  const order = (kind: "台本作成" | "動画編集") => {
+    if (!video || !selected) return;
+    const params = new URLSearchParams({
+      category: kind,
+      ref: video.url || `demo://${selected.handle}/${video.id}`,
+      refTitle: video.caption,
+    });
+    router.push(`/order/create?${params.toString()}`);
   };
 
-  const steps = ["基本情報", "詳細ヒアリング", "確認・登録"];
-
   return (
-    <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">案件登録</h1>
+    <div className="max-w-5xl">
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">案件登録</h1>
+        <Link href="/order/create" className="text-sm text-indigo-500 hover:underline">
+          参考動画なしでフォームから登録 →
+        </Link>
+      </div>
+      <p className="mb-6 text-sm text-slate-500">
+        「このアカウントみたいに作りたい」から始める発注。参考アカウント → 動画を選ぶと、発注フォームに引き継がれます。
+      </p>
 
-      <ol className="flex items-center gap-2 mb-8">
-        {steps.map((s, i) => (
-          <li key={s} className="flex items-center gap-2">
-            <span
-              className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                i < step ? "bg-indigo-600 text-white" : i === step ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-600" : "bg-slate-200 text-slate-500"
-              }`}
-            >
-              {i + 1}
-            </span>
-            <span className={`text-sm ${i === step ? "font-semibold text-slate-900" : "text-slate-500"}`}>{s}</span>
-            {i < steps.length - 1 && <span className="mx-1 h-px w-8 bg-slate-300" />}
-          </li>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c}
+            onClick={() => setCategory(c)}
+            className={`rounded-lg border px-3 py-1.5 text-sm ${category === c ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-indigo-400"}`}
+          >
+            {c}
+          </button>
         ))}
-      </ol>
+      </div>
 
-      {step === 0 && (
-        <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6">
-          <div>
-            <div className="text-sm font-semibold mb-2">案件の種類</div>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-                    category === c ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white hover:border-indigo-400"
-                  }`}
+      {!isVideoCategory ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
+          <p className="text-sm text-slate-500">このカテゴリは参考動画選択に対応していません。</p>
+          <Link href={`/order/create?category=${encodeURIComponent(category)}`} className="mt-3 inline-block rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+            {category}の発注フォームへ進む
+          </Link>
+        </div>
+      ) : !selected ? (
+        <>
+          <div className="mb-6 flex items-center gap-2 text-sm">
+            <span className="text-slate-500">業界:</span>
+            <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-1.5">
+              {industries.map((i) => <option key={i}>{i}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map((a) => (
+              <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
+                <div
+                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white"
+                  style={{ background: `linear-gradient(135deg, hsl(${(a.followers % 360)}, 60%, 55%), hsl(${(a.followers % 360) + 40}, 60%, 40%))` }}
                 >
-                  {c}
+                  {a.name[0]}
+                </div>
+                <div className="mt-3 font-bold">{a.name}</div>
+                <div className="text-xs text-indigo-500">{a.handle}</div>
+                <span className="mt-2 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{a.industry}</span>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-slate-50 py-2">
+                    <div className="text-lg font-bold">{fmtFollowers(a.followers)}</div>
+                    <div className="text-xs text-slate-500">フォロワー</div>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 py-2">
+                    <div className="text-lg font-bold">{a.videos.length}</div>
+                    <div className="text-xs text-slate-500">登録動画数</div>
+                  </div>
+                </div>
+                <p className="mt-3 line-clamp-2 text-left text-xs text-slate-500">{a.bio}</p>
+                <button onClick={() => setSelected(a)} className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+                  動画を見る
                 </button>
-              ))}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <button onClick={() => { setSelected(null); setVideo(null); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
+            ← アカウント一覧に戻る
+          </button>
+          <div className="mb-6 flex items-center gap-4 rounded-xl border border-indigo-200 bg-indigo-50/50 px-5 py-4">
+            <div>
+              <span className="font-bold">{selected.name}</span>
+              <span className="ml-2 text-sm text-indigo-500">{selected.handle}</span>
+            </div>
+            <div className="ml-auto flex gap-4 text-sm">
+              <span><b>{fmtFollowers(selected.followers)}</b> フォロワー</span>
+              <span><b>{selected.videos.length}</b> 本</span>
             </div>
           </div>
-          <label className="block">
-            <span className="text-sm font-semibold">タイトル（案件名）</span>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="例: 企業紹介動画の台本"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm font-semibold">概要説明（最大2000文字）</span>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={2000}
-              rows={4}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            />
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="block">
-              <span className="text-sm font-semibold">希望納期</span>
-              <input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-              />
-            </label>
-            <div className="block">
-              <span className="text-sm font-semibold">消費ポイント</span>
-              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-indigo-700">{points || "-"} pt</div>
+          <h2 className="mb-3 text-sm font-semibold">参考動画を選択</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {selected.videos.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => setVideo(v)}
+                className="group relative aspect-[9/16] overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02]"
+                style={{ background: `linear-gradient(160deg, hsl(${v.hue}, 45%, 30%), hsl(${v.hue + 30}, 50%, 15%))` }}
+              >
+                <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] text-white">▶ ショート動画</span>
+                <span className="absolute inset-x-2 bottom-2 text-xs font-semibold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+                  {v.caption}
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {video && selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => setVideo(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-start justify-between">
+              <h3 className="text-sm font-bold">動画プレビュー</h3>
+              <button onClick={() => setVideo(null)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
-          </div>
-          <div className="flex justify-end">
-            <button
-              disabled={!step1Ok}
-              onClick={() => setStep(1)}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
+            <div
+              className="mx-auto flex aspect-[9/16] w-52 items-end overflow-hidden rounded-xl p-3"
+              style={{ background: `linear-gradient(160deg, hsl(${video.hue}, 45%, 30%), hsl(${video.hue + 30}, 50%, 15%))` }}
             >
-              次へ
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6">
-          {isScript ? (
-            <>
-              <CheckGroup label="使用媒体（複数選択可）" options={MEDIA_OPTIONS} values={media} onChange={setMedia} required />
-              <CheckGroup label="想定動画の尺（完成後）" options={DURATION_OPTIONS} values={duration} onChange={setDuration} required />
-              <CheckGroup label="動画の目的" options={PURPOSE_OPTIONS} values={purpose} onChange={setPurpose} required />
-              <label className="block">
-                <span className="text-sm font-semibold">想定ターゲット（年齢・性別・悩み・属性など）</span>
-                <input
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                  placeholder="例: 30代女性、産後ダイエットに悩む主婦"
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-semibold">動画を見た人にどう感じてほしいか？（感情）</span>
-                <input
-                  value={emotion}
-                  onChange={(e) => setEmotion(e.target.value)}
-                  placeholder="例:「自分に当てはまる！」「今すぐ申し込みたい」"
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-                />
-              </label>
-              <CheckGroup label="台本の形式（複数選択可）" options={FORMAT_OPTIONS} values={format} onChange={setFormat} required />
-              <CheckGroup label="トーンや雰囲気の希望（複数可）" options={TONE_OPTIONS} values={tone} onChange={setTone} required />
-              <CheckGroup label="盛り込みたい要素（複数選択可）" options={ELEMENT_OPTIONS} values={elements} onChange={setElements} required />
-              <label className="block">
-                <span className="text-sm font-semibold">絶対に入れてほしいキーワードや表現（任意）</span>
-                <input value={keywords} onChange={(e) => setKeywords(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              </label>
-              <label className="block">
-                <span className="text-sm font-semibold">避けてほしい表現・NGワード（任意）</span>
-                <input value={ngWords} onChange={(e) => setNgWords(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              </label>
-              <label className="block">
-                <span className="text-sm font-semibold">参考URL（任意）</span>
-                <input value={refUrl} onChange={(e) => setRefUrl(e.target.value)} placeholder="https://" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" />
-              </label>
-            </>
-          ) : (
-            <p className="text-sm text-slate-500">
-              このカテゴリの詳細ヒアリングフォームは今後追加予定です。「次へ」で確認画面に進んでください。
-            </p>
-          )}
-          <div className="flex justify-between">
-            <button onClick={() => setStep(0)} className="rounded-lg border border-slate-300 px-5 py-2 text-sm hover:bg-slate-100">
-              戻る
-            </button>
-            <button
-              disabled={!step2Ok}
-              onClick={() => setStep(2)}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
-            >
-              次へ
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div><dt className="text-slate-500">カテゴリ</dt><dd className="font-medium">{category}</dd></div>
-            <div><dt className="text-slate-500">タイトル</dt><dd className="font-medium">{title}</dd></div>
-            <div><dt className="text-slate-500">希望納期</dt><dd className="font-medium">{deadline}</dd></div>
-            <div><dt className="text-slate-500">消費ポイント</dt><dd className="font-medium">{points}pt</dd></div>
-            <div className="sm:col-span-2"><dt className="text-slate-500">概要</dt><dd className="font-medium whitespace-pre-wrap">{description}</dd></div>
-          </dl>
-          <div className="rounded-lg bg-slate-50 p-4">
-            <div className="text-sm font-semibold mb-2">同意事項</div>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-slate-600">
-              {AGREEMENTS.map((a) => (
-                <li key={a}>{a}</li>
-              ))}
-            </ul>
-            <label className="mt-3 flex items-center gap-2 text-sm font-medium">
-              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="h-4 w-4 accent-indigo-600" />
-              上記すべてに同意します
-            </label>
-          </div>
-          {submitError && <p className="text-sm text-rose-600">{submitError}</p>}
-          <div className="flex justify-between">
-            <button onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-5 py-2 text-sm hover:bg-slate-100">
-              戻る
-            </button>
-            <button
-              disabled={!agreed}
-              onClick={submit}
-              className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
-            >
-              案件を登録する
-            </button>
+              <p className="text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{video.caption}</p>
+            </div>
+            <p className="mt-2 text-center text-xs text-slate-400">{selected.handle}{video.url ? ` ・ ${video.url}` : "（デモ動画）"}</p>
+            <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <button onClick={() => order("台本作成")} className="rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
+                台本作成で発注
+                <span className="block text-[10px] font-normal opacity-80">4pt</span>
+              </button>
+              <button onClick={() => order("動画編集")} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
+                動画編集で発注
+                <span className="block text-[10px] font-normal opacity-80">内容により変動</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

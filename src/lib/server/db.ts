@@ -117,6 +117,23 @@ function init(db: Database.Database) {
     word TEXT UNIQUE NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS ref_accounts (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    handle TEXT NOT NULL,
+    industry TEXT NOT NULL,
+    followers INTEGER NOT NULL DEFAULT 0,
+    bio TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS ref_videos (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    caption TEXT NOT NULL,
+    url TEXT NOT NULL DEFAULT '',
+    hue INTEGER NOT NULL DEFAULT 220,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   CREATE TABLE IF NOT EXISTS point_transactions (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -155,6 +172,45 @@ function init(db: Database.Database) {
     const insertChat = db.prepare("INSERT INTO chat_messages (id, from_id, to_id, body) VALUES (?, ?, ?, ?)");
     insertChat.run(crypto.randomUUID(), freelancerId, clientId, "はじめまして、佐藤です。チラシ案件について質問があります。");
     insertChat.run(crypto.randomUUID(), clientId, freelancerId, "ありがとうございます。何でも聞いてください。");
+  }
+
+  const refCount = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts").get() as { c: number }).c;
+  if (refCount === 0) {
+    const insertAccount = db.prepare(
+      "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio) VALUES (?, ?, ?, ?, ?, ?)"
+    );
+    const insertVideo = db.prepare(
+      "INSERT INTO ref_videos (id, account_id, caption, url, hue) VALUES (?, ?, ?, ?, ?)"
+    );
+    const seed: [string, string, string, number, string, [string, number][]][] = [
+      ["ヘアサロン RIRE 表参道", "@rire_omotesando", "美容室", 284000, "表参道の髪質改善サロン / ビフォーアフター動画が人気",
+        [["【衝撃】ブリーチ3回の髪がこうなる…髪質改善ビフォーアフター", 280],
+         ["美容師が絶対にやらないNGヘアケア3選", 310],
+         ["「前髪失敗した…」を3分で直す方法", 340],
+         ["\u00a5300のアレで艶髪になる裏ワザ", 20],
+         ["朝5分でできる巻き髪ルーティン", 50]]],
+      ["炭火焼鳥 とり吉", "@torikichi_official", "飲食", 156000, "全席禁煙の焼鳥屋 / 仕込み動画とまかない飯でバズり中",
+        [["開店前の仕込み、全部見せます【焼鳥屋の朝】", 25],
+         ["まかない対決！新人vs大将", 45],
+         ["焼鳥屋が教える家庭で失敗しない焼き方", 15],
+         ["常連さんしか知らない裏メニュー3選", 0]]],
+      ["パーソナルジム FORCE", "@force_gym", "フィットネス", 198000, "続けられるダイエット / トレーナーの掛け合いが人気",
+        [["【検証】1ヶ月毎日スクワットしたら脚はこうなる", 200],
+         ["ダイエット中に絶対食べていいコンビニ飯5選", 150],
+         ["トレーナーが太っていた頃の話", 260],
+         ["運動ゼロで痩せる方法を聞かれた時の返答", 230]]],
+      ["さくら不動産 中央店", "@sakura_fudosan", "不動産", 92000, "内見動画とお部屋探しの豆知識 / 若手社員が出演",
+        [["家賃5万円で駅徒歩3分の部屋、中はこうなってます", 210],
+         ["不動産屋が教える内見で絶対見るべき3ヶ所", 190],
+         ["やばい物件の見分け方【実例あり】", 250]]],
+    ];
+    for (const [name, handle, industry, followers, bio, videos] of seed) {
+      const accountId = crypto.randomUUID();
+      insertAccount.run(accountId, name, handle, industry, followers, bio);
+      for (const [caption, hue] of videos) {
+        insertVideo.run(crypto.randomUUID(), accountId, caption, "", hue);
+      }
+    }
   }
 }
 
