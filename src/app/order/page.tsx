@@ -6,7 +6,12 @@ import Link from "next/link";
 import { api } from "@/lib/client";
 import { CATEGORIES } from "@/lib/data";
 
-type RefVideo = { id: string; caption: string; url: string; hue: number };
+type RefVideo = { id: string; caption: string; url: string; thumbnail: string; hue: number };
+
+function tiktokVideoId(url: string): string | null {
+  const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  return m ? m[1] : null;
+}
 type RefAccount = {
   id: string; name: string; handle: string; industry: string; followers: number; bio: string; videos: RefVideo[];
 };
@@ -137,8 +142,12 @@ export default function OrderPage() {
                 className="group relative aspect-[9/16] overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02]"
                 style={{ background: `linear-gradient(160deg, hsl(${v.hue}, 45%, 30%), hsl(${v.hue + 30}, 50%, 15%))` }}
               >
+                {v.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={v.thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                )}
                 <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] text-white">▶ ショート動画</span>
-                <span className="absolute inset-x-2 bottom-2 text-xs font-semibold leading-snug text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6 text-xs font-semibold leading-snug text-white">
                   {v.caption}
                 </span>
               </button>
@@ -154,13 +163,30 @@ export default function OrderPage() {
               <h3 className="text-sm font-bold">動画プレビュー</h3>
               <button onClick={() => setVideo(null)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
-            <div
-              className="mx-auto flex aspect-[9/16] w-52 items-end overflow-hidden rounded-xl p-3"
-              style={{ background: `linear-gradient(160deg, hsl(${video.hue}, 45%, 30%), hsl(${video.hue + 30}, 50%, 15%))` }}
-            >
-              <p className="text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{video.caption}</p>
-            </div>
-            <p className="mt-2 text-center text-xs text-slate-400">{selected.handle}{video.url ? ` ・ ${video.url}` : "（デモ動画）"}</p>
+            {tiktokVideoId(video.url) ? (
+              <iframe
+                src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(video.url)}`}
+                className="mx-auto block h-[480px] w-[270px] rounded-xl border-0"
+                allow="encrypted-media; fullscreen"
+              />
+            ) : (
+              <div
+                className="relative mx-auto flex aspect-[9/16] w-52 items-end overflow-hidden rounded-xl p-3"
+                style={{ background: `linear-gradient(160deg, hsl(${video.hue}, 45%, 30%), hsl(${video.hue + 30}, 50%, 15%))` }}
+              >
+                {video.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={video.thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                )}
+                <p className="relative text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{video.caption}</p>
+              </div>
+            )}
+            <p className="mt-2 text-center text-xs text-slate-400">
+              {selected.handle}
+              {video.url ? (
+                <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 text-indigo-400 hover:underline">元動画を開く</a>
+              ) : "（デモ動画）"}
+            </p>
             <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button onClick={() => order("台本作成")} className="rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">

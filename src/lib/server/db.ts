@@ -131,6 +131,7 @@ function init(db: Database.Database) {
     account_id TEXT NOT NULL,
     caption TEXT NOT NULL,
     url TEXT NOT NULL DEFAULT '',
+    thumbnail TEXT NOT NULL DEFAULT '',
     hue INTEGER NOT NULL DEFAULT 220,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
@@ -172,6 +173,21 @@ function init(db: Database.Database) {
     const insertChat = db.prepare("INSERT INTO chat_messages (id, from_id, to_id, body) VALUES (?, ?, ?, ?)");
     insertChat.run(crypto.randomUUID(), freelancerId, clientId, "はじめまして、佐藤です。チラシ案件について質問があります。");
     insertChat.run(crypto.randomUUID(), clientId, freelancerId, "ありがとうございます。何でも聞いてください。");
+  }
+
+  const videoCols = (db.prepare("PRAGMA table_info(ref_videos)").all() as { name: string }[]).map((c) => c.name);
+  if (!videoCols.includes("thumbnail")) {
+    db.exec("ALTER TABLE ref_videos ADD COLUMN thumbnail TEXT NOT NULL DEFAULT ''");
+  }
+
+  const licensed = db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE handle = '@dr.norimoto'").get() as { c: number };
+  if (licensed.c === 0) {
+    const insertLicensed = db.prepare(
+      "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio) VALUES (?, ?, ?, ?, ?, ?)"
+    );
+    insertLicensed.run(crypto.randomUUID(), "クマ取り名人・則本翔", "@dr.norimoto", "美容クリニック", 421700, "CHINOWA CLINIC院長 / 表参道・原宿 ひたすらクマを消す人！症例一覧・ご予約はInstagramから");
+    insertLicensed.run(crypto.randomUUID(), "焼鳥どん 日垣兄弟", "@higakiyakitori", "飲食", 318400, "全席禁煙の全部大歓迎焼鳥屋 / お子様・お一人様歓迎 店舗一覧・ご予約・FC・通販は下記リンク");
+    insertLicensed.run(crypto.randomUUID(), "ドラゴン細井 / 美容外科医", "@dragonamasora", "美容クリニック", 238100, "渋谷アマソラクリニック院長 / 医学部受験塾MEDUCATE塾長 形成外科・美容外科医");
   }
 
   const refCount = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts").get() as { c: number }).c;

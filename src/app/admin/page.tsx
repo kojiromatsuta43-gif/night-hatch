@@ -17,7 +17,7 @@ export default function AdminPage() {
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
   const [newWord, setNewWord] = useState("");
   const [refs, setRefs] = useState<RefAccount[]>([]);
-  const [refForm, setRefForm] = useState({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
+  const [refForm, setRefForm] = useState<{ accountId?: string; name: string; handle: string; industry: string; followers: string; bio: string; videos: string }>({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
 
   const load = useCallback(() => {
     api<User[]>("/api/admin/users").then(setUsers).catch(() => {});
@@ -94,8 +94,17 @@ export default function AdminPage() {
       {tab === "refs" && (
         <div className="max-w-xl space-y-5">
           <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-            <h3 className="text-sm font-bold">参考アカウントを追加</h3>
-            {([["name", "アカウント名"], ["handle", "@ハンドル"], ["industry", "業界（美容室・飲食など）"], ["followers", "フォロワー数（数字）"], ["bio", "紹介文"]] as const).map(([k, ph]) => (
+            <h3 className="text-sm font-bold">既存アカウントに動画を追加</h3>
+            <select
+              value={refForm.accountId ?? ""}
+              onChange={(e) => setRefForm({ ...refForm, accountId: e.target.value })}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              <option value="">（新規アカウントを作成する）</option>
+              {refs.map((r) => <option key={r.id} value={r.id}>{r.name} {r.handle}</option>)}
+            </select>
+            {!refForm.accountId && <h3 className="text-sm font-bold pt-2">新規アカウント情報</h3>}
+            {!refForm.accountId && ([["name", "アカウント名"], ["handle", "@ハンドル"], ["industry", "業界（美容室・飲食など）"], ["followers", "フォロワー数（数字）"], ["bio", "紹介文"]] as const).map(([k, ph]) => (
               <input
                 key={k}
                 value={refForm[k]}
@@ -108,13 +117,13 @@ export default function AdminPage() {
               value={refForm.videos}
               onChange={(e) => setRefForm({ ...refForm, videos: e.target.value })}
               rows={4}
-              placeholder={"動画（1行に1本）: キャプション | TikTok等のURL（URL省略可）\n例: ビフォーアフター動画 | https://www.tiktok.com/@xxx/video/123"}
+              placeholder={"動画（1行に1本）。TikTokのURLだけ貼ればキャプションとサムネイルは自動取得します。\nhttps://www.tiktok.com/@xxx/video/1234567890\nまたは: キャプション | URL"}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <button
               onClick={async () => {
-                if (!refForm.name.trim()) return;
-                await api("/api/ref-accounts", { method: "POST", body: JSON.stringify({ ...refForm, followers: Number(refForm.followers) || 0 }) });
+                if (!refForm.accountId && !refForm.name.trim()) return;
+                await api("/api/ref-accounts", { method: "POST", body: JSON.stringify({ ...refForm, accountId: refForm.accountId || undefined, followers: Number(refForm.followers) || 0 }) });
                 setRefForm({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
                 load();
               }}
