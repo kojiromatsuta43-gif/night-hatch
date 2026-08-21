@@ -13,7 +13,8 @@ import {
   PURPOSE_OPTIONS,
   TONE_OPTIONS,
 } from "@/lib/data";
-import { useProjects } from "@/lib/store";
+import { api } from "@/lib/client";
+import { useMe } from "@/components/AppShell";
 
 function CheckGroup({
   label,
@@ -57,7 +58,8 @@ function CheckGroup({
 
 export default function OrderPage() {
   const router = useRouter();
-  const { add } = useProjects();
+  const { refresh } = useMe();
+  const [submitError, setSubmitError] = useState("");
   const [step, setStep] = useState(0);
   const [category, setCategory] = useState<string>("");
   const [title, setTitle] = useState("");
@@ -82,19 +84,24 @@ export default function OrderPage() {
   const step1Ok = category && title.trim() && description.trim() && deadline;
   const step2Ok = !isScript || (media.length && duration.length && purpose.length && target.trim() && emotion.trim() && format.length && tone.length && elements.length);
 
-  const submit = () => {
-    add({
-      id: crypto.randomUUID(),
-      title,
-      category,
-      description,
-      points,
-      deadline,
-      createdAt: new Date().toISOString().slice(0, 10),
-      status: "募集中",
-      detail: { media, duration, purpose, target, emotion, format, tone, elements, keywords, ngWords, refUrl },
-    });
-    router.push("/projects");
+  const submit = async () => {
+    try {
+      await api("/api/projects", {
+        method: "POST",
+        body: JSON.stringify({
+          title,
+          category,
+          description,
+          points,
+          deadline,
+          detail: { media, duration, purpose, target, emotion, format, tone, elements, keywords, ngWords, refUrl },
+        }),
+      });
+      refresh();
+      router.push("/projects");
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "登録に失敗しました");
+    }
   };
 
   const steps = ["基本情報", "詳細ヒアリング", "確認・登録"];
@@ -266,6 +273,7 @@ export default function OrderPage() {
               上記すべてに同意します
             </label>
           </div>
+          {submitError && <p className="text-sm text-rose-600">{submitError}</p>}
           <div className="flex justify-between">
             <button onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-5 py-2 text-sm hover:bg-slate-100">
               戻る

@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useProjects } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/client";
+import { useMe } from "@/components/AppShell";
+import { Project } from "@/lib/data";
 
 export default function Dashboard() {
-  const { projects } = useProjects();
-  const list = projects ?? [];
-  const done = list.filter((p) => p.status === "完了");
-  const active = list.filter((p) => p.status !== "完了" && p.status !== "未公開");
-  const open = list.filter((p) => p.status === "募集中");
-  const points = 65;
+  const { me } = useMe();
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    api<Project[]>("/api/projects").then(setProjects).catch(() => {});
+  }, []);
+
+  const done = projects.filter((p) => p.status === "完了");
+  const active = projects.filter((p) => p.status !== "完了" && p.status !== "未公開");
+  const open = projects.filter((p) => p.status === "募集中");
 
   return (
     <div className="max-w-5xl">
@@ -18,7 +25,7 @@ export default function Dashboard() {
         {[
           { label: "完了", value: `${done.length}件` },
           { label: "進行中", value: `${active.length}件` },
-          { label: "残ポイント", value: `${points}pt` },
+          { label: "残ポイント", value: `${me?.points ?? 0}pt` },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
@@ -45,11 +52,7 @@ export default function Dashboard() {
           </thead>
           <tbody>
             {open.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
-                  募集中の案件はありません
-                </td>
-              </tr>
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">募集中の案件はありません</td></tr>
             )}
             {open.map((p) => (
               <tr key={p.id} className="border-b border-slate-100 last:border-0">

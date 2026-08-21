@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CREATE WORKS
 
-## Getting Started
+制作案件の発注・管理プラットフォーム（SODATSU類似機能のオリジナル実装）。
 
-First, run the development server:
+## 起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 → デモアカウントでログイン（パスワードは全て `demo1234`）
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- client@example.com（発注者）
+- creator@example.com（フリーランス）
+- admin@example.com（管理者）
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## AI機能を有効にする
 
-## Learn More
+`.env.local.example` をコピーして `.env.local` を作り、APIキーを設定して再起動。
 
-To learn more about Next.js, take a look at the following resources:
+- `ANTHROPIC_API_KEY` … AIエージェント（台本生成）、ブランドプロファイルのAI抽出
+- `GEMINI_API_KEY` … 動画分析（未設定時はデモ結果を表示）
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 機能
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 案件登録（3ステップウィザード、ポイント自動計算・残高消費）
+- 案件一覧（カンバン / テーブル）
+- AIエージェント（会話型台本生成、NGワードチェック、ブランドプロファイル参照）
+- 保存済み台本（お気に入り・検索）
+- ブランドプロファイル（確定情報/スタンス/NG事項、資料からのAI抽出）
+- 動画分析（シーン分解・フック分析・応用ポイント）
+- 発注書・請求書・取引先管理
+- チャット（5秒ポーリング）
+- ポイント購入（モック決済、Stripe差し替え前提）
+- 管理画面（ユーザー管理・NGワード・チャット監視）
 
-## Deploy on Vercel
+## 技術
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js (App Router) / TypeScript / Tailwind / better-sqlite3（`data/app.db`）/ Claude API / Gemini API
