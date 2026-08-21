@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
   const [newWord, setNewWord] = useState("");
   const [refs, setRefs] = useState<RefAccount[]>([]);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<string>("");
   const [refForm, setRefForm] = useState<{ accountId?: string; name: string; handle: string; industry: string; followers: string; bio: string; videos: string }>({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
 
   const load = useCallback(() => {
@@ -93,6 +95,37 @@ export default function AdminPage() {
 
       {tab === "refs" && (
         <div className="max-w-xl space-y-5">
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-5">
+            <h3 className="text-sm font-bold">移行元から参考動画を一括インポート</h3>
+            <p className="mt-1 text-xs text-slate-600">
+              登録済みアカウントに対応する動画（キャプション・サムネイル・TikTok URL）を移行元CMSから取得します。
+              既存の動画は置き換えられます。数分かかる場合があります。
+            </p>
+            <button
+              onClick={async () => {
+                if (!confirm("移行元から全アカウントの動画を取り込みます。よろしいですか？")) return;
+                setImporting(true);
+                setImportResult("");
+                try {
+                  const r = await api<{ importedAccounts: number; importedVideos: number; skippedCount: number }>(
+                    "/api/admin/import-videos", { method: "POST" }
+                  );
+                  setImportResult(`✓ ${r.importedAccounts}アカウント / ${r.importedVideos}本の動画を取り込みました${r.skippedCount ? `（${r.skippedCount}件スキップ）` : ""}`);
+                  load();
+                } catch (e) {
+                  setImportResult(`エラー: ${e instanceof Error ? e.message : "失敗しました"}`);
+                } finally {
+                  setImporting(false);
+                }
+              }}
+              disabled={importing}
+              className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            >
+              {importing ? "インポート中...（そのままお待ちください）" : "動画を一括インポート"}
+            </button>
+            {importResult && <p className="mt-2 text-xs font-medium text-slate-700">{importResult}</p>}
+          </div>
+
           <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
             <h3 className="text-sm font-bold">既存アカウントに動画を追加</h3>
             <select
@@ -134,7 +167,10 @@ export default function AdminPage() {
             {refs.map((r) => (
               <div key={r.id} className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5 text-sm last:border-0">
                 <span><b>{r.name}</b> <span className="text-slate-400">{r.handle} / {r.industry}</span></span>
-                <span className="text-xs text-slate-400">{r.followers.toLocaleString()}フォロワー・{r.videos.length}本</span>
+                <span className="text-xs text-slate-400">
+                  {r.followers.toLocaleString()}フォロワー・
+                  <b className={r.videos.length ? "text-emerald-600" : "text-slate-400"}>{r.videos.length}本</b>
+                </span>
               </div>
             ))}
           </div>
