@@ -54,7 +54,9 @@ function syncRefAccounts(db: Database.Database) {
   tx();
 }
 
-const DB_PATH = path.join(process.cwd(), "data", "app.db");
+// デプロイ先では永続ボリュームのパスを DATA_DIR で指定する（例: /data）
+const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
+const DB_PATH = path.join(DATA_DIR, "app.db");
 
 declare global {
   // eslint-disable-next-line no-var
