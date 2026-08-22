@@ -33,7 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <MeContext.Provider value={{ me, refresh }}>
       <div className="flex">
         <Sidebar role={me.role} />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-14 md:pt-0">
           <header className="flex items-center justify-end gap-4 border-b border-slate-200 bg-white px-6 py-3">
             <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">
               {me.points} pt
