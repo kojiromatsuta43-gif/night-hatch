@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Docker / Railway 向け: 依存を含む最小構成を .next/standalone に出力する
+  output: "standalone",
   serverExternalPackages: ["better-sqlite3"],
   // 外部公開（Cloudflareトンネル等）経由で開発サーバーにアクセスするために許可
   allowedDevOrigins: [
