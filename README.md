@@ -79,14 +79,22 @@ src/
 - 案件詳細ページは未実装（一覧のステータス変更のみ）
 - SQLiteをファイルで持つため、Vercel等のサーバーレス環境には非対応。デプロイ先はRailway / Fly.io / VPS等（永続ボリュームが必要）を想定
 
-## キャラクター切替の消し方（遊び心の機能）
+## キャラクター切替（遊び心の機能・既定は非表示）
 
-ヘッダーの「🐝ハチ / 🐖ぶた / 🦝たぬ」タブで、マスコット・ポイントの呼び名（はちみつP🍯 / 飼料P🌿 / 無糖レモンP🍋）・配色が切り替わります。選択は端末ごとに localStorage に保存され、サーバー・DBには一切保存していません。
+ふだんは**機能ごと隠れていて**、誰が見てもハチ（はちみつP🍯）のままです。
+合言葉を入れた端末にだけ、ヘッダーに「🐝ハチ / 🐖ぶた / 🦝たぬ」のタブが出ます。
 
-**タブだけ隠す（ハチ固定に戻す）**
-`src/lib/mascot.ts` の `MASCOT_SWITCHER_ENABLED` を `false` にする。それだけで切替UIが消え、全員ハチ表示に戻ります。
+| やりたいこと | 方法 |
+|---|---|
+| 出す | URLの末尾に `?fun=on` を付けて開く（例: `https://.../?fun=on`） |
+| その場で消す | タブの右にある「✕」を押す。ハチに戻り、タブも消える |
+| URLで消す | URLの末尾に `?fun=off` を付けて開く |
+| 全員に対して完全に無効化 | `src/lib/mascot.ts` の `MASCOT_SWITCHER_ENABLED` を `false` にする（合言葉を入れても出なくなる） |
 
-**完全に削除する**
+- 合言葉を入れた状態も、選んだキャラも **その端末のブラウザにだけ** 保存されます（localStorage）。サーバー・DBには一切保存していません。したがって**お客様や他の社員の画面には絶対に出ません**。
+- 合言葉は開いた直後にURLから自動で消えるので、アドレスバーに残りません。
+
+### コードごと削除する場合
 1. `src/lib/mascot.ts` / `src/components/MascotProvider.tsx` / `src/components/PigLogo.tsx` / `src/components/TanukiLogo.tsx` / `src/components/LemonCanLogo.tsx` / `src/components/MascotSwitcher.tsx` を削除
 2. `src/app/globals.css` 末尾の `html[data-mascot="pig"]` / `html[data-mascot="tanuki"]` ブロックを削除
-3. `<Mascot .../>` を `<BeeLogo .../>` に、`<PointMark .../>` を `🍯` に、`{mascot.pointEmoji}` を `🍯`、`{mascot.pointName}` を `はちみつP` に戻す
+3. `<Mascot .../>` を `<BeeLogo .../>` に、`<PointInline />` を `🍯` に、`{mascot.pointName}` を `はちみつP` に戻す

@@ -65,3 +65,5 @@ export const MASCOTS: Record<MascotId, MascotTheme> = {
 
 export const DEFAULT_MASCOT: MascotId = "bee";
 export const MASCOT_STORAGE_KEY = "bridge-hatch-mascot";
+/** 合言葉を入れた端末かどうかの保存先 */
+export const FUN_STORAGE_KEY = "bridge-hatch-fun";
