@@ -55,7 +55,7 @@ export const MASCOTS: Record<MascotId, MascotTheme> = {
     name: "たぬき",
     pointName: "無糖レモン",
     pointEmoji: "🍋",
-    greeting: "こんにちは、たぬきです！",
+    greeting: "こんにちは、たぬです！",
     thinking: "たぬきが考えています",
     agentTitle: "たぬきのAIエージェント",
     talkTo: "たぬきに話しかける",
