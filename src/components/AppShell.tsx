@@ -37,8 +37,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 min-w-0 pt-14 md:pt-0">
           <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
             <NotificationBell />
-            <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">
-              {me.points} pt
+            <span className="rounded-full bg-honey-50 px-3 py-1 text-sm font-semibold text-honey-700">
+              {me.points} 🍯
             </span>
             <span className="text-sm text-slate-600">{me.name}</span>
             <button

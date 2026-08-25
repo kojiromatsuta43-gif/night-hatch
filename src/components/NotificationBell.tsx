@@ -100,7 +100,7 @@ export default function NotificationBell() {
         onClick={() => void openItem(n)}
         className="flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
       >
-        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${KIND_COLOR[n.kind] ?? "bg-indigo-500"}`} />
+        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${KIND_COLOR[n.kind] ?? "bg-honey-500"}`} />
         <span className="min-w-0 flex-1">
           <span className="block text-xs text-slate-400">{formatWhen(n.created_at)}</span>
           <span className="block text-sm font-medium text-slate-900">{n.title}</span>
@@ -131,7 +131,7 @@ export default function NotificationBell() {
         <div className="absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <span className="text-sm font-bold text-slate-900">通知</span>
-            <button onClick={() => void markAll()} className="text-xs text-indigo-600 hover:underline disabled:text-slate-300" disabled={unread === 0}>
+            <button onClick={() => void markAll()} className="text-xs text-honey-700 hover:underline disabled:text-slate-300" disabled={unread === 0}>
               すべて既読にする
             </button>
           </div>
@@ -142,7 +142,7 @@ export default function NotificationBell() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  tab === t ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"
+                  tab === t ? "bg-honey-400 text-hive-900" : "text-slate-500 hover:bg-slate-100"
                 }`}
               >
                 {t === "unread" ? `新しい通知${unread > 0 ? ` (${unread})` : ""}` : "確認済"}

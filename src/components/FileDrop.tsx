@@ -94,7 +94,7 @@ export default function FileDrop({
           }
         }}
         className={`mt-2 cursor-pointer rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
-          dragging ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-slate-50 hover:border-indigo-400"
+          dragging ? "border-honey-500 bg-honey-50" : "border-slate-300 bg-slate-50 hover:border-honey-400"
         }`}
       >
         <div className="text-sm font-medium text-slate-700">
@@ -125,7 +125,7 @@ export default function FileDrop({
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="min-w-0 flex-1 truncate text-indigo-600 hover:underline"
+                className="min-w-0 flex-1 truncate text-honey-700 hover:underline"
               >
                 {f.name}
               </a>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import BeeLogo from "./BeeLogo";
 import { useEffect, useState } from "react";
 
 const NAV = [
@@ -15,7 +16,7 @@ const NAV = [
   { href: "/video-analysis", label: "動画分析" },
   { href: "/issue", label: "発注書・請求書" },
   { href: "/chat", label: "チャット" },
-  { href: "/points", label: "ポイント" },
+  { href: "/points", label: "はちみつ" },
 ];
 
 export default function Sidebar({ role }: { role?: string }) {
@@ -37,7 +38,7 @@ export default function Sidebar({ role }: { role?: string }) {
             key={item.href}
             href={item.href}
             className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-              active ? "bg-indigo-600 text-white" : "text-slate-700 hover:bg-slate-100"
+              active ? "bg-honey-400 text-hive-900" : "text-slate-700 hover:bg-slate-100"
             }`}
           >
             {item.label}
@@ -51,7 +52,10 @@ export default function Sidebar({ role }: { role?: string }) {
     <>
       {/* デスクトップ: 常時表示のサイドバー */}
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white px-4 py-6 md:block">
-        <div className="mb-8 px-2 text-xl font-bold tracking-tight text-indigo-600">CREATE WORKS</div>
+        <div className="mb-8 flex items-center gap-2 px-2">
+          <BeeLogo className="h-8 w-8 shrink-0" />
+          <span className="text-lg font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+        </div>
         {navLinks}
       </aside>
 
@@ -66,7 +70,10 @@ export default function Sidebar({ role }: { role?: string }) {
             <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </button>
-        <span className="text-base font-bold tracking-tight text-indigo-600">CREATE WORKS</span>
+        <span className="flex items-center gap-2">
+          <BeeLogo className="h-7 w-7" />
+          <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+        </span>
       </header>
 
       {open && (
@@ -78,7 +85,10 @@ export default function Sidebar({ role }: { role?: string }) {
           />
           <div className="absolute inset-y-0 left-0 w-64 overflow-y-auto bg-white px-4 py-5 shadow-xl">
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-lg font-bold tracking-tight text-indigo-600">CREATE WORKS</span>
+              <span className="flex items-center gap-2">
+                <BeeLogo className="h-7 w-7" />
+                <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+              </span>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="メニューを閉じる"
