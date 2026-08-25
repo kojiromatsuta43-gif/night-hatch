@@ -76,7 +76,7 @@ export default function OrderPage() {
     <div className="max-w-5xl">
       <div className="mb-2 flex items-center justify-between">
         <h1 className="text-2xl font-bold">案件登録</h1>
-        <Link href="/order/create" className="text-sm text-indigo-500 hover:underline">
+        <Link href="/order/create" className="text-sm text-honey-600 hover:underline">
           参考動画なしでフォームから登録 →
         </Link>
       </div>
@@ -89,7 +89,7 @@ export default function OrderPage() {
           <button
             key={c}
             onClick={() => setCategory(c)}
-            className={`rounded-lg border px-3 py-1.5 text-sm ${category === c ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-indigo-400"}`}
+            className={`rounded-lg border px-3 py-1.5 text-sm ${category === c ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"}`}
           >
             {c}
           </button>
@@ -99,7 +99,7 @@ export default function OrderPage() {
       {!isVideoCategory ? (
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-sm text-slate-500">このカテゴリは参考動画選択に対応していません。</p>
-          <Link href={`/order/create?category=${encodeURIComponent(category)}`} className="mt-3 inline-block rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+          <Link href={`/order/create?category=${encodeURIComponent(category)}`} className="mt-3 inline-block rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">
             {category}の発注フォームへ進む
           </Link>
         </div>
@@ -131,8 +131,8 @@ export default function OrderPage() {
                   </div>
                 )}
                 <div className="mt-3 font-bold">{a.name}</div>
-                <div className="text-xs text-indigo-500">{a.handle}</div>
-                <span className="mt-2 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{a.industry}</span>
+                <div className="text-xs text-honey-600">{a.handle}</div>
+                <span className="mt-2 inline-block rounded-full bg-honey-50 px-3 py-1 text-xs font-medium text-honey-700">{a.industry}</span>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <div className="rounded-lg bg-slate-50 py-2">
                     <div className="text-lg font-bold">{fmtFollowers(a.followers)}</div>
@@ -144,7 +144,7 @@ export default function OrderPage() {
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-left text-xs text-slate-500">{a.bio}</p>
-                <button onClick={() => openAccount(a)} className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+                <button onClick={() => openAccount(a)} className="mt-3 w-full rounded-lg bg-honey-400 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">
                   動画を見る
                 </button>
               </div>
@@ -156,10 +156,10 @@ export default function OrderPage() {
           <button onClick={() => { setSelected(null); setVideo(null); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
             ← アカウント一覧に戻る
           </button>
-          <div className="mb-6 flex items-center gap-4 rounded-xl border border-indigo-200 bg-indigo-50/50 px-5 py-4">
+          <div className="mb-6 flex items-center gap-4 rounded-xl border border-honey-200 bg-honey-50/50 px-5 py-4">
             <div>
               <span className="font-bold">{selected.name}</span>
-              <span className="ml-2 text-sm text-indigo-500">{selected.handle}</span>
+              <span className="ml-2 text-sm text-honey-600">{selected.handle}</span>
             </div>
             <div className="ml-auto flex gap-4 text-sm">
               <span><b>{fmtFollowers(selected.followers)}</b> フォロワー</span>
@@ -176,7 +176,7 @@ export default function OrderPage() {
             <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
               このアカウントの動画はまだ取り込まれていません。
               {selected.profile_url && (
-                <a href={selected.profile_url} target="_blank" rel="noreferrer" className="mx-1 text-indigo-500 hover:underline">
+                <a href={selected.profile_url} target="_blank" rel="noreferrer" className="mx-1 text-honey-600 hover:underline">
                   TikTokプロフィール
                 </a>
               )}
@@ -233,14 +233,14 @@ export default function OrderPage() {
             <p className="mt-2 text-center text-xs text-slate-400">
               {selected.handle}
               {video.url ? (
-                <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 text-indigo-400 hover:underline">元動画を開く</a>
+                <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 text-honey-500 hover:underline">元動画を開く</a>
               ) : "（デモ動画）"}
             </p>
             <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <button onClick={() => order("台本作成")} className="rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
+              <button onClick={() => order("台本作成")} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
                 台本作成で発注
-                <span className="block text-[10px] font-normal opacity-80">4pt</span>
+                <span className="block text-[10px] font-normal opacity-80">4🍯</span>
               </button>
               <button onClick={() => order("動画編集")} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
                 動画編集で発注
