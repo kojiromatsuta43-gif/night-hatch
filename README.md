@@ -78,3 +78,15 @@ src/
 - フリーランス側の応募・納品フローは未実装
 - 案件詳細ページは未実装（一覧のステータス変更のみ）
 - SQLiteをファイルで持つため、Vercel等のサーバーレス環境には非対応。デプロイ先はRailway / Fly.io / VPS等（永続ボリュームが必要）を想定
+
+## キャラクター切替の消し方（遊び心の機能）
+
+ヘッダーの「🐝ハチ / 🐖ぶた」タブで、マスコット・ポイントの呼び名（はちみつP🍯 ⇔ 飼料の草🌿）・配色が切り替わります。選択は端末ごとに localStorage に保存され、サーバー・DBには一切保存していません。
+
+**タブだけ隠す（ハチ固定に戻す）**
+`src/lib/mascot.ts` の `MASCOT_SWITCHER_ENABLED` を `false` にする。それだけで切替UIが消え、全員ハチ表示に戻ります。
+
+**完全に削除する**
+1. `src/lib/mascot.ts` / `src/components/MascotProvider.tsx` / `src/components/PigLogo.tsx` / `src/components/MascotSwitcher.tsx` を削除
+2. `src/app/globals.css` 末尾の `html[data-mascot="pig"]` ブロックを削除
+3. `<Mascot .../>` を `<BeeLogo .../>` に、`{mascot.pointEmoji}` を `🍯`、`{mascot.pointName}` を `はちみつP` に戻す

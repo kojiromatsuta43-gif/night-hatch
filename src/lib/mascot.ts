@@ -1,0 +1,54 @@
+// ============================================================
+//  キャラクター切替（遊び心の機能）
+//  ▼ この1行を false にすると切替タブが消え、ハチ固定に戻ります。
+//    完全に削除したい場合は README の「キャラクター切替の消し方」を参照。
+// ============================================================
+export const MASCOT_SWITCHER_ENABLED = true;
+
+export type MascotId = "bee" | "pig";
+
+export type MascotTheme = {
+  id: MascotId;
+  label: string;      // 切替タブに出す名前
+  emoji: string;      // 切替タブの絵文字
+  name: string;       // 本文中の呼び名
+  pointName: string;  // ポイントの呼び名
+  pointEmoji: string; // ポイントの絵文字
+  greeting: string;
+  thinking: string;
+  agentTitle: string;
+  talkTo: string;
+  consult: string;
+};
+
+export const MASCOTS: Record<MascotId, MascotTheme> = {
+  bee: {
+    id: "bee",
+    label: "ハチ",
+    emoji: "🐝",
+    name: "ハチ",
+    pointName: "はちみつP",
+    pointEmoji: "🍯",
+    greeting: "こんにちは、ハチです！",
+    thinking: "ハチが考えています",
+    agentTitle: "ハチのAIエージェント",
+    talkTo: "ハチに話しかける",
+    consult: "ハチに相談",
+  },
+  pig: {
+    id: "pig",
+    label: "ぶた",
+    emoji: "🐖",
+    name: "ぶた",
+    pointName: "飼料の草",
+    pointEmoji: "🌿",
+    greeting: "こんにちは、ぶたです！",
+    thinking: "ぶたが考えています",
+    agentTitle: "ぶたのAIエージェント",
+    talkTo: "ぶたに話しかける",
+    consult: "ぶたに相談",
+  },
+};
+
+export const DEFAULT_MASCOT: MascotId = "bee";
+export const MASCOT_STORAGE_KEY = "bridge-hatch-mascot";

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
+import { useMascot } from "@/components/MascotProvider";
 
 type RefVideo = { id: string; caption: string; url: string; thumbnail: string; hue: number };
 
@@ -23,6 +24,7 @@ function fmtFollowers(n: number) {
 }
 
 export default function OrderPage() {
+  const { mascot } = useMascot();
   const router = useRouter();
   const [accounts, setAccounts] = useState<RefAccount[]>([]);
   const [industry, setIndustry] = useState("すべて");
@@ -228,7 +230,7 @@ export default function OrderPage() {
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button onClick={() => order("台本作成")} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
                 台本作成で発注
-                <span className="block text-[10px] font-normal opacity-80">4🍯</span>
+                <span className="block text-[10px] font-normal opacity-80">4{mascot.pointEmoji}</span>
               </button>
               <button onClick={() => order("動画編集")} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
                 動画編集で発注

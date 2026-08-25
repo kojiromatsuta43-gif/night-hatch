@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import BeeLogo from "@/components/BeeLogo";
+import { Mascot } from "@/components/MascotProvider";
 
 const STEPS = [
   {
@@ -53,7 +53,7 @@ export default function GuidePage() {
       <div className="mb-8 rounded-2xl bg-gradient-to-br from-honey-400 to-honey-500 px-7 py-8 text-hive-900">
         <div className="text-sm font-medium opacity-80">デモのご案内</div>
         <h1 className="mt-1 flex items-center gap-3 text-3xl font-bold">
-          <BeeLogo className="h-11 w-11" />
+          <Mascot className="h-11 w-11" />
           BRIDGE HATCH
         </h1>
         <p className="mt-3 text-sm leading-relaxed opacity-90">

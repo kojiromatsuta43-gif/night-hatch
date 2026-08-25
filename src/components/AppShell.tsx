@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
+import MascotProvider, { useMascot } from "./MascotProvider";
+import MascotSwitcher from "./MascotSwitcher";
 import NotificationBell from "./NotificationBell";
 import { api, Me } from "@/lib/client";
 
@@ -32,19 +34,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (!me) return null;
 
   return (
+    <MascotProvider>
     <MeContext.Provider value={{ me, refresh }}>
       <div className="flex">
         <Sidebar role={me.role} />
         <div className="flex-1 min-w-0 pt-14 md:pt-0">
           <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
+            <MascotSwitcher />
             <NotificationBell />
-            <Link
-              href="/points"
-              title="はちみつPの残高（クリックで詳細）"
-              className="rounded-full bg-honey-50 px-3 py-1 text-sm font-semibold text-honey-700 transition-colors hover:bg-honey-100"
-            >
-              {me.points} 🍯
-            </Link>
+            <PointsChip points={me.points} />
             <span className="text-sm text-slate-600">{me.name}</span>
             <button
               onClick={async () => {
@@ -60,5 +58,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </MeContext.Provider>
+    </MascotProvider>
+  );
+}
+
+function PointsChip({ points }: { points: number }) {
+  const { mascot } = useMascot();
+  return (
+    <Link
+      href="/points"
+      title={`${mascot.pointName}の残高（クリックで詳細）`}
+      className="rounded-full bg-honey-50 px-3 py-1 text-sm font-semibold text-honey-700 transition-colors hover:bg-honey-100"
+    >
+      {points} {mascot.pointEmoji}
+    </Link>
   );
 }

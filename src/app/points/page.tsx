@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
+import { useMascot } from "@/components/MascotProvider";
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
 
@@ -13,6 +14,7 @@ const PLANS = [
 ];
 
 export default function PointsPage() {
+  const { mascot } = useMascot();
   const { me, refresh } = useMe();
   const [txs, setTxs] = useState<Tx[]>([]);
   const [busy, setBusy] = useState(false);
@@ -23,7 +25,7 @@ export default function PointsPage() {
   useEffect(load, [load]);
 
   const buy = async (amount: number) => {
-    if (!confirm(`はちみつP を ${amount}🍯 購入します（デモのため決済は行われません）`)) return;
+    if (!confirm(`${mascot.pointName} を ${amount}${mascot.pointEmoji} 購入します（デモのため決済は行われません）`)) return;
     setBusy(true);
     await api("/api/points", { method: "POST", body: JSON.stringify({ amount }) });
     refresh();
@@ -33,19 +35,19 @@ export default function PointsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">はちみつP 🍯</h1>
+      <h1 className="text-2xl font-bold mb-6">{mascot.pointName} {mascot.pointEmoji}</h1>
       <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6">
         <div className="text-sm text-slate-500">現在の残高</div>
-        <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}<span className="ml-1 text-lg">🍯</span></div>
+        <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}<span className="ml-1 text-lg">{mascot.pointEmoji}</span></div>
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold">はちみつPを買う</h2>
+      <h2 className="mb-3 text-lg font-semibold">{mascot.pointName}を買う</h2>
       <p className="mb-4 text-xs text-slate-400">※ デモ環境のため実際の決済は行われません（本番はStripe連携を想定）</p>
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {PLANS.map((p) => (
           <div key={p.amount} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
             <div className="text-sm text-slate-500">{p.desc}</div>
-            <div className="mt-1 text-2xl font-bold text-honey-700">{p.amount}🍯</div>
+            <div className="mt-1 text-2xl font-bold text-honey-700">{p.amount}{mascot.pointEmoji}</div>
             <div className="text-sm text-slate-400">{p.price}</div>
             <button onClick={() => buy(p.amount)} disabled={busy} className="mt-3 w-full rounded-lg bg-honey-400 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300">購入する</button>
           </div>
@@ -62,7 +64,7 @@ export default function PointsPage() {
               <div className="text-xs text-slate-400">{t.created_at.slice(0, 16)}</div>
             </div>
             <span className={t.amount > 0 ? "font-semibold text-emerald-600" : "font-semibold text-rose-500"}>
-              {t.amount > 0 ? "+" : ""}{t.amount}🍯
+              {t.amount > 0 ? "+" : ""}{t.amount}{mascot.pointEmoji}
             </span>
           </div>
         ))}

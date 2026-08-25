@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
+import { useMascot } from "@/components/MascotProvider";
 
 type User = { id: string; email: string; name: string; role: string; points: number; created_at: string };
 type NgWord = { id: string; word: string };
@@ -10,6 +11,7 @@ type MonitorMessage = { id: string; body: string; from_name: string; to_name: st
 type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; loaded_videos: number };
 
 export default function AdminPage() {
+  const { mascot } = useMascot();
   const { me } = useMe();
   const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs">("users");
   const [users, setUsers] = useState<User[]>([]);
@@ -52,7 +54,7 @@ export default function AdminPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
-                <th className="px-4 py-3 font-medium text-right">はちみつP</th>
+                <th className="px-4 py-3 font-medium text-right">{mascot.pointName}</th>
                 <th className="px-4 py-3 font-medium">登録日</th>
               </tr>
             </thead>
@@ -62,7 +64,7 @@ export default function AdminPage() {
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs">{u.role}</span></td>
-                  <td className="px-4 py-3 text-right">{u.points}🍯</td>
+                  <td className="px-4 py-3 text-right">{u.points}{mascot.pointEmoji}</td>
                   <td className="px-4 py-3">{u.created_at.slice(0, 10)}</td>
                 </tr>
               ))}

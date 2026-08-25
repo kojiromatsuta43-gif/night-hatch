@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { STATUSES, Status, Project } from "@/lib/data";
+import { useMascot } from "@/components/MascotProvider";
 
 const STATUS_COLOR: Record<Status, string> = {
   "未公開": "bg-slate-200 text-slate-700",
@@ -13,6 +14,7 @@ const STATUS_COLOR: Record<Status, string> = {
 };
 
 export default function ProjectsPage() {
+  const { mascot } = useMascot();
   const [projects, setProjects] = useState<Project[]>([]);
   const [view, setView] = useState<"board" | "table">("board");
 
@@ -52,7 +54,7 @@ export default function ProjectsPage() {
                       <div className="text-sm font-medium leading-snug">{p.title}</div>
                       <div className="mt-1 text-xs text-slate-500">{p.category}</div>
                       <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                        <span>{p.points}🍯</span>
+                        <span>{p.points}{mascot.pointEmoji}</span>
                         <span>納期 {p.deadline.slice(5).replace("-", "/")}</span>
                       </div>
                       <select
@@ -79,7 +81,7 @@ export default function ProjectsPage() {
                 <th className="px-4 py-3 font-medium">案件名</th>
                 <th className="px-4 py-3 font-medium">カテゴリ</th>
                 <th className="px-4 py-3 font-medium">納期</th>
-                <th className="px-4 py-3 font-medium text-right">はちみつP</th>
+                <th className="px-4 py-3 font-medium text-right">{mascot.pointName}</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +91,7 @@ export default function ProjectsPage() {
                   <td className="px-4 py-3 font-medium">{p.title}</td>
                   <td className="px-4 py-3">{p.category}</td>
                   <td className="px-4 py-3">{p.deadline}</td>
-                  <td className="px-4 py-3 text-right">{p.points}🍯</td>
+                  <td className="px-4 py-3 text-right">{p.points}{mascot.pointEmoji}</td>
                 </tr>
               ))}
             </tbody>

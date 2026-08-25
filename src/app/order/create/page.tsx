@@ -21,6 +21,7 @@ import {
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
+import { useMascot } from "@/components/MascotProvider";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none";
@@ -124,6 +125,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
 }
 
 function OrderForm() {
+  const { mascot } = useMascot();
   const router = useRouter();
   const { refresh } = useMe();
   const [submitError, setSubmitError] = useState("");
@@ -323,9 +325,9 @@ function OrderForm() {
               <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={inputClass} />
             </label>
             <div className="block">
-              <span className="text-sm font-semibold">消費するはちみつP</span>
+              <span className="text-sm font-semibold">消費する{mascot.pointName}</span>
               <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-honey-700">
-                {points || "-"} 🍯
+                {points || "-"} {mascot.pointEmoji}
               </div>
             </div>
           </div>
@@ -558,8 +560,8 @@ function OrderForm() {
               <dd className="font-medium">{deadline}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">消費するはちみつP</dt>
-              <dd className="font-medium">{points}🍯</dd>
+              <dt className="text-slate-500">消費する{mascot.pointName}</dt>
+              <dd className="font-medium">{points}{mascot.pointEmoji}</dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-slate-500">概要</dt>

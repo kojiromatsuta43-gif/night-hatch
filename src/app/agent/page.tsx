@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { api } from "@/lib/client";
-import BeeLogo from "@/components/BeeLogo";
+import { Mascot, useMascot } from "@/components/MascotProvider";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
@@ -28,6 +28,7 @@ export default function AgentPage() {
   const [profileId, setProfileId] = useState("");
   const [ngFlags, setNgFlags] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { mascot } = useMascot();
 
   useEffect(() => {
     api<AgentSession[]>("/api/agent").then(setSessions).catch(() => {});
@@ -101,8 +102,8 @@ export default function AgentPage() {
 
       <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-2">
-          <BeeLogo className="h-7 w-7 shrink-0" />
-          <span className="text-sm font-semibold text-hive-900">ハチのAIエージェント</span>
+          <Mascot className="h-7 w-7 shrink-0" />
+          <span className="text-sm font-semibold text-hive-900">{mascot.agentTitle}</span>
           <select
             value={profileId}
             onChange={(e) => setProfileId(e.target.value)}
@@ -118,10 +119,10 @@ export default function AgentPage() {
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && (
             <div className="mx-auto mt-8 max-w-2xl text-center">
-              <BeeLogo className="mx-auto h-20 w-20 animate-bee-float" />
+              <Mascot className="mx-auto h-20 w-20 animate-bee-float" />
               <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-honey-200 bg-honey-50 px-6 py-4">
                 <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-honey-200 bg-honey-50" />
-                <p className="text-lg font-bold text-hive-900">こんにちは、ハチです！</p>
+                <p className="text-lg font-bold text-hive-900">{mascot.greeting}</p>
                 <p className="mt-1 text-sm text-slate-600">何をお手伝いしましょうか？下のボタンから選んでもいいですし、そのまま話しかけてもOKです。</p>
               </div>
 
@@ -132,7 +133,7 @@ export default function AgentPage() {
                     onClick={() => send(q.prompt)}
                     className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-honey-400 hover:bg-honey-50"
                   >
-                    <BeeLogo className="h-7 w-7 shrink-0" />
+                    <Mascot className="h-7 w-7 shrink-0" />
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold text-hive-900">{q.label}</span>
                       <span className="block text-xs text-slate-400">{q.hint}</span>
@@ -163,7 +164,7 @@ export default function AgentPage() {
                   <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
                 ) : (
                   <div className="flex max-w-[92%] gap-2.5">
-                    <BeeLogo className="mt-1 h-8 w-8 shrink-0" />
+                    <Mascot className="mt-1 h-8 w-8 shrink-0" />
                     <div className="min-w-0">
                       <div
                         className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
@@ -179,12 +180,12 @@ export default function AgentPage() {
             ))}
             {busy && (
               <div className="flex items-center gap-2.5">
-                <BeeLogo className="h-8 w-8 shrink-0 animate-bee-float" />
+                <Mascot className="h-8 w-8 shrink-0 animate-bee-float" />
                 <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3">
                   <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500" />
                   <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.18s]" />
                   <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.36s]" />
-                  <span className="ml-1.5 text-xs text-slate-500">ハチが考えています</span>
+                  <span className="ml-1.5 text-xs text-slate-500">{mascot.thinking}</span>
                 </div>
               </div>
             )}
@@ -210,7 +211,7 @@ export default function AgentPage() {
                 }
               }}
               rows={2}
-              placeholder="ハチに話しかける — 例: フィットネスジムの体験申込を増やすリール台本を作って"
+              placeholder={`${mascot.talkTo} — 例: フィットネスジムの体験申込を増やすリール台本を作って`}
               className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
             />
             <button

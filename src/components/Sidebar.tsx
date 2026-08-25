@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import BeeLogo from "./BeeLogo";
+import { Mascot, useMascot } from "./MascotProvider";
 import { useEffect, useState } from "react";
 
 const NAV = [
@@ -16,13 +16,14 @@ const NAV = [
   { href: "/video-analysis", label: "動画分析" },
   { href: "/issue", label: "発注書・請求書" },
   { href: "/chat", label: "チャット" },
-  { href: "/points", label: "はちみつP" },
 ];
 
 export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = role === "admin" ? [...NAV, { href: "/admin", label: "管理" }] : NAV;
+  const { mascot } = useMascot();
+  const base = [...NAV, { href: "/points", label: mascot.pointName }];
+  const items = role === "admin" ? [...base, { href: "/admin", label: "管理" }] : base;
 
   // 画面遷移したらメニューを閉じる
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function Sidebar({ role }: { role?: string }) {
       {/* デスクトップ: 常時表示のサイドバー */}
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white px-4 py-6 md:block">
         <div className="mb-8 flex items-center gap-2 px-2">
-          <BeeLogo className="h-8 w-8 shrink-0" />
+          <Mascot className="h-8 w-8 shrink-0" />
           <span className="text-lg font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
         </div>
         {navLinks}
@@ -71,7 +72,7 @@ export default function Sidebar({ role }: { role?: string }) {
           </svg>
         </button>
         <span className="flex items-center gap-2">
-          <BeeLogo className="h-7 w-7" />
+          <Mascot className="h-7 w-7" />
           <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
         </span>
       </header>
@@ -86,7 +87,7 @@ export default function Sidebar({ role }: { role?: string }) {
           <div className="absolute inset-y-0 left-0 w-64 overflow-y-auto bg-white px-4 py-5 shadow-xl">
             <div className="mb-6 flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <BeeLogo className="h-7 w-7" />
+                <Mascot className="h-7 w-7" />
                 <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
               </span>
               <button
