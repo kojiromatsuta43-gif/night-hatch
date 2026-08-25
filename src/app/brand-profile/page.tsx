@@ -32,12 +32,12 @@ export default function BrandProfilePage() {
     <div className="max-w-3xl">
       <div className="mb-2 flex items-center justify-between">
         <h1 className="text-2xl font-bold">ブランドプロファイル</h1>
-        <button onClick={create} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">＋ 新規作成</button>
+        <button onClick={create} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">＋ 新規作成</button>
       </div>
       <p className="mb-6 text-sm text-slate-500">台本生成時に参照される「情報の単一情報源」。確定情報はAIが改変しません。用途ごとに複数作れます。</p>
       <div className="space-y-2">
         {profiles.map((p) => (
-          <button key={p.id} onClick={() => setEditingId(p.id)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:border-indigo-400">
+          <button key={p.id} onClick={() => setEditingId(p.id)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:border-honey-400">
             <div>
               <div className="text-sm font-semibold">{p.name}</div>
               <div className="text-xs text-slate-400">更新 {p.updated_at.slice(0, 16)}</div>
@@ -105,7 +105,7 @@ function Editor({ profile, onBack }: { profile: Profile; onBack: () => void }) {
           <button onClick={() => setItems(items.filter((_, j) => j !== i))} className="text-slate-300 hover:text-rose-500">✕</button>
         </div>
       ))}
-      <button onClick={() => setItems([...items, ""])} className="text-xs text-indigo-500 hover:underline">＋ {placeholder}</button>
+      <button onClick={() => setItems([...items, ""])} className="text-xs text-honey-600 hover:underline">＋ {placeholder}</button>
     </section>
   );
 
@@ -115,17 +115,17 @@ function Editor({ profile, onBack }: { profile: Profile; onBack: () => void }) {
         <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-700">← 一覧へ戻る</button>
         <div className="flex items-center gap-3">
           {saved && <span className="text-xs text-emerald-600">✓ 保存しました</span>}
-          <button onClick={save} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">保存</button>
+          <button onClick={save} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">保存</button>
         </div>
       </div>
 
       <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-lg font-bold" />
 
-      <section className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5">
+      <section className="rounded-xl border border-honey-200 bg-honey-50/50 p-5">
         <h3 className="text-sm font-bold">資料からAIで下書きを抽出</h3>
         <p className="mb-3 text-xs text-slate-500">会社概要・パンフレットなどのテキストを貼り付けると、AIが下の各欄に振り分けます。</p>
         <textarea value={sourceText} onChange={(e) => setSourceText(e.target.value)} rows={4} placeholder="ここに資料のテキストを貼り付け" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button onClick={extract} disabled={extracting || !sourceText.trim()} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">
+        <button onClick={extract} disabled={extracting || !sourceText.trim()} className="mt-2 rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">
           {extracting ? "抽出中..." : "AIで下書きを抽出"}
         </button>
         {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}
@@ -141,7 +141,7 @@ function Editor({ profile, onBack }: { profile: Profile; onBack: () => void }) {
             <button onClick={() => setFacts(facts.filter((_, j) => j !== i))} className="text-slate-300 hover:text-rose-500">✕</button>
           </div>
         ))}
-        <button onClick={() => setFacts([...facts, { label: "", value: "" }])} className="text-xs text-indigo-500 hover:underline">＋ 確定情報を追加</button>
+        <button onClick={() => setFacts([...facts, { label: "", value: "" }])} className="text-xs text-honey-600 hover:underline">＋ 確定情報を追加</button>
       </section>
 
       {listEditor("② スタンス（自社の立場）", "意見が割れるテーマの方針。AIが一般論で上書きしません。", stances, setStances, "スタンスを追加")}
