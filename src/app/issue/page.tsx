@@ -79,25 +79,25 @@ export default function IssuePage() {
       <h1 className="text-2xl font-bold mb-6">発注書・請求書</h1>
       <div className="mb-6 flex gap-2 text-sm">
         {([["po", "発注書"], ["inv", "請求書"], ["partners", "取引先"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
+          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
 
       {tab === "po" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("po")} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white">＋ 発注書作成</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("po")} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 発注書作成</button></div>
           {docTable(pos, PO_STATUSES, "/api/purchase-orders")}
         </>
       )}
       {tab === "inv" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("inv")} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white">＋ 請求書作成</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("inv")} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 請求書作成</button></div>
           {docTable(invs, INV_STATUSES, "/api/invoices")}
         </>
       )}
       {tab === "partners" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={addPartner} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white">＋ 取引先登録</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={addPartner} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 取引先登録</button></div>
           <div className="rounded-xl border border-slate-200 bg-white">
             {partners.length === 0 && <div className="px-4 py-8 text-center text-sm text-slate-400">取引先がありません</div>}
             {partners.map((p) => (
