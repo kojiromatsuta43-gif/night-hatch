@@ -42,9 +42,9 @@ export default function VideoAnalysisPage() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://www.youtube.com/shorts/..."
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
         />
-        <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white disabled:opacity-40">
+        <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">
           {busy ? "分析中..." : "分析する"}
         </button>
       </div>
@@ -70,7 +70,7 @@ export default function VideoAnalysisPage() {
             <div className="space-y-2">
               {result.scenes.map((s, i) => (
                 <div key={i} className="rounded-lg bg-slate-50 px-4 py-2.5">
-                  <span className="mr-3 font-mono text-xs text-indigo-600">{s.time}</span>
+                  <span className="mr-3 font-mono text-xs text-honey-700">{s.time}</span>
                   <span className="text-sm font-semibold">{s.label}</span>
                   <p className="mt-0.5 text-sm text-slate-600">{s.note}</p>
                 </div>
