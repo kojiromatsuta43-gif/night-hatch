@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import BeeLogo from "./BeeLogo";
 import PigLogo from "./PigLogo";
+import TanukiLogo from "./TanukiLogo";
+import LemonCanLogo from "./LemonCanLogo";
 import { DEFAULT_MASCOT, MASCOTS, MASCOT_STORAGE_KEY, MascotId, MascotTheme } from "@/lib/mascot";
 
 const Ctx = createContext<{ mascot: MascotTheme; setMascot: (id: MascotId) => void }>({
@@ -15,7 +17,20 @@ export const useMascot = () => useContext(Ctx);
 /** 現在のキャラクターの絵を出す。BeeLogo と同じ使い方。 */
 export function Mascot({ className = "h-8 w-8" }: { className?: string }) {
   const { mascot } = useMascot();
-  return mascot.id === "pig" ? <PigLogo className={className} /> : <BeeLogo className={className} />;
+  if (mascot.id === "pig") return <PigLogo className={className} />;
+  if (mascot.id === "tanuki") return <TanukiLogo className={className} />;
+  return <BeeLogo className={className} />;
+}
+
+/** ポイントのしるし。絵があるキャラは絵、無ければ絵文字を大きく出す。 */
+export function PointMark({ className = "h-8 w-8" }: { className?: string }) {
+  const { mascot } = useMascot();
+  if (mascot.id === "tanuki") return <LemonCanLogo className={className} />;
+  return (
+    <span className={`inline-flex items-center justify-center ${className}`} aria-hidden="true">
+      {mascot.pointEmoji}
+    </span>
+  );
 }
 
 export default function MascotProvider({ children }: { children: React.ReactNode }) {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
-import { useMascot } from "@/components/MascotProvider";
+import { PointMark, useMascot } from "@/components/MascotProvider";
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
 
@@ -35,10 +35,16 @@ export default function PointsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">{mascot.pointName} {mascot.pointEmoji}</h1>
-      <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6">
-        <div className="text-sm text-slate-500">現在の残高</div>
-        <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}<span className="ml-1 text-lg">{mascot.pointEmoji}</span></div>
+      <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold">
+        {mascot.pointName}
+        <PointMark className="h-7 w-7 text-2xl" />
+      </h1>
+      <div className="mb-8 flex items-center gap-5 rounded-xl border border-slate-200 bg-white p-6">
+        <PointMark className="h-16 w-16 shrink-0 text-5xl" />
+        <div>
+          <div className="text-sm text-slate-500">現在の残高</div>
+          <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}</div>
+        </div>
       </div>
 
       <h2 className="mb-3 text-lg font-semibold">{mascot.pointName}を買う</h2>

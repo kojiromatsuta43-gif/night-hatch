@@ -3,7 +3,7 @@
 import { MASCOTS, MASCOT_SWITCHER_ENABLED, MascotId } from "@/lib/mascot";
 import { useMascot } from "./MascotProvider";
 
-const ORDER: MascotId[] = ["bee", "pig"];
+const ORDER: MascotId[] = ["bee", "pig", "tanuki"];
 
 /** キャラクター切替タブ。MASCOT_SWITCHER_ENABLED を false にすると出なくなる。 */
 export default function MascotSwitcher() {

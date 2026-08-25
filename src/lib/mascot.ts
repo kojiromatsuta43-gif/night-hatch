@@ -5,7 +5,7 @@
 // ============================================================
 export const MASCOT_SWITCHER_ENABLED = true;
 
-export type MascotId = "bee" | "pig";
+export type MascotId = "bee" | "pig" | "tanuki";
 
 export type MascotTheme = {
   id: MascotId;
@@ -47,6 +47,19 @@ export const MASCOTS: Record<MascotId, MascotTheme> = {
     agentTitle: "ぶたのAIエージェント",
     talkTo: "ぶたに話しかける",
     consult: "ぶたに相談",
+  },
+  tanuki: {
+    id: "tanuki",
+    label: "たぬき",
+    emoji: "🦝",
+    name: "たぬき",
+    pointName: "無糖レモン",
+    pointEmoji: "🍋",
+    greeting: "こんにちは、たぬきです！",
+    thinking: "たぬきが考えています",
+    agentTitle: "たぬきのAIエージェント",
+    talkTo: "たぬきに話しかける",
+    consult: "たぬきに相談",
   },
 };
 

@@ -59,3 +59,16 @@ html[data-mascot="pig"] {
   --color-honey-700: #A83B60;
   --color-honey-800: #7A2B46;
 }
+
+html[data-mascot="tanuki"] {
+  --app-bg: #FBF7F1;
+  --color-honey-50: #FBF5EE;
+  --color-honey-100: #F5E9DA;
+  --color-honey-200: #E9D4B8;
+  --color-honey-300: #DBBB92;
+  --color-honey-400: #C89B6A;
+  --color-honey-500: #A97C4C;
+  --color-honey-600: #8B6238;
+  --color-honey-700: #6B4A2A;
+  --color-honey-800: #4E351D;
+}
