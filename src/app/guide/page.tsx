@@ -40,11 +40,11 @@ const STEPS = [
 ];
 
 const OTHERS = [
-  { label: "ダッシュボード", href: "/", body: "案件数とはちみつ残高の把握" },
+  { label: "ダッシュボード", href: "/", body: "案件数とはちみつP残高の把握" },
   { label: "保存済み台本", href: "/scripts", body: "生成した台本の保存・お気に入り" },
   { label: "発注書・請求書", href: "/issue", body: "取引先管理と書類のステータス管理" },
   { label: "チャット", href: "/chat", body: "クリエイターとのやり取り" },
-  { label: "はちみつ", href: "/points", body: "残高・購入・利用履歴" },
+  { label: "はちみつP", href: "/points", body: "残高・購入・利用履歴" },
 ];
 
 export default function GuidePage() {
@@ -105,7 +105,7 @@ export default function GuidePage() {
         <p className="mb-1 font-semibold text-slate-600">ご確認いただく際の注意</p>
         <ul className="list-disc space-y-1 pl-4">
           <li>本デモは開発中の環境です。データは予告なくリセットされる場合があります。</li>
-          <li>はちみつの購入は決済を行わないデモ動作です。</li>
+          <li>はちみつPの購入は決済を行わないデモ動作です。</li>
           <li>AIの生成結果は必ず人の目でご確認ください。</li>
         </ul>
       </div>

@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const db = getDb();
   if (user.points < body.points) {
-    return NextResponse.json({ error: "はちみつが足りません" }, { status: 400 });
+    return NextResponse.json({ error: "はちみつPが足りません" }, { status: 400 });
   }
   const id = crypto.randomUUID();
   const tx = db.transaction(() => {

@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const db = getDb();
   db.prepare("UPDATE users SET points = points + ? WHERE id = ?").run(amount, user.id);
   db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'purchase', ?)").run(
-    crypto.randomUUID(), user.id, amount, `はちみつ購入 ${amount}🍯（モック決済）`
+    crypto.randomUUID(), user.id, amount, `はちみつP購入 ${amount}🍯（モック決済）`
   );
   return NextResponse.json({ ok: true });
 }

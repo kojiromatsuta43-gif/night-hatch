@@ -52,7 +52,7 @@ export default function AdminPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
-                <th className="px-4 py-3 font-medium text-right">はちみつ</th>
+                <th className="px-4 py-3 font-medium text-right">はちみつP</th>
                 <th className="px-4 py-3 font-medium">登録日</th>
               </tr>
             </thead>

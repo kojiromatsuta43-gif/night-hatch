@@ -79,7 +79,7 @@ export default function ProjectsPage() {
                 <th className="px-4 py-3 font-medium">案件名</th>
                 <th className="px-4 py-3 font-medium">カテゴリ</th>
                 <th className="px-4 py-3 font-medium">納期</th>
-                <th className="px-4 py-3 font-medium text-right">はちみつ</th>
+                <th className="px-4 py-3 font-medium text-right">はちみつP</th>
               </tr>
             </thead>
             <tbody>

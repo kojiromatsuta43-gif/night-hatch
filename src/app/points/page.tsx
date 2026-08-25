@@ -23,7 +23,7 @@ export default function PointsPage() {
   useEffect(load, [load]);
 
   const buy = async (amount: number) => {
-    if (!confirm(`はちみつ ${amount}🍯 を購入します（デモのため決済は行われません）`)) return;
+    if (!confirm(`はちみつP を ${amount}🍯 購入します（デモのため決済は行われません）`)) return;
     setBusy(true);
     await api("/api/points", { method: "POST", body: JSON.stringify({ amount }) });
     refresh();
@@ -33,13 +33,13 @@ export default function PointsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">はちみつ 🍯</h1>
+      <h1 className="text-2xl font-bold mb-6">はちみつP 🍯</h1>
       <div className="mb-8 rounded-xl border border-slate-200 bg-white p-6">
         <div className="text-sm text-slate-500">現在の残高</div>
         <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}<span className="ml-1 text-lg">🍯</span></div>
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold">はちみつを買う</h2>
+      <h2 className="mb-3 text-lg font-semibold">はちみつPを買う</h2>
       <p className="mb-4 text-xs text-slate-400">※ デモ環境のため実際の決済は行われません（本番はStripe連携を想定）</p>
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {PLANS.map((p) => (
