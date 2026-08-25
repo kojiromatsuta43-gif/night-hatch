@@ -55,7 +55,7 @@ function syncRefAccounts(db: Database.Database) {
 }
 
 // デプロイ先では永続ボリュームのパスを DATA_DIR で指定する（例: /data）
-const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
+export const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 
 declare global {
@@ -200,6 +200,29 @@ function init(db: Database.Database) {
     memo TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS uploads (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    mime TEXT NOT NULL DEFAULT '',
+    size INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS notifications (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    link TEXT NOT NULL DEFAULT '',
+    read_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_notifications_user
+    ON notifications (user_id, created_at DESC);
   `);
 
   const count = (db.prepare("SELECT COUNT(*) AS c FROM users").get() as { c: number }).c;
