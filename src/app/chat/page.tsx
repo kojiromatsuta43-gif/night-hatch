@@ -45,8 +45,8 @@ export default function ChatPage() {
       <aside className="w-60 shrink-0 border-r border-slate-200 overflow-y-auto">
         <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold">メッセージ</div>
         {users.map((u) => (
-          <button key={u.id} onClick={() => setPeer(u.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-indigo-50" : ""}`}>
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-sm font-bold text-white">{u.name[0]}</span>
+          <button key={u.id} onClick={() => setPeer(u.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-honey-50" : ""}`}>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">{u.name[0]}</span>
             <span>
               <span className="block text-sm font-medium">{u.name}</span>
               <span className="block text-xs text-slate-400">{u.role === "freelancer" ? "フリーランス" : "クライアント"}</span>
@@ -62,9 +62,9 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
               {thread.map((m) => (
                 <div key={m.id} className={m.from_id === me ? "flex justify-end" : "flex"}>
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${m.from_id === me ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-800"}`}>
+                  <div className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${m.from_id === me ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-800"}`}>
                     {m.body}
-                    <div className={`mt-1 text-right text-[10px] ${m.from_id === me ? "text-indigo-200" : "text-slate-400"}`}>{m.created_at.slice(11, 16)}</div>
+                    <div className={`mt-1 text-right text-[10px] ${m.from_id === me ? "text-honey-200" : "text-slate-400"}`}>{m.created_at.slice(11, 16)}</div>
                   </div>
                 </div>
               ))}
@@ -76,9 +76,9 @@ export default function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) send(); }}
                 placeholder="メッセージを入力"
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
               />
-              <button onClick={send} disabled={!input.trim()} className="rounded-lg bg-indigo-600 px-5 text-sm font-medium text-white disabled:opacity-40">送信</button>
+              <button onClick={send} disabled={!input.trim()} className="rounded-lg bg-honey-400 px-5 text-sm font-medium text-hive-900 disabled:opacity-40">送信</button>
             </div>
           </>
         )}
