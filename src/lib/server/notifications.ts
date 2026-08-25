@@ -103,3 +103,27 @@ export function notifyStatusChange(
   if (!m) return;
   notify(ownerId, { kind: "status", title: m.title, body: m.body, link: "/projects" });
 }
+
+/**
+ * チャット受信のお知らせ。
+ * 同じ相手からの未読はためずに1件にまとめ、いつも最新のメッセージを見せる。
+ */
+export function notifyChatMessage(
+  toId: string,
+  from: { id: string; name: string },
+  body: string,
+  projectTitle?: string | null
+) {
+  const db = getDb();
+  const id = `chat:${from.id}:${toId}`;
+  db.prepare("DELETE FROM notifications WHERE id = ?").run(id);
+  const where = projectTitle ? `「${projectTitle}」について ` : "";
+  db.prepare(
+    "INSERT INTO notifications (id, user_id, kind, title, body, link) VALUES (?, ?, 'chat', ?, ?, '/chat')"
+  ).run(
+    id,
+    toId,
+    `${from.name}さんからメッセージが届きました`,
+    `${where}${body.slice(0, 60)}${body.length > 60 ? "…" : ""}`
+  );
+}

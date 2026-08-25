@@ -260,6 +260,12 @@ function init(db: Database.Database) {
     if (!accCols.includes(col)) db.exec(`ALTER TABLE ref_accounts ADD COLUMN ${col} ${def}`);
   }
 
+  // チャットを案件ごとのスレッドに分け、ファイルを添付できるようにするための列
+  const chatCols = (db.prepare("PRAGMA table_info(chat_messages)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [["project_id", "TEXT"], ["upload_id", "TEXT"]] as const) {
+    if (!chatCols.includes(col)) db.exec(`ALTER TABLE chat_messages ADD COLUMN ${col} ${def}`);
+  }
+
   const videoCols = (db.prepare("PRAGMA table_info(ref_videos)").all() as { name: string }[]).map((c) => c.name);
   if (!videoCols.includes("thumbnail")) {
     db.exec("ALTER TABLE ref_videos ADD COLUMN thumbnail TEXT NOT NULL DEFAULT ''");

@@ -1,84 +1,269 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/client";
 
 type ChatUser = { id: string; name: string; role: string };
-type Message = { id: string; from_id: string; to_id: string; body: string; created_at: string };
+type ChatProject = { id: string; title: string };
+type Message = {
+  id: string;
+  from_id: string;
+  to_id: string;
+  body: string;
+  created_at: string;
+  project_id: string | null;
+  project_title: string | null;
+  upload_id: string | null;
+  upload_name: string | null;
+  upload_mime: string | null;
+};
+
+/** スレッドを表す値。null は「全般」 */
+type ThreadKey = string | null;
+const GENERAL = "__general__";
 
 export default function ChatPage() {
   const [users, setUsers] = useState<ChatUser[]>([]);
+  const [projects, setProjects] = useState<ChatProject[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [me, setMe] = useState("");
   const [peer, setPeer] = useState<string | null>(null);
+  const [thread, setThread] = useState<ThreadKey>(null);
   const [input, setInput] = useState("");
+  const [attach, setAttach] = useState<{ id: string; name: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(() => {
-    api<{ users: ChatUser[]; messages: Message[]; me: string }>("/api/chat")
-      .then((res) => { setUsers(res.users); setMessages(res.messages); setMe(res.me); })
+    api<{ users: ChatUser[]; projects: ChatProject[]; messages: Message[]; me: string }>("/api/chat")
+      .then((res) => {
+        setUsers(res.users);
+        setProjects(res.projects);
+        setMessages(res.messages);
+        setMe(res.me);
+      })
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    const first = setTimeout(load, 0);
+    const timer = setInterval(load, 5000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
   }, [load]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
-  }, [messages, peer]);
+  }, [messages, peer, thread]);
 
-  const thread = messages.filter((m) => (m.from_id === peer && m.to_id === me) || (m.from_id === me && m.to_id === peer));
+  /** 相手とのやりとり全部 */
+  const withPeer = useMemo(
+    () => messages.filter((m) => (m.from_id === peer && m.to_id === me) || (m.from_id === me && m.to_id === peer)),
+    [messages, peer, me]
+  );
+
+  /** この相手とのスレッド一覧（全般 ＋ 会話に出てきた案件 ＋ 自分の案件） */
+  const threads = useMemo(() => {
+    const map = new Map<string, string>();
+    withPeer.forEach((m) => {
+      if (m.project_id) map.set(m.project_id, m.project_title ?? "（削除された案件）");
+    });
+    projects.forEach((p) => map.set(p.id, p.title));
+    return [...map.entries()].map(([id, title]) => ({ id, title }));
+  }, [withPeer, projects]);
+
+  const shown = withPeer.filter((m) => (thread === null ? !m.project_id : m.project_id === thread));
+
+  const unreadCountFor = (userId: string) =>
+    messages.filter((m) => m.from_id === userId && m.to_id === me).length;
+
+  const upload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setError("");
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", files[0]);
+      const res = await fetch("/api/uploads", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "アップロードに失敗しました");
+      setAttach({ id: data.files[0].id, name: data.files[0].name });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "アップロードに失敗しました");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const send = async () => {
-    if (!input.trim() || !peer) return;
+    if ((!input.trim() && !attach) || !peer) return;
     const body = input;
+    const uploadId = attach?.id ?? null;
     setInput("");
-    await api("/api/chat", { method: "POST", body: JSON.stringify({ to: peer, body }) });
+    setAttach(null);
+    try {
+      await api("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ to: peer, body, projectId: thread, uploadId }),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "送信に失敗しました");
+    }
     load();
   };
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <aside className="w-60 shrink-0 border-r border-slate-200 overflow-y-auto">
+      <aside className="w-60 shrink-0 overflow-y-auto border-r border-slate-200">
         <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold">メッセージ</div>
         {users.map((u) => (
-          <button key={u.id} onClick={() => setPeer(u.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-honey-50" : ""}`}>
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">{u.name[0]}</span>
-            <span>
-              <span className="block text-sm font-medium">{u.name}</span>
-              <span className="block text-xs text-slate-400">{u.role === "freelancer" ? "フリーランス" : "クライアント"}</span>
+          <button
+            key={u.id}
+            onClick={() => {
+              setPeer(u.id);
+              setThread(null);
+            }}
+            className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-honey-50" : ""}`}
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">
+              {u.name[0]}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium">{u.name}</span>
+              <span className="block text-xs text-slate-400">
+                {u.role === "freelancer" ? "フリーランス" : "クライアント"}
+                {unreadCountFor(u.id) > 0 && <span className="ml-1 text-honey-700">・{unreadCountFor(u.id)}件</span>}
+              </span>
             </span>
           </button>
         ))}
       </aside>
+
       <div className="flex min-w-0 flex-1 flex-col">
         {!peer ? (
-          <div className="flex flex-1 items-center justify-center text-sm text-slate-400">左のリストから会話を選んでください</div>
+          <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
+            左のリストから会話を選んでください
+          </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-              {thread.map((m) => (
-                <div key={m.id} className={m.from_id === me ? "flex justify-end" : "flex"}>
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${m.from_id === me ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-800"}`}>
-                    {m.body}
-                    <div className={`mt-1 text-right text-[10px] ${m.from_id === me ? "text-honey-200" : "text-slate-400"}`}>{m.created_at.slice(11, 16)}</div>
-                  </div>
-                </div>
+            {/* スレッド切替 */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-2.5">
+              <span className="text-xs font-semibold text-slate-500">スレッド</span>
+              <button
+                onClick={() => setThread(null)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  thread === null
+                    ? "border-honey-500 bg-honey-400 text-hive-900"
+                    : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+                }`}
+              >
+                全般
+              </button>
+              {threads.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setThread(t.id)}
+                  className={`max-w-[16rem] truncate rounded-full border px-3 py-1 text-xs transition-colors ${
+                    thread === t.id
+                      ? "border-honey-500 bg-honey-400 text-hive-900"
+                      : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+                  }`}
+                  title={t.title}
+                >
+                  {t.title}
+                </button>
               ))}
+            </div>
+
+            <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+              {shown.length === 0 && (
+                <p className="pt-10 text-center text-sm text-slate-400">
+                  {thread === null ? "まだメッセージがありません" : "この案件のやりとりはまだありません"}
+                </p>
+              )}
+              {shown.map((m) => {
+                const mine = m.from_id === me;
+                const isImage = (m.upload_mime ?? "").startsWith("image/");
+                return (
+                  <div key={m.id} className={mine ? "flex justify-end" : "flex"}>
+                    <div
+                      className={`max-w-[70%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${
+                        mine ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-800"
+                      }`}
+                    >
+                      {m.body}
+                      {m.upload_id && (
+                        <a
+                          href={`/api/uploads/${m.upload_id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`mt-1 block ${mine ? "text-hive-900" : "text-slate-700"}`}
+                        >
+                          {isImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={`/api/uploads/${m.upload_id}`}
+                              alt={m.upload_name ?? "添付画像"}
+                              className="max-h-48 rounded-lg border border-black/10"
+                            />
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-lg bg-white/60 px-2 py-1 text-xs font-medium underline">
+                              📎 {m.upload_name ?? "添付ファイル"}
+                            </span>
+                          )}
+                        </a>
+                      )}
+                      <div className={`mt-1 text-right text-[10px] ${mine ? "text-hive-700" : "text-slate-400"}`}>
+                        {m.created_at.slice(11, 16)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
               <div ref={bottomRef} />
             </div>
-            <div className="border-t border-slate-200 p-3 flex gap-2">
+
+            {error && <p className="px-4 pb-1 text-xs text-rose-600">{error}</p>}
+            {attach && (
+              <div className="flex items-center gap-2 px-4 pb-1 text-xs text-slate-600">
+                <span className="truncate rounded-lg bg-slate-100 px-2 py-1">📎 {attach.name}</span>
+                <button onClick={() => setAttach(null)} className="text-slate-400 hover:text-rose-600">
+                  取り消す
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 border-t border-slate-200 p-3">
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                aria-label="ファイルを添付"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500 hover:border-honey-400 hover:text-honey-700 disabled:opacity-40"
+              >
+                {uploading ? "…" : "📎"}
+              </button>
+              <input ref={fileRef} type="file" className="hidden" onChange={(e) => void upload(e.target.files)} />
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) send(); }}
-                placeholder="メッセージを入力"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing) void send();
+                }}
+                placeholder={thread === null ? "メッセージを入力" : "この案件についてのメッセージ"}
                 className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
               />
-              <button onClick={send} disabled={!input.trim()} className="rounded-lg bg-honey-400 px-5 text-sm font-medium text-hive-900 disabled:opacity-40">送信</button>
+              <button
+                onClick={() => void send()}
+                disabled={!input.trim() && !attach}
+                className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+              >
+                送信
+              </button>
             </div>
           </>
         )}
