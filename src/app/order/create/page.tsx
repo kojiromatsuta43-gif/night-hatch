@@ -175,6 +175,17 @@ function OrderForm() {
     if (cat) setCategory(cat);
     if (ref) setRefUrl(ref);
     if (refTitle && !description) setDescription(`参考動画「${refTitle}」のような${cat ?? "コンテンツ"}を希望`);
+    const scriptId = search.get("script");
+    if (scriptId) {
+      api<{ title: string; content: string }>(`/api/scripts/${scriptId}`)
+        .then((s) => {
+          setCategory("動画編集");
+          setScriptWish(s.content);
+          setTitle((t) => t || `「${s.title}」の動画編集`);
+          setDescription((d) => d || `保存済み台本「${s.title}」をもとにした動画編集を希望します。`);
+        })
+        .catch(() => {});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

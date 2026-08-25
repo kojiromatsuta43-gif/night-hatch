@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
 
@@ -47,6 +48,12 @@ export default function ScriptsPage() {
               <span>{s.created_at.slice(0, 10)}</span>
               <button onClick={async () => { if (confirm("削除しますか？")) { await api(`/api/scripts/${s.id}`, { method: "DELETE" }); load(); } }} className="hover:text-rose-500">削除</button>
             </div>
+            <Link
+              href={`/order/create?category=${encodeURIComponent("動画編集")}&script=${s.id}`}
+              className="mt-3 block rounded-lg bg-honey-400 py-2 text-center text-xs font-semibold text-hive-900 hover:bg-honey-300"
+            >
+              🐝 この台本で動画編集を発注する →
+            </Link>
           </div>
         ))}
       </div>
@@ -59,6 +66,12 @@ export default function ScriptsPage() {
               <button onClick={() => setOpenId(null)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
             <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: marked.parse(open.content) as string }} />
+            <Link
+              href={`/order/create?category=${encodeURIComponent("動画編集")}&script=${open.id}`}
+              className="mt-5 block rounded-lg bg-honey-400 py-2.5 text-center text-sm font-semibold text-hive-900 hover:bg-honey-300"
+            >
+              🐝 この台本で動画編集を発注する →
+            </Link>
           </div>
         </div>
       )}

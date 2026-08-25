@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 const NAV = [
   { href: "/guide", label: "デモの歩き方" },
   { href: "/", label: "ダッシュボード" },
-  { href: "/order", label: "案件登録" },
+  { href: "/order", label: "つくる・発注" },
   { href: "/projects", label: "案件一覧" },
   { href: "/agent", label: "AIエージェント" },
   { href: "/scripts", label: "保存済み台本" },
