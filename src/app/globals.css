@@ -26,3 +26,19 @@ body {
   background: #FDFAF2;
   color: #1C1710;
 }
+
+/* ハチのマスコット用アニメーション */
+@keyframes bee-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes bee-dot {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+.animate-bee-float { animation: bee-float 3s ease-in-out infinite; }
+.animate-bee-dot { animation: bee-dot 1.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bee-float, .animate-bee-dot { animation: none; }
+}

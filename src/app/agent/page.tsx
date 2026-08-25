@@ -3,10 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { api } from "@/lib/client";
+import BeeLogo from "@/components/BeeLogo";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
 type BrandProfile = { id: string; name: string };
+
+// ハチにすぐ頼めること（白紙のチャット欄を無くすための入口）
+const QUICK_ACTIONS = [
+  { label: "台本をつくる", hint: "ショート動画の構成から", prompt: "ショート動画の台本を作りたいです。まず何を教えればいいか質問してください。" },
+  { label: "競合を分析する", hint: "伸びてる理由を分解", prompt: "競合アカウントを分析したいです。どんな情報が必要か質問してください。" },
+  { label: "発注内容を整理する", hint: "頼み方が分からない時", prompt: "制作を発注したいのですが、依頼内容がまとまっていません。質問しながら整理してください。" },
+  { label: "企画を出してもらう", hint: "ネタ切れの時", prompt: "自社のショート動画の企画案を5つ出してください。まず業種と目的を質問してください。" },
+];
 
 export default function AgentPage() {
   const [sessions, setSessions] = useState<AgentSession[]>([]);
@@ -92,7 +101,8 @@ export default function AgentPage() {
 
       <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-2">
-          <span className="text-sm font-semibold">AIエージェント</span>
+          <BeeLogo className="h-7 w-7 shrink-0" />
+          <span className="text-sm font-semibold text-hive-900">ハチのAIエージェント</span>
           <select
             value={profileId}
             onChange={(e) => setProfileId(e.target.value)}
@@ -107,16 +117,39 @@ export default function AgentPage() {
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && (
-            <div className="mt-16 text-center">
-              <p className="text-lg font-semibold">何をお手伝いしましょうか？</p>
-              <p className="mt-1 text-sm text-slate-500">台本作成・構成案・発注内容の整理・競合分析まで会話で進められます。</p>
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <div className="mx-auto mt-8 max-w-2xl text-center">
+              <BeeLogo className="mx-auto h-20 w-20 animate-bee-float" />
+              <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-honey-200 bg-honey-50 px-6 py-4">
+                <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-honey-200 bg-honey-50" />
+                <p className="text-lg font-bold text-hive-900">こんにちは、ハチです！</p>
+                <p className="mt-1 text-sm text-slate-600">何をお手伝いしましょうか？下のボタンから選んでもいいですし、そのまま話しかけてもOKです。</p>
+              </div>
+
+              <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                {QUICK_ACTIONS.map((q) => (
+                  <button
+                    key={q.label}
+                    onClick={() => send(q.prompt)}
+                    className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-honey-400 hover:bg-honey-50"
+                  >
+                    <BeeLogo className="h-7 w-7 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-hive-900">{q.label}</span>
+                      <span className="block text-xs text-slate-400">{q.hint}</span>
+                    </span>
+                    <span className="ml-auto text-sm font-semibold text-honey-600 opacity-0 transition-opacity group-hover:opacity-100">→</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-6 mb-2 text-xs font-semibold text-slate-400">こんな聞き方もできます</p>
+              <div className="flex flex-wrap justify-center gap-2">
                 {[
                   "美容室の新規客向けInstagramリールの台本を作って",
                   "飲食店のTikTok企画を5つ提案して",
                   "LP改善の発注内容を整理したい",
                 ].map((q) => (
-                  <button key={q} onClick={() => send(q)} className="rounded-full border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:border-honey-400">
+                  <button key={q} onClick={() => send(q)} className="rounded-full border border-slate-300 px-4 py-1.5 text-xs text-slate-600 transition-colors hover:border-honey-400 hover:bg-honey-50">
                     {q}
                   </button>
                 ))}
@@ -129,19 +162,32 @@ export default function AgentPage() {
                 {m.role === "user" ? (
                   <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
                 ) : (
-                  <div className="max-w-[90%]">
-                    <div
-                      className="prose prose-sm prose-slate max-w-none rounded-2xl bg-slate-50 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
-                      dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
-                    />
-                    <button onClick={() => saveScript(m.content)} className="mt-1 text-xs text-honey-600 hover:underline">
-                      台本として保存
-                    </button>
+                  <div className="flex max-w-[92%] gap-2.5">
+                    <BeeLogo className="mt-1 h-8 w-8 shrink-0" />
+                    <div className="min-w-0">
+                      <div
+                        className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
+                        dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
+                      />
+                      <button onClick={() => saveScript(m.content)} className="mt-1 text-xs font-medium text-honey-600 hover:underline">
+                        台本として保存
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             ))}
-            {busy && <div className="text-sm text-slate-400">考え中...</div>}
+            {busy && (
+              <div className="flex items-center gap-2.5">
+                <BeeLogo className="h-8 w-8 shrink-0 animate-bee-float" />
+                <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3">
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500" />
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.18s]" />
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.36s]" />
+                  <span className="ml-1.5 text-xs text-slate-500">ハチが考えています</span>
+                </div>
+              </div>
+            )}
             {ngFlags.length > 0 && (
               <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
                 ⚠ NGワード検出: {ngFlags.join("、")} — 表現の見直しを推奨します
@@ -164,7 +210,7 @@ export default function AgentPage() {
                 }
               }}
               rows={2}
-              placeholder="例: フィットネスジムの体験申込を増やすリール台本を作って"
+              placeholder="ハチに話しかける — 例: フィットネスジムの体験申込を増やすリール台本を作って"
               className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
             />
             <button
