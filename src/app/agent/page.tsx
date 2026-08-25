@@ -71,7 +71,7 @@ export default function AgentPage() {
       <aside className="w-56 shrink-0 overflow-y-auto">
         <button
           onClick={() => { setSessionId(null); setMessages([]); setError(""); }}
-          className="mb-3 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="mb-3 w-full rounded-lg bg-honey-400 px-3 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300"
         >
           ＋ 新しい会話
         </button>
@@ -81,7 +81,7 @@ export default function AgentPage() {
               key={s.id}
               onClick={() => openSession(s)}
               className={`block w-full truncate rounded-lg px-3 py-2 text-left text-sm ${
-                s.id === sessionId ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-100"
+                s.id === sessionId ? "bg-honey-50 text-honey-700" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               {s.title}
@@ -116,7 +116,7 @@ export default function AgentPage() {
                   "飲食店のTikTok企画を5つ提案して",
                   "LP改善の発注内容を整理したい",
                 ].map((q) => (
-                  <button key={q} onClick={() => send(q)} className="rounded-full border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:border-indigo-400">
+                  <button key={q} onClick={() => send(q)} className="rounded-full border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:border-honey-400">
                     {q}
                   </button>
                 ))}
@@ -127,14 +127,14 @@ export default function AgentPage() {
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : ""}>
                 {m.role === "user" ? (
-                  <div className="max-w-[80%] rounded-2xl bg-indigo-600 px-4 py-2 text-sm text-white whitespace-pre-wrap">{m.content}</div>
+                  <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
                 ) : (
                   <div className="max-w-[90%]">
                     <div
                       className="prose prose-sm prose-slate max-w-none rounded-2xl bg-slate-50 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
                       dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
                     />
-                    <button onClick={() => saveScript(m.content)} className="mt-1 text-xs text-indigo-500 hover:underline">
+                    <button onClick={() => saveScript(m.content)} className="mt-1 text-xs text-honey-600 hover:underline">
                       台本として保存
                     </button>
                   </div>
@@ -165,12 +165,12 @@ export default function AgentPage() {
               }}
               rows={2}
               placeholder="例: フィットネスジムの体験申込を増やすリール台本を作って"
-              className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
             />
             <button
               onClick={() => send()}
               disabled={busy || !input.trim()}
-              className="rounded-lg bg-indigo-600 px-5 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
+              className="rounded-lg bg-honey-400 px-5 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
             >
               送信
             </button>
