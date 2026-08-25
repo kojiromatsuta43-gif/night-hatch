@@ -16,7 +16,7 @@ const NAV = [
   { href: "/video-analysis", label: "動画分析" },
   { href: "/issue", label: "発注書・請求書" },
   { href: "/chat", label: "チャット" },
-  { href: "/points", label: "はちみつ" },
+  { href: "/points", label: "はちみつP" },
 ];
 
 export default function Sidebar({ role }: { role?: string }) {

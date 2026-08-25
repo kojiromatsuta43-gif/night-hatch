@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
+import HoneyPoints from "./HoneyPoint";
 import { api, Me } from "@/lib/client";
 
 const MeContext = createContext<{ me: Me | null; refresh: () => void }>({ me: null, refresh: () => {} });
@@ -38,7 +39,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
             <NotificationBell />
             <span className="rounded-full bg-honey-50 px-3 py-1 text-sm font-semibold text-honey-700">
-              {me.points} 🍯
+              <HoneyPoints value={me.points} />
             </span>
             <span className="text-sm text-slate-600">{me.name}</span>
             <button
