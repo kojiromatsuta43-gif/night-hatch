@@ -1,77 +1,56 @@
 "use client";
 
-/** キャラクター切替用のたぬき。おすわりポーズの丸っこい姿。 */
+import { useId } from "react";
+
+/** キャラクター切替用のたぬき。BeeLogo / PigLogo と同じ丸っこい作り。 */
 export default function TanukiLogo({ className = "h-8 w-8" }: { className?: string }) {
-  const TAN = "#C6853F";
-  const MASK = "#8B5A2E";
-  const LINE = "#3B2314";
-  const CREAM = "#F8E5A0";
-  const BLUSH = "#F9C3AC";
+  const uid = useId().replace(/:/g, "");
+  const tailClip = `tanuki-tail-${uid}`;
 
   return (
     <svg viewBox="0 0 48 48" className={className} role="img" aria-label="たぬきのマーク">
-      {/* しっぽ */}
-      <path
-        d="M32 37C40 38.5 45.5 33.5 44.2 28.2C43.4 24.6 39.6 23.8 38.2 26.6"
-        fill="none"
-        stroke={LINE}
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <path
-        d="M32 37C40 38.5 45.5 33.5 44.2 28.2C43.4 24.6 39.6 23.8 38.2 26.6"
-        fill="none"
-        stroke={TAN}
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <path d="M42.6 24.6C40.4 22.8 38.9 24.2 38.2 26.6" fill="none" stroke={MASK} strokeWidth="6" strokeLinecap="round" />
+      <defs>
+        <clipPath id={tailClip}>
+          <ellipse cx="39" cy="32" rx="5" ry="7.6" transform="rotate(28 39 32)" />
+        </clipPath>
+      </defs>
 
-      {/* あし */}
-      <ellipse cx="16.5" cy="42.2" rx="5" ry="3.9" fill={TAN} stroke={LINE} strokeWidth="1.8" />
-      <ellipse cx="31.5" cy="42.2" rx="5" ry="3.9" fill={TAN} stroke={LINE} strokeWidth="1.8" />
-
-      {/* からだ */}
-      <ellipse cx="24" cy="36.5" rx="11.5" ry="9.2" fill={TAN} stroke={LINE} strokeWidth="1.9" />
-      <rect x="21.2" y="32" width="5.6" height="11" rx="2.8" fill={CREAM} />
-
-      {/* うで */}
-      <ellipse cx="11.8" cy="35.8" rx="4.3" ry="5.2" transform="rotate(-18 11.8 35.8)" fill={TAN} stroke={LINE} strokeWidth="1.8" />
-      <ellipse cx="36.2" cy="35.8" rx="4.3" ry="5.2" transform="rotate(18 36.2 35.8)" fill={TAN} stroke={LINE} strokeWidth="1.8" />
+      {/* しっぽ（からだの後ろ・しま模様） */}
+      <g>
+        <ellipse cx="39" cy="32" rx="5" ry="7.6" transform="rotate(28 39 32)" fill="#C89B6A" />
+        <g clipPath={`url(#${tailClip})`}>
+          <rect x="31" y="33.5" width="18" height="3.4" fill="#4E351D" transform="rotate(28 39 32)" />
+          <rect x="31" y="27.5" width="18" height="3.4" fill="#4E351D" transform="rotate(28 39 32)" />
+        </g>
+        <ellipse cx="39" cy="32" rx="5" ry="7.6" transform="rotate(28 39 32)" fill="none" stroke="#1C1710" strokeWidth="1.8" />
+      </g>
 
       {/* みみ */}
-      <circle cx="11.8" cy="9.6" r="6.2" fill={TAN} stroke={LINE} strokeWidth="1.9" />
-      <circle cx="36.2" cy="9.6" r="6.2" fill={TAN} stroke={LINE} strokeWidth="1.9" />
-      <circle cx="11.8" cy="9.6" r="3.4" fill={CREAM} />
-      <circle cx="36.2" cy="9.6" r="3.4" fill={CREAM} />
+      <path d="M13.5 15 11 6.5 20.5 10.5Z" fill="#C89B6A" stroke="#1C1710" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M34.5 15 37 6.5 27.5 10.5Z" fill="#C89B6A" stroke="#1C1710" strokeWidth="2" strokeLinejoin="round" />
 
-      {/* あたま */}
-      <ellipse cx="24" cy="19.2" rx="15.2" ry="13" fill={TAN} stroke={LINE} strokeWidth="1.9" />
+      {/* からだ */}
+      <rect x="10.5" y="12" width="27" height="29.5" rx="13.5" fill="#C89B6A" stroke="#1C1710" strokeWidth="2" />
 
-      {/* 目のまわりの模様 */}
-      <path
-        d="M24 7.6C33.6 7.6 39.3 12 38.8 17.6C38.4 21.6 35.2 23.6 31.8 22.1C29.4 21 26.9 20.6 24 20.6C21.1 20.6 18.6 21 16.2 22.1C12.8 23.6 9.6 21.6 9.2 17.6C8.7 12 14.4 7.6 24 7.6Z"
-        fill={MASK}
-      />
+      {/* おなかの模様 */}
+      <ellipse cx="24" cy="36" rx="8" ry="5.2" fill="#F5E9DA" />
+
+      {/* 目のまわりの黒い模様（たぬきの特徴） */}
+      <ellipse cx="18.3" cy="22.2" rx="4.6" ry="5" transform="rotate(-12 18.3 22.2)" fill="#4E351D" />
+      <ellipse cx="29.7" cy="22.2" rx="4.6" ry="5" transform="rotate(12 29.7 22.2)" fill="#4E351D" />
 
       {/* め */}
-      <ellipse cx="17.6" cy="16.6" rx="2.6" ry="3" fill={LINE} />
-      <ellipse cx="30.4" cy="16.6" rx="2.6" ry="3" fill={LINE} />
-
-      {/* ほっぺ */}
-      <circle cx="11.4" cy="22.4" r="3.1" fill={BLUSH} />
-      <circle cx="36.6" cy="22.4" r="3.1" fill={BLUSH} />
+      <circle cx="18.6" cy="21.8" r="2.5" fill="#FFFFFF" />
+      <circle cx="29.4" cy="21.8" r="2.5" fill="#FFFFFF" />
+      <circle cx="18.9" cy="21.9" r="1.5" fill="#1C1710" />
+      <circle cx="29.7" cy="21.9" r="1.5" fill="#1C1710" />
+      <circle cx="19.4" cy="21.3" r="0.55" fill="#FFFFFF" />
+      <circle cx="30.2" cy="21.3" r="0.55" fill="#FFFFFF" />
 
       {/* はな・くち */}
-      <ellipse cx="24" cy="24.2" rx="8.3" ry="6.3" fill="#FFFFFF" stroke={LINE} strokeWidth="1.7" />
-      <ellipse cx="24" cy="21.6" rx="2" ry="1.6" fill={LINE} />
-      <path
-        d="M24 23.2v1.1M24 24.3c-1 1.4-2.9 1.2-3.5-.1M24 24.3c1 1.4 2.9 1.2 3.5-.1"
-        fill="none"
-        stroke={LINE}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <ellipse cx="24" cy="29.4" rx="6.6" ry="4.4" fill="#F5E9DA" stroke="#1C1710" strokeWidth="1.6" />
+      <ellipse cx="24" cy="27.6" rx="1.9" ry="1.45" fill="#1C1710" />
+      <path d="M24 29.2v1.5M24 30.7c-.9 1-2.4.9-3 0M24 30.7c.9 1 2.4.9 3 0" stroke="#1C1710" strokeWidth="1.3" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
