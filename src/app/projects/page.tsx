@@ -6,7 +6,7 @@ import { STATUSES, Status, Project } from "@/lib/data";
 
 const STATUS_COLOR: Record<Status, string> = {
   "未公開": "bg-slate-200 text-slate-700",
-  "募集中": "bg-indigo-100 text-indigo-700",
+  "募集中": "bg-honey-100 text-honey-700",
   "制作待ち": "bg-amber-100 text-amber-700",
   "フィードバック": "bg-orange-100 text-orange-700",
   "完了": "bg-emerald-100 text-emerald-700",
@@ -31,8 +31,8 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">案件一覧</h1>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-          <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-indigo-600 text-white" : "bg-white text-slate-600"}`}>ボード</button>
-          <button onClick={() => setView("table")} className={`px-4 py-1.5 ${view === "table" ? "bg-indigo-600 text-white" : "bg-white text-slate-600"}`}>テーブル</button>
+          <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>ボード</button>
+          <button onClick={() => setView("table")} className={`px-4 py-1.5 ${view === "table" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>テーブル</button>
         </div>
       </div>
 
@@ -52,7 +52,7 @@ export default function ProjectsPage() {
                       <div className="text-sm font-medium leading-snug">{p.title}</div>
                       <div className="mt-1 text-xs text-slate-500">{p.category}</div>
                       <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                        <span>{p.points}pt</span>
+                        <span>{p.points}🍯</span>
                         <span>納期 {p.deadline.slice(5).replace("-", "/")}</span>
                       </div>
                       <select
@@ -79,7 +79,7 @@ export default function ProjectsPage() {
                 <th className="px-4 py-3 font-medium">案件名</th>
                 <th className="px-4 py-3 font-medium">カテゴリ</th>
                 <th className="px-4 py-3 font-medium">納期</th>
-                <th className="px-4 py-3 font-medium text-right">ポイント</th>
+                <th className="px-4 py-3 font-medium text-right">はちみつ</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@ export default function ProjectsPage() {
                   <td className="px-4 py-3 font-medium">{p.title}</td>
                   <td className="px-4 py-3">{p.category}</td>
                   <td className="px-4 py-3">{p.deadline}</td>
-                  <td className="px-4 py-3 text-right">{p.points}pt</td>
+                  <td className="px-4 py-3 text-right">{p.points}🍯</td>
                 </tr>
               ))}
             </tbody>
