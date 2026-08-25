@@ -38,6 +38,39 @@ export const AGREEMENTS = [
   "提供素材や方向性に不備がある場合は納期が遅れることがあります",
 ];
 
+// ── 動画編集フォーム（クラウド発注用）の選択肢 ──────────────
+export const VIDEO_USE_OPTIONS = [
+  "TikTok",
+  "Instagramリール",
+  "YouTubeショート／本編",
+  "PR用動画（企業／店舗）",
+  "セミナー動画",
+  "その他",
+];
+export const ASPECT_OPTIONS = ["縦（9:16）", "横（16:9）", "正方形（1:1）"];
+export const EDIT_STYLE_OPTIONS = [
+  "ポップ",
+  "シネマティック",
+  "ビジネス寄り",
+  "テロップ多め",
+  "インパクト重視",
+  "かわいい・やさしい",
+];
+export const SUBTITLE_OPTIONS = ["セリフすべて表示", "要点のみ表示", "テロップ不要"];
+export const MIDCHECK_OPTIONS = ["あり", "なし"];
+
+export const VIDEO_AGREEMENTS = [
+  "修正は原則2回まで無料、以降は別途お見積りになります",
+  "いただいた素材の状態（画質・音声）によっては仕上がりに影響が出る場合があります",
+  "「おまかせ」部分の表現については、制作側に一任されることを了承しています",
+  "BGM・音源の著作権にはご注意ください（商用利用が可能な素材をご提供ください）",
+];
+
+/** カテゴリごとの同意事項 */
+export function agreementsFor(category: string): string[] {
+  return category === "動画編集" ? VIDEO_AGREEMENTS : AGREEMENTS;
+}
+
 export const STATUSES = ["未公開", "募集中", "制作待ち", "フィードバック", "完了"] as const;
 export type Status = (typeof STATUSES)[number];
 
@@ -50,7 +83,7 @@ export type Project = {
   deadline: string;
   createdAt: string;
   status: Status;
-  detail?: Record<string, string | string[]>;
+  detail?: Record<string, unknown>;
 };
 
 export const SEED_PROJECTS: Project[] = [
