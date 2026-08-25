@@ -23,7 +23,7 @@ import { useMe } from "@/components/AppShell";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none";
 
 function CheckGroup({
   label,
@@ -57,8 +57,8 @@ function CheckGroup({
               onClick={() => onChange(on ? values.filter((v) => v !== opt) : [...values, opt])}
               className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                 on
-                  ? "border-indigo-600 bg-indigo-600 text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:border-indigo-400"
+                  ? "border-honey-500 bg-honey-400 text-hive-900"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-honey-400"
               }`}
             >
               {opt}
@@ -97,8 +97,8 @@ function RadioGroup({
             onClick={() => onChange(value === opt ? "" : opt)}
             className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
               value === opt
-                ? "border-indigo-600 bg-indigo-600 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:border-indigo-400"
+                ? "border-honey-500 bg-honey-400 text-hive-900"
+                : "border-slate-300 bg-white text-slate-700 hover:border-honey-400"
             }`}
           >
             {opt}
@@ -113,7 +113,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
   return (
     <section className="space-y-5 border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
       <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-xs font-bold text-indigo-700">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-honey-100 text-xs font-bold text-honey-700">
           {n}
         </span>
         {title}
@@ -252,9 +252,9 @@ function OrderForm() {
             <span
               className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
                 i < step
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-honey-400 text-hive-900"
                   : i === step
-                    ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-600"
+                    ? "bg-honey-100 text-honey-700 ring-2 ring-honey-500"
                     : "bg-slate-200 text-slate-500"
               }`}
             >
@@ -278,8 +278,8 @@ function OrderForm() {
                   onClick={() => setCategory(c)}
                   className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                     category === c
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-slate-300 bg-white hover:border-indigo-400"
+                      ? "border-honey-500 bg-honey-400 text-hive-900"
+                      : "border-slate-300 bg-white hover:border-honey-400"
                   }`}
                 >
                   {c}
@@ -312,9 +312,9 @@ function OrderForm() {
               <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={inputClass} />
             </label>
             <div className="block">
-              <span className="text-sm font-semibold">消費ポイント</span>
-              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-indigo-700">
-                {points || "-"} pt
+              <span className="text-sm font-semibold">消費するはちみつ</span>
+              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-honey-700">
+                {points || "-"} 🍯
               </div>
             </div>
           </div>
@@ -322,7 +322,7 @@ function OrderForm() {
             <button
               disabled={!step1Ok}
               onClick={() => setStep(1)}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
+              className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
             >
               次へ
             </button>
@@ -375,7 +375,7 @@ function OrderForm() {
 
           {isVideo && (
             <>
-              <div className="rounded-lg bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-800">
+              <div className="rounded-lg bg-honey-50 px-4 py-3 text-sm font-semibold text-honey-800">
                 動画編集フォーム（クラウド発注用）
               </div>
 
@@ -523,7 +523,7 @@ function OrderForm() {
             <button
               disabled={!step2Ok}
               onClick={() => setStep(2)}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
+              className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
             >
               次へ
             </button>
@@ -547,8 +547,8 @@ function OrderForm() {
               <dd className="font-medium">{deadline}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">消費ポイント</dt>
-              <dd className="font-medium">{points}pt</dd>
+              <dt className="text-slate-500">消費するはちみつ</dt>
+              <dd className="font-medium">{points}🍯</dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-slate-500">概要</dt>
@@ -601,7 +601,7 @@ function OrderForm() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="h-4 w-4 accent-indigo-600"
+                className="h-4 w-4 accent-honey-500"
               />
               上記すべてに同意します
             </label>
@@ -614,7 +614,7 @@ function OrderForm() {
             <button
               disabled={!agreed}
               onClick={submit}
-              className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-indigo-500"
+              className="rounded-lg bg-honey-400 px-6 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
             >
               案件を登録する
             </button>
