@@ -64,6 +64,10 @@ export const MASCOTS: Record<MascotId, MascotTheme> = {
 };
 
 export const DEFAULT_MASCOT: MascotId = "bee";
+
+/** 合言葉（?fun=on）を入れた端末にだけ出るキャラ。ここから外せば通常表示になる。 */
+export const SECRET_MASCOTS: MascotId[] = ["tanuki"];
+export const isSecretMascot = (id: MascotId) => SECRET_MASCOTS.includes(id);
 export const MASCOT_STORAGE_KEY = "bridge-hatch-mascot";
 /** 合言葉を入れた端末かどうかの保存先 */
 export const FUN_STORAGE_KEY = "bridge-hatch-fun";

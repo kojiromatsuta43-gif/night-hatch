@@ -12,15 +12,16 @@ import {
   MASCOT_STORAGE_KEY,
   MASCOT_SWITCHER_ENABLED,
   MascotId,
+  isSecretMascot,
   MascotTheme,
 } from "@/lib/mascot";
 
 type Ctx = {
   mascot: MascotTheme;
   setMascot: (id: MascotId) => void;
-  /** 合言葉を入れた端末だけ true。false のときは機能ごと存在しない扱い */
+  /** 合言葉を入れた端末だけ true。秘密のキャラ（たぬ）が選べるようになる */
   unlocked: boolean;
-  /** その場で元に戻す（ハチ固定＋タブを隠す） */
+  /** 秘密のキャラを隠す（選択中ならハチに戻る） */
   lock: () => void;
 };
 
@@ -100,11 +101,11 @@ export default function MascotProvider({ children }: { children: React.ReactNode
       } catch {}
     } else if (cmd === "off") {
       open = false;
-      saved = DEFAULT_MASCOT;
       try {
         window.localStorage.removeItem(FUN_STORAGE_KEY);
-        window.localStorage.removeItem(MASCOT_STORAGE_KEY);
+        if (isSecretMascot(saved)) window.localStorage.removeItem(MASCOT_STORAGE_KEY);
       } catch {}
+      if (isSecretMascot(saved)) saved = DEFAULT_MASCOT;
     }
 
     // 合言葉をURLから消して、履歴に残さない
@@ -117,7 +118,7 @@ export default function MascotProvider({ children }: { children: React.ReactNode
     }
 
     const nextOpen = open;
-    const nextId = open ? saved : DEFAULT_MASCOT;
+    const nextId = isSecretMascot(saved) && !open ? DEFAULT_MASCOT : saved;
     const t = setTimeout(() => {
       setUnlocked(nextOpen);
       setId(nextId);
@@ -125,7 +126,11 @@ export default function MascotProvider({ children }: { children: React.ReactNode
     return () => clearTimeout(t);
   }, []);
 
-  const active: MascotId = MASCOT_SWITCHER_ENABLED && unlocked ? id : DEFAULT_MASCOT;
+  const active: MascotId = !MASCOT_SWITCHER_ENABLED
+    ? DEFAULT_MASCOT
+    : isSecretMascot(id) && !unlocked
+      ? DEFAULT_MASCOT
+      : id;
 
   // 配色を切り替えるため <html> に印を付ける
   useEffect(() => {
@@ -141,10 +146,15 @@ export default function MascotProvider({ children }: { children: React.ReactNode
 
   const lock = useCallback(() => {
     setUnlocked(false);
-    setId(DEFAULT_MASCOT);
+    setId((cur) => {
+      if (!isSecretMascot(cur)) return cur;
+      try {
+        window.localStorage.removeItem(MASCOT_STORAGE_KEY);
+      } catch {}
+      return DEFAULT_MASCOT;
+    });
     try {
       window.localStorage.removeItem(FUN_STORAGE_KEY);
-      window.localStorage.removeItem(MASCOT_STORAGE_KEY);
     } catch {}
   }, []);
 

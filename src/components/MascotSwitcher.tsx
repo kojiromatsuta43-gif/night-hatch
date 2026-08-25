@@ -1,18 +1,20 @@
 "use client";
 
-import { MASCOTS, MASCOT_SWITCHER_ENABLED, MascotId } from "@/lib/mascot";
+import { MASCOTS, MASCOT_SWITCHER_ENABLED, MascotId, isSecretMascot } from "@/lib/mascot";
 import { useMascot } from "./MascotProvider";
 
 const ORDER: MascotId[] = ["bee", "pig", "tanuki"];
 
 /**
  * キャラクター切替タブ。
- * 合言葉（URLに ?fun=on）を入れた端末にだけ出ます。
- * MASCOT_SWITCHER_ENABLED を false にすれば合言葉ごと無効になります。
+ * ハチ・ぶたは常時表示。たぬは合言葉（URLに ?fun=on）を入れた端末にだけ出ます。
+ * MASCOT_SWITCHER_ENABLED を false にすればタブごと消えます。
  */
 export default function MascotSwitcher() {
   const { mascot, setMascot, unlocked, lock } = useMascot();
-  if (!MASCOT_SWITCHER_ENABLED || !unlocked) return null;
+  if (!MASCOT_SWITCHER_ENABLED) return null;
+
+  const items = ORDER.filter((key) => !isSecretMascot(key) || unlocked);
 
   return (
     <div className="flex items-center gap-1">
@@ -21,7 +23,7 @@ export default function MascotSwitcher() {
         aria-label="キャラクター変更"
         className="flex items-center gap-0.5 rounded-full border border-slate-200 bg-slate-50 p-0.5"
       >
-        {ORDER.map((key) => {
+        {items.map((key) => {
           const m = MASCOTS[key];
           const on = mascot.id === key;
           return (
@@ -39,14 +41,16 @@ export default function MascotSwitcher() {
           );
         })}
       </div>
-      <button
-        onClick={lock}
-        title="キャラクター変更を隠す（ハチに戻ります）"
-        aria-label="キャラクター変更を隠す"
-        className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-      >
-        ✕
-      </button>
+      {unlocked && (
+        <button
+          onClick={lock}
+          title="たぬを隠す"
+          aria-label="たぬを隠す"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        >
+          ✕
+        </button>
+      )}
     </div>
   );
 }
