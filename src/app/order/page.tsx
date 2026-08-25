@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Mascot, useMascot } from "@/components/MascotProvider";
+import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import FormatIcon from "@/components/FormatIcon";
 import PlatformIcon from "@/components/PlatformIcon";
 import { useMe } from "@/components/AppShell";
@@ -17,21 +17,31 @@ const OTHER_STARTS = [
     title: "バズり動画をAIで分析",
     desc: "URLを入れると構成・フックを分解",
     href: "/video-analysis",
-    cost: () => "無料",
+    cost: () => <>無料</>,
   },
   {
     who: "企画はある。台本がほしい",
     title: "AIと台本をつくる",
     desc: "会話しながらショート動画の台本を作成",
     href: "/agent",
-    cost: (e: string) => `${POINTS_BY_CATEGORY["台本作成"]}${e}〜`,
+    cost: () => (
+      <>
+        {POINTS_BY_CATEGORY["台本作成"]}
+        <PointInline />〜
+      </>
+    ),
   },
   {
     who: "素材はある。編集してほしい",
     title: "動画編集を発注する",
     desc: "字幕・カット・BGMまで指定して依頼",
     href: "/order/create?category=動画編集",
-    cost: (e: string) => `${POINTS_BY_CATEGORY["動画編集"]}${e}〜`,
+    cost: () => (
+      <>
+        {POINTS_BY_CATEGORY["動画編集"]}
+        <PointInline />〜
+      </>
+    ),
   },
 ];
 
@@ -98,8 +108,8 @@ export default function OrderTopPage() {
             こんにちは、{me?.name ?? "ゲスト"}さん！今日は何をつくりますか？
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            いまの残高は <Link href="/points" className="font-semibold text-honey-600 hover:underline">{me?.points ?? 0}{mascot.pointEmoji}</Link>。
-            {mascot.pointEmoji}の数字は発注に必要な目安ポイントです。迷ったら一番下の「{mascot.consult}」からどうぞ。
+            いまの残高は <Link href="/points" className="font-semibold text-honey-600 hover:underline">{me?.points ?? 0}<PointInline /></Link>。
+            <PointInline />の数字は発注に必要な目安ポイントです。迷ったら一番下の「{mascot.consult}」からどうぞ。
           </p>
         </div>
       </div>
@@ -167,7 +177,7 @@ export default function OrderTopPage() {
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-bold text-hive-900 group-hover:text-honey-700">{p.title}</span>
-                <span className="shrink-0 rounded-full bg-honey-50 px-2 py-0.5 text-[11px] font-bold text-honey-700">{p.cost(mascot.pointEmoji)}</span>
+                <span className="shrink-0 rounded-full bg-honey-50 px-2 py-0.5 text-[11px] font-bold text-honey-700">{p.cost()}</span>
               </div>
               <span className="mt-0.5 block text-[11px] text-slate-400">{p.who}</span>
               <span className="mt-1 block text-xs text-slate-500">{p.desc}</span>
@@ -198,7 +208,7 @@ export default function OrderTopPage() {
                       <span className="block truncate text-sm font-semibold text-slate-700 group-hover:text-hive-900">{it.label}</span>
                       <span className="block text-[11px] text-slate-400">{it.size}</span>
                       <span className="block text-[11px] font-medium text-honey-700">
-                        {POINTS_BY_CATEGORY[it.category]}{mascot.pointEmoji} ／ {it.days}
+                        {POINTS_BY_CATEGORY[it.category]}<PointInline /> ／ {it.days}
                       </span>
                     </span>
                   </Link>

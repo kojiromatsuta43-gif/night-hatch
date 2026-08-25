@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
-import { PointMark, useMascot } from "@/components/MascotProvider";
+import { PointInline, PointMark, useMascot } from "@/components/MascotProvider";
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
 
@@ -53,7 +53,7 @@ export default function PointsPage() {
         {PLANS.map((p) => (
           <div key={p.amount} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
             <div className="text-sm text-slate-500">{p.desc}</div>
-            <div className="mt-1 text-2xl font-bold text-honey-700">{p.amount}{mascot.pointEmoji}</div>
+            <div className="mt-1 text-2xl font-bold text-honey-700">{p.amount}<PointInline /></div>
             <div className="text-sm text-slate-400">{p.price}</div>
             <button onClick={() => buy(p.amount)} disabled={busy} className="mt-3 w-full rounded-lg bg-honey-400 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300">購入する</button>
           </div>
@@ -70,7 +70,7 @@ export default function PointsPage() {
               <div className="text-xs text-slate-400">{t.created_at.slice(0, 16)}</div>
             </div>
             <span className={t.amount > 0 ? "font-semibold text-emerald-600" : "font-semibold text-rose-500"}>
-              {t.amount > 0 ? "+" : ""}{t.amount}{mascot.pointEmoji}
+              {t.amount > 0 ? "+" : ""}{t.amount}<PointInline />
             </span>
           </div>
         ))}

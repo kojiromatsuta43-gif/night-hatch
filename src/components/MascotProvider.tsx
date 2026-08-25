@@ -22,7 +22,7 @@ export function Mascot({ className = "h-8 w-8" }: { className?: string }) {
   return <BeeLogo className={className} />;
 }
 
-/** ポイントのしるし。絵があるキャラは絵、無ければ絵文字を大きく出す。 */
+/** ポイントのしるし（大きく出す用）。絵があるキャラは絵、無ければ絵文字。 */
 export function PointMark({ className = "h-8 w-8" }: { className?: string }) {
   const { mascot } = useMascot();
   if (mascot.id === "tanuki") return <LemonCanLogo className={className} />;
@@ -31,6 +31,15 @@ export function PointMark({ className = "h-8 w-8" }: { className?: string }) {
       {mascot.pointEmoji}
     </span>
   );
+}
+
+/** 文章の中に混ぜる用のポイントのしるし。文字サイズに合わせて伸縮する。 */
+export function PointInline() {
+  const { mascot } = useMascot();
+  if (mascot.id === "tanuki") {
+    return <LemonCanLogo className="inline-block h-[1.3em] w-[1.3em] align-[-0.33em]" />;
+  }
+  return <>{mascot.pointEmoji}</>;
 }
 
 export default function MascotProvider({ children }: { children: React.ReactNode }) {

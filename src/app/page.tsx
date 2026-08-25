@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { Project } from "@/lib/data";
-import { useMascot } from "@/components/MascotProvider";
+import { PointInline, useMascot } from "@/components/MascotProvider";
 
 export default function Dashboard() {
   const { mascot } = useMascot();
@@ -27,7 +27,7 @@ export default function Dashboard() {
         {[
           { label: "完了", value: `${done.length}件` },
           { label: "進行中", value: `${active.length}件` },
-          { label: `残り${mascot.pointName}`, value: `${me?.points ?? 0}${mascot.pointEmoji}` },
+          { label: `残り${mascot.pointName}`, value: <>{me?.points ?? 0}<PointInline /></> },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
@@ -61,7 +61,7 @@ export default function Dashboard() {
                 <td className="px-4 py-3 font-medium">{p.title}</td>
                 <td className="px-4 py-3">{p.category}</td>
                 <td className="px-4 py-3">{p.deadline}</td>
-                <td className="px-4 py-3 text-right">{p.points}{mascot.pointEmoji}</td>
+                <td className="px-4 py-3 text-right">{p.points}<PointInline /></td>
               </tr>
             ))}
           </tbody>

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import MascotProvider, { useMascot } from "./MascotProvider";
+import MascotProvider, { PointInline, useMascot } from "./MascotProvider";
 import MascotSwitcher from "./MascotSwitcher";
 import NotificationBell from "./NotificationBell";
 import { api, Me } from "@/lib/client";
@@ -70,7 +70,7 @@ function PointsChip({ points }: { points: number }) {
       title={`${mascot.pointName}の残高（クリックで詳細）`}
       className="rounded-full bg-honey-50 px-3 py-1 text-sm font-semibold text-honey-700 transition-colors hover:bg-honey-100"
     >
-      {points} {mascot.pointEmoji}
+      {points} <PointInline />
     </Link>
   );
 }

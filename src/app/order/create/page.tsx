@@ -21,7 +21,7 @@ import {
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
-import { useMascot } from "@/components/MascotProvider";
+import { PointInline, useMascot } from "@/components/MascotProvider";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none";
@@ -327,7 +327,7 @@ function OrderForm() {
             <div className="block">
               <span className="text-sm font-semibold">消費する{mascot.pointName}</span>
               <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-honey-700">
-                {points || "-"} {mascot.pointEmoji}
+                {points || "-"} <PointInline />
               </div>
             </div>
           </div>
@@ -561,7 +561,7 @@ function OrderForm() {
             </div>
             <div>
               <dt className="text-slate-500">消費する{mascot.pointName}</dt>
-              <dd className="font-medium">{points}{mascot.pointEmoji}</dd>
+              <dd className="font-medium">{points}<PointInline /></dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-slate-500">概要</dt>

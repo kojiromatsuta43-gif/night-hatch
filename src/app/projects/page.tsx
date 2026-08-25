@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { STATUSES, Status, Project } from "@/lib/data";
-import { useMascot } from "@/components/MascotProvider";
+import { PointInline, useMascot } from "@/components/MascotProvider";
 
 const STATUS_COLOR: Record<Status, string> = {
   "未公開": "bg-slate-200 text-slate-700",
@@ -54,7 +54,7 @@ export default function ProjectsPage() {
                       <div className="text-sm font-medium leading-snug">{p.title}</div>
                       <div className="mt-1 text-xs text-slate-500">{p.category}</div>
                       <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                        <span>{p.points}{mascot.pointEmoji}</span>
+                        <span>{p.points}<PointInline /></span>
                         <span>納期 {p.deadline.slice(5).replace("-", "/")}</span>
                       </div>
                       <select
@@ -91,7 +91,7 @@ export default function ProjectsPage() {
                   <td className="px-4 py-3 font-medium">{p.title}</td>
                   <td className="px-4 py-3">{p.category}</td>
                   <td className="px-4 py-3">{p.deadline}</td>
-                  <td className="px-4 py-3 text-right">{p.points}{mascot.pointEmoji}</td>
+                  <td className="px-4 py-3 text-right">{p.points}<PointInline /></td>
                 </tr>
               ))}
             </tbody>

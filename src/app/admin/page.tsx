@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
-import { useMascot } from "@/components/MascotProvider";
+import { PointInline, useMascot } from "@/components/MascotProvider";
 
 type User = { id: string; email: string; name: string; role: string; points: number; created_at: string };
 type NgWord = { id: string; word: string };
@@ -64,7 +64,7 @@ export default function AdminPage() {
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs">{u.role}</span></td>
-                  <td className="px-4 py-3 text-right">{u.points}{mascot.pointEmoji}</td>
+                  <td className="px-4 py-3 text-right">{u.points}<PointInline /></td>
                   <td className="px-4 py-3">{u.created_at.slice(0, 10)}</td>
                 </tr>
               ))}
