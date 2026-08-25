@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { Project } from "@/lib/data";
+import HoneyPoints from "@/components/HoneyPoint";
 
 export default function Dashboard() {
   const { me } = useMe();
@@ -25,7 +26,7 @@ export default function Dashboard() {
         {[
           { label: "完了", value: `${done.length}件` },
           { label: "進行中", value: `${active.length}件` },
-          { label: "残りはちみつ", value: `${me?.points ?? 0}🍯` },
+          { label: "残りはちみつP", value: <HoneyPoints value={me?.points ?? 0} /> },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
@@ -47,7 +48,7 @@ export default function Dashboard() {
               <th className="px-4 py-3 font-medium">案件名</th>
               <th className="px-4 py-3 font-medium">カテゴリ</th>
               <th className="px-4 py-3 font-medium">納期</th>
-              <th className="px-4 py-3 font-medium text-right">はちみつ</th>
+              <th className="px-4 py-3 font-medium text-right">はちみつP</th>
             </tr>
           </thead>
           <tbody>
@@ -59,7 +60,7 @@ export default function Dashboard() {
                 <td className="px-4 py-3 font-medium">{p.title}</td>
                 <td className="px-4 py-3">{p.category}</td>
                 <td className="px-4 py-3">{p.deadline}</td>
-                <td className="px-4 py-3 text-right">{p.points}🍯</td>
+                <td className="px-4 py-3 text-right"><HoneyPoints value={p.points} /></td>
               </tr>
             ))}
           </tbody>
