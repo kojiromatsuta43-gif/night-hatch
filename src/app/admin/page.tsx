@@ -40,7 +40,7 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex gap-2 text-sm">
         {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
+          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
 
@@ -52,7 +52,7 @@ export default function AdminPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
-                <th className="px-4 py-3 font-medium text-right">ポイント</th>
+                <th className="px-4 py-3 font-medium text-right">はちみつ</th>
                 <th className="px-4 py-3 font-medium">登録日</th>
               </tr>
             </thead>
@@ -62,7 +62,7 @@ export default function AdminPage() {
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs">{u.role}</span></td>
-                  <td className="px-4 py-3 text-right">{u.points}pt</td>
+                  <td className="px-4 py-3 text-right">{u.points}🍯</td>
                   <td className="px-4 py-3">{u.created_at.slice(0, 10)}</td>
                 </tr>
               ))}
@@ -77,7 +77,7 @@ export default function AdminPage() {
             <input value={newWord} onChange={(e) => setNewWord(e.target.value)} placeholder="NGワードを入力" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <button
               onClick={async () => { if (!newWord.trim()) return; await api("/api/admin/ng-words", { method: "POST", body: JSON.stringify({ word: newWord.trim() }) }); setNewWord(""); load(); }}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900"
             >追加</button>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white">
@@ -95,7 +95,7 @@ export default function AdminPage() {
 
       {tab === "refs" && (
         <div className="max-w-xl space-y-5">
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-5">
+          <div className="rounded-xl border border-honey-200 bg-honey-50/60 p-5">
             <h3 className="text-sm font-bold">移行元から参考動画を一括インポート</h3>
             <p className="mt-1 text-xs text-slate-600">
               登録済みアカウントに対応する動画（キャプション・サムネイル・TikTok URL）を移行元CMSから取得します。
@@ -119,7 +119,7 @@ export default function AdminPage() {
                 }
               }}
               disabled={importing}
-              className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="mt-3 rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 disabled:opacity-40"
             >
               {importing ? "インポート中...（そのままお待ちください）" : "動画を一括インポート"}
             </button>
@@ -160,7 +160,7 @@ export default function AdminPage() {
                 setRefForm({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
                 load();
               }}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900"
             >追加</button>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white">
