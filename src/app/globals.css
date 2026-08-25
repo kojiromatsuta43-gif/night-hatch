@@ -1,6 +1,28 @@
 @import "tailwindcss";
 
+/* ── BRIDGE HATCH のブランドカラー ──────────────────────
+   はちみつの黄色（honey）と、巣箱の黒（hive）。
+   黄色の上に白文字は読みづらいため、ボタンの文字は必ず hive を使う。 */
+@theme {
+  --color-honey-50: #FFFBEB;
+  --color-honey-100: #FFF3C9;
+  --color-honey-200: #FFE79B;
+  --color-honey-300: #FFD75F;
+  --color-honey-400: #FFC62E;
+  --color-honey-500: #F5A800;
+  --color-honey-600: #D08C00;
+  --color-honey-700: #A06A00;
+  --color-honey-800: #7A5100;
+
+  --color-hive-50: #F7F5F1;
+  --color-hive-200: #DED9D0;
+  --color-hive-500: #6B6154;
+  --color-hive-700: #3A3229;
+  --color-hive-800: #2A231B;
+  --color-hive-900: #1C1710;
+}
+
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: #FDFAF2;
+  color: #1C1710;
 }

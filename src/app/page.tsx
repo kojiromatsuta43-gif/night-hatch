@@ -25,18 +25,18 @@ export default function Dashboard() {
         {[
           { label: "完了", value: `${done.length}件` },
           { label: "進行中", value: `${active.length}件` },
-          { label: "残ポイント", value: `${me?.points ?? 0}pt` },
+          { label: "残りはちみつ", value: `${me?.points ?? 0}🍯` },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
-            <div className="mt-1 text-3xl font-bold text-indigo-600">{s.value}</div>
+            <div className="mt-1 text-3xl font-bold text-honey-700">{s.value}</div>
           </div>
         ))}
       </div>
 
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">募集中の案件</h2>
-        <Link href="/order" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+        <Link href="/order" className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">
           ＋ 新規案件を登録
         </Link>
       </div>
@@ -47,7 +47,7 @@ export default function Dashboard() {
               <th className="px-4 py-3 font-medium">案件名</th>
               <th className="px-4 py-3 font-medium">カテゴリ</th>
               <th className="px-4 py-3 font-medium">納期</th>
-              <th className="px-4 py-3 font-medium text-right">ポイント</th>
+              <th className="px-4 py-3 font-medium text-right">はちみつ</th>
             </tr>
           </thead>
           <tbody>
@@ -59,7 +59,7 @@ export default function Dashboard() {
                 <td className="px-4 py-3 font-medium">{p.title}</td>
                 <td className="px-4 py-3">{p.category}</td>
                 <td className="px-4 py-3">{p.deadline}</td>
-                <td className="px-4 py-3 text-right">{p.points}pt</td>
+                <td className="px-4 py-3 text-right">{p.points}🍯</td>
               </tr>
             ))}
           </tbody>
