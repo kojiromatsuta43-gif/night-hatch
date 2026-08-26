@@ -3,33 +3,20 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import BeeLogo from "./BeeLogo";
 import PigLogo from "./PigLogo";
-import TanukiLogo from "./TanukiLogo";
-import LemonCanLogo from "./LemonCanLogo";
 import {
   DEFAULT_MASCOT,
-  FUN_STORAGE_KEY,
   MASCOTS,
   MASCOT_STORAGE_KEY,
   MASCOT_SWITCHER_ENABLED,
   MascotId,
-  isSecretMascot,
   MascotTheme,
 } from "@/lib/mascot";
 
-type Ctx = {
-  mascot: MascotTheme;
-  setMascot: (id: MascotId) => void;
-  /** 合言葉を入れた端末だけ true。秘密のキャラ（たぬ）が選べるようになる */
-  unlocked: boolean;
-  /** 秘密のキャラを隠す（選択中ならハチに戻る） */
-  lock: () => void;
-};
+type Ctx = { mascot: MascotTheme; setMascot: (id: MascotId) => void };
 
 const MascotCtx = createContext<Ctx>({
   mascot: MASCOTS[DEFAULT_MASCOT],
   setMascot: () => {},
-  unlocked: false,
-  lock: () => {},
 });
 
 export const useMascot = () => useContext(MascotCtx);
@@ -38,14 +25,12 @@ export const useMascot = () => useContext(MascotCtx);
 export function Mascot({ className = "h-8 w-8" }: { className?: string }) {
   const { mascot } = useMascot();
   if (mascot.id === "pig") return <PigLogo className={className} />;
-  if (mascot.id === "tanuki") return <TanukiLogo className={className} />;
   return <BeeLogo className={className} />;
 }
 
 /** ポイントのしるし（大きく出す用）。 */
 export function PointMark({ className = "h-8 w-8" }: { className?: string }) {
   const { mascot } = useMascot();
-  if (mascot.id === "tanuki") return <LemonCanLogo className={className} />;
   return (
     <span className={`inline-flex items-center justify-center ${className}`} aria-hidden="true">
       {mascot.pointEmoji}
@@ -53,84 +38,31 @@ export function PointMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-/** 文章の中に混ぜる用。文字サイズに追従する。 */
+/** 文章の中に混ぜる用。 */
 export function PointInline() {
   const { mascot } = useMascot();
-  if (mascot.id === "tanuki") {
-    return <LemonCanLogo className="inline-block h-[1.3em] w-[1.3em] align-[-0.33em]" />;
-  }
   return <>{mascot.pointEmoji}</>;
 }
 
-function readStored(): { open: boolean; saved: MascotId } {
-  let open = false;
-  let saved: MascotId = DEFAULT_MASCOT;
-  try {
-    open = window.localStorage.getItem(FUN_STORAGE_KEY) === "on";
-    const m = window.localStorage.getItem(MASCOT_STORAGE_KEY);
-    if (m === "pig" || m === "tanuki" || m === "bee") saved = m;
-  } catch {
-    // プライベートモード等では既定値のまま
-  }
-  return { open, saved };
-}
-
 export default function MascotProvider({ children }: { children: React.ReactNode }) {
-  const [unlocked, setUnlocked] = useState(false);
   const [id, setId] = useState<MascotId>(DEFAULT_MASCOT);
 
+  // 保存済みの選択を読み出す（端末ごとに保持。サーバーには送らない）
   useEffect(() => {
     if (!MASCOT_SWITCHER_ENABLED) return;
-
-    // URL の合言葉（?fun=on で表示 / ?fun=off で消す）
-    let cmd: "on" | "off" | null = null;
+    let saved: string | null = null;
     try {
-      const q = new URLSearchParams(window.location.search).get("fun");
-      if (q === "on") cmd = "on";
-      else if (q === "off") cmd = "off";
+      saved = window.localStorage.getItem(MASCOT_STORAGE_KEY);
     } catch {
-      // 何もしない
+      // プライベートモード等では既定値のまま
     }
-
-    let { open, saved } = readStored();
-
-    if (cmd === "on") {
-      open = true;
-      try {
-        window.localStorage.setItem(FUN_STORAGE_KEY, "on");
-      } catch {}
-    } else if (cmd === "off") {
-      open = false;
-      try {
-        window.localStorage.removeItem(FUN_STORAGE_KEY);
-        if (isSecretMascot(saved)) window.localStorage.removeItem(MASCOT_STORAGE_KEY);
-      } catch {}
-      if (isSecretMascot(saved)) saved = DEFAULT_MASCOT;
-    }
-
-    // 合言葉をURLから消して、履歴に残さない
-    if (cmd) {
-      try {
-        const u = new URL(window.location.href);
-        u.searchParams.delete("fun");
-        window.history.replaceState({}, "", u.pathname + u.search + u.hash);
-      } catch {}
-    }
-
-    const nextOpen = open;
-    const nextId = isSecretMascot(saved) && !open ? DEFAULT_MASCOT : saved;
-    const t = setTimeout(() => {
-      setUnlocked(nextOpen);
-      setId(nextId);
-    }, 0);
+    if (saved !== "pig" && saved !== "bee") return;
+    const next = saved;
+    const t = setTimeout(() => setId(next), 0);
     return () => clearTimeout(t);
   }, []);
 
-  const active: MascotId = !MASCOT_SWITCHER_ENABLED
-    ? DEFAULT_MASCOT
-    : isSecretMascot(id) && !unlocked
-      ? DEFAULT_MASCOT
-      : id;
+  const active: MascotId = MASCOT_SWITCHER_ENABLED ? id : DEFAULT_MASCOT;
 
   // 配色を切り替えるため <html> に印を付ける
   useEffect(() => {
@@ -144,30 +76,7 @@ export default function MascotProvider({ children }: { children: React.ReactNode
     } catch {}
   }, []);
 
-  const lock = useCallback(() => {
-    setUnlocked(false);
-    setId((cur) => {
-      if (!isSecretMascot(cur)) return cur;
-      try {
-        window.localStorage.removeItem(MASCOT_STORAGE_KEY);
-      } catch {}
-      return DEFAULT_MASCOT;
-    });
-    try {
-      window.localStorage.removeItem(FUN_STORAGE_KEY);
-    } catch {}
-  }, []);
-
   return (
-    <MascotCtx.Provider
-      value={{
-        mascot: MASCOTS[active],
-        setMascot,
-        unlocked: MASCOT_SWITCHER_ENABLED && unlocked,
-        lock,
-      }}
-    >
-      {children}
-    </MascotCtx.Provider>
+    <MascotCtx.Provider value={{ mascot: MASCOTS[active], setMascot }}>{children}</MascotCtx.Provider>
   );
 }

@@ -83,21 +83,17 @@ src/
 
 ヘッダーのタブでマスコット・ポイントの呼び名・配色が切り替わります。
 
-- **常時表示**: 🐝ハチ（はちみつP🍯・既定）／ 🐖ぶた（飼料P🌿）
-- **秘密**: 🦝たぬ（無糖レモンP🍋）— 合言葉を入れた端末にだけタブに出る
+- 🐝 ハチ（はちみつP🍯・既定）
+- 🐖 ぶた（飼料P🌿）
+
+選んだキャラは **その端末のブラウザにだけ** 保存されます（localStorage）。サーバー・DBには一切保存していないので、他の人の画面には影響しません。
 
 | やりたいこと | 方法 |
 |---|---|
-| たぬを出す | URLの末尾に `?fun=on` を付けて開く（例: `https://.../?fun=on`） |
-| たぬをその場で隠す | タブの右の「✕」を押す（選択中ならハチに戻る。ぶたの選択はそのまま） |
-| URLで隠す | URLの末尾に `?fun=off` を付けて開く |
-| たぬを常時表示にする | `src/lib/mascot.ts` の `SECRET_MASCOTS` から `"tanuki"` を外す |
 | 切替機能ごと無効化 | `src/lib/mascot.ts` の `MASCOT_SWITCHER_ENABLED` を `false` にする（全員ハチ固定） |
-
-- 解錠状態も選んだキャラも **その端末のブラウザにだけ** 保存されます（localStorage）。サーバー・DBには一切保存していないので、**お客様や他の社員の画面には出ません**。
-- 合言葉は開いた直後にURLから自動で消えるため、アドレスバーや履歴に残りません。
+| キャラを増やす | `src/lib/mascot.ts` の `MASCOTS` に足し、絵のコンポーネントを作って `MascotProvider.tsx` の `Mascot` に分岐を追加 |
 
 ### コードごと削除する場合
-1. `src/lib/mascot.ts` / `src/components/MascotProvider.tsx` / `src/components/PigLogo.tsx` / `src/components/TanukiLogo.tsx` / `src/components/LemonCanLogo.tsx` / `src/components/MascotSwitcher.tsx` を削除
-2. `src/app/globals.css` 末尾の `html[data-mascot="pig"]` / `html[data-mascot="tanuki"]` ブロックを削除
+1. `src/lib/mascot.ts` / `src/components/MascotProvider.tsx` / `src/components/PigLogo.tsx` / `src/components/MascotSwitcher.tsx` を削除
+2. `src/app/globals.css` 末尾の `html[data-mascot="pig"]` ブロックを削除
 3. `<Mascot .../>` を `<BeeLogo .../>` に、`<PointInline />` を `🍯` に、`{mascot.pointName}` を `はちみつP` に戻す

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local database
 data/
+
+# device_bash が rm できないため退避用（Git管理外）
+_to_delete/
