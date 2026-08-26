@@ -42,7 +42,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
             <MascotSwitcher />
             <NotificationBell />
-            <PointsChip points={me.points} />
+            {me.role !== "freelancer" && <PointsChip points={me.points} />}
             <span className="text-sm text-slate-600">{me.name}</span>
             <button
               onClick={async () => {

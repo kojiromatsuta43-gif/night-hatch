@@ -9,7 +9,10 @@ export async function GET() {
   const rows =
     user.role === "admin"
       ? db.prepare("SELECT * FROM projects ORDER BY created_at DESC").all()
-      : db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").all(user.id);
+      : user.role === "freelancer"
+        ? // フリーランスは自分が担当する案件だけ見える
+          db.prepare("SELECT * FROM projects WHERE assignee_id = ? ORDER BY created_at DESC").all(user.id)
+        : db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").all(user.id);
   return NextResponse.json(rows);
 }
 

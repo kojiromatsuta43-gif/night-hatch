@@ -137,7 +137,7 @@ function OrderForm() {
   const [deadline, setDeadline] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [freelancers, setFreelancers] = useState<
-    { id: string; name: string; done_count: number }[]
+    { id: string; name: string; done_count: number; worked_count: number }[]
   >([]);
 
   // 台本作成
@@ -197,7 +197,7 @@ function OrderForm() {
   }, []);
 
   useEffect(() => {
-    api<{ id: string; name: string; done_count: number }[]>("/api/freelancers")
+    api<{ id: string; name: string; done_count: number; worked_count: number }[]>("/api/freelancers")
       .then(setFreelancers)
       .catch(() => {});
   }, []);
@@ -340,7 +340,7 @@ function OrderForm() {
             <span className="text-sm font-semibold">フリーランサー指定</span>
             <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">任意</span>
             <p className="mt-1 mb-2 text-xs text-slate-500">
-              指名しない場合は、こちらで最適な担当者を割り当てます。
+一度お取引のあった方を指名できます。初めての場合は「おまかせ」で募集します。
             </p>
             <div className="flex flex-wrap gap-2">
               <button
@@ -366,15 +366,15 @@ function OrderForm() {
                   }`}
                 >
                   {f.name}
-                  {f.done_count > 0 && (
-                    <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                      実績{f.done_count}件
-                    </span>
-                  )}
+                  <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                    {f.done_count > 0 ? `完了${f.done_count}件` : `対応中${f.worked_count}件`}
+                  </span>
                 </button>
               ))}
               {freelancers.length === 0 && (
-                <span className="text-sm text-slate-400">指名できるフリーランスがまだ登録されていません。</span>
+                <span className="text-sm text-slate-400">
+                  指名できる方はまだいません。初回は「おまかせ」で募集し、担当した方を次回から指名できます。
+                </span>
               )}
             </div>
           </div>

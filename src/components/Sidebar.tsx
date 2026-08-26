@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { Mascot, useMascot } from "./MascotProvider";
 import { useEffect, useState } from "react";
 
-const NAV = [
+/** 発注する側のメニュー */
+const CLIENT_NAV = [
   { href: "/guide", label: "デモの歩き方" },
   { href: "/", label: "ダッシュボード" },
   { href: "/order", label: "つくる・発注" },
@@ -18,11 +19,28 @@ const NAV = [
   { href: "/chat", label: "チャット" },
 ];
 
+/** 制作する側（フリーランス）のメニュー */
+const FREELANCER_NAV = [
+  { href: "/guide", label: "デモの歩き方" },
+  { href: "/", label: "ダッシュボード" },
+  { href: "/jobs", label: "お仕事をさがす" },
+  { href: "/projects", label: "担当案件" },
+  { href: "/agent", label: "AIエージェント" },
+  { href: "/scripts", label: "保存済み台本" },
+  { href: "/video-analysis", label: "動画分析" },
+  { href: "/chat", label: "チャット" },
+];
+
+
 export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { mascot } = useMascot();
-  const base = [...NAV, { href: "/points", label: mascot.pointName }];
+  const isFreelancer = role === "freelancer";
+  // 制作側はポイントを買わないので、ポイントのメニューは出さない
+  const base = isFreelancer
+    ? FREELANCER_NAV
+    : [...CLIENT_NAV, { href: "/points", label: mascot.pointName }];
   const items = role === "admin" ? [...base, { href: "/admin", label: "管理" }] : base;
 
   // 画面遷移したらメニューを閉じる
