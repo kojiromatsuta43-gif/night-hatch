@@ -14,86 +14,88 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 export default function FormatIcon({ category }: { category: string }) {
   switch (category) {
-    case "バナー作成": // 横長 3:1
+    case "ショート動画編集": // 9:16 の縦動画
       return (
         <Frame>
-          <rect x="3" y="15" width="58" height="19" rx="2" fill={SOFT} stroke={HONEY} strokeWidth="1.5" />
-          <rect x="7" y="20" width="22" height="3.5" rx="1.7" fill={HIVE} />
-          <rect x="7" y="26" width="14" height="2.5" rx="1.2" fill={LINE} />
-          <rect x="42" y="20" width="15" height="9" rx="4.5" fill={HONEY} />
+          <rect x="23" y="2" width="18" height="44" rx="2.5" fill={HIVE} />
+          <path d="M29 19l9 5-9 5z" fill="#fff" />
+          <rect x="26" y="37" width="12" height="3.5" rx="1.7" fill={HONEY} />
         </Frame>
       );
-    case "チラシ作成": // A4 縦
-      return (
-        <Frame>
-          <rect x="21" y="3" width="22" height="42" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <rect x="24" y="7" width="16" height="9" rx="1.5" fill={HONEY} />
-          <rect x="24" y="19" width="16" height="2" rx="1" fill={LINE} />
-          <rect x="24" y="23" width="16" height="2" rx="1" fill={LINE} />
-          <rect x="24" y="27" width="10" height="2" rx="1" fill={LINE} />
-          <rect x="24" y="34" width="16" height="7" rx="1.5" fill={SOFT} stroke={HONEY} strokeWidth="1" />
-        </Frame>
-      );
-    case "サムネイル作成": // 16:9 + 再生
+    case "動画編集（3分）": // 16:9 の横動画
       return (
         <Frame>
           <rect x="6" y="10" width="52" height="29" rx="2.5" fill={HIVE} />
           <path d="M27 18.5l10 5.5-10 5.5z" fill="#fff" />
-          <rect x="10" y="31" width="20" height="4" rx="2" fill={HONEY} />
+          <rect x="10" y="31" width="16" height="3.5" rx="1.7" fill={HONEY} />
         </Frame>
       );
-    case "名刺作成": // 91:55 横長カード
+    case "台本作成（長尺）": // 台本の書面
       return (
         <Frame>
-          <rect x="10" y="12" width="44" height="26" rx="2.5" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <circle cx="19" cy="21" r="4" fill={HONEY} />
-          <rect x="27" y="18" width="20" height="3" rx="1.5" fill={HIVE} />
-          <rect x="27" y="24" width="14" height="2" rx="1" fill={LINE} />
-          <rect x="15" y="30" width="32" height="2" rx="1" fill={LINE} />
+          <rect x="18" y="3" width="28" height="42" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="22" y="8" width="14" height="3.5" rx="1.5" fill={HIVE} />
+          <rect x="22" y="16" width="20" height="2" rx="1" fill={LINE} />
+          <rect x="22" y="20" width="20" height="2" rx="1" fill={LINE} />
+          <rect x="22" y="26" width="8" height="2.6" rx="1.3" fill={HONEY} />
+          <rect x="22" y="32" width="20" height="2" rx="1" fill={LINE} />
+          <rect x="22" y="36" width="14" height="2" rx="1" fill={LINE} />
         </Frame>
       );
-    case "LP作成・修正": // 縦に長いページ
+    case "サムネイル作成": // 16:9 に大きな文字
+      return (
+        <Frame>
+          <rect x="6" y="10" width="52" height="29" rx="2.5" fill={SOFT} stroke={HONEY} strokeWidth="1.5" />
+          <rect x="11" y="16" width="26" height="6" rx="1.5" fill={HIVE} />
+          <rect x="11" y="25" width="17" height="4.5" rx="1.5" fill={HONEY} />
+          <circle cx="48" cy="24" r="7" fill="#fff" stroke={HIVE} strokeWidth="1.5" />
+          <path d="M46 21l5 3-5 3z" fill={HIVE} />
+        </Frame>
+      );
+    case "カルーセル投稿": // 正方形が重なった束
+      return (
+        <Frame>
+          <rect x="8" y="10" width="28" height="28" rx="3" fill={SOFT} stroke={HONEY} strokeWidth="1.4" />
+          <rect x="16" y="7" width="30" height="34" rx="3" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="20" y="11" width="22" height="14" rx="1.5" fill={HONEY} />
+          <rect x="20" y="28" width="22" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="20" y="32.5" width="14" height="2.2" rx="1.1" fill={LINE} />
+          <circle cx="51" cy="24" r="1.6" fill={LINE} />
+          <circle cx="56" cy="24" r="1.6" fill={LINE} />
+        </Frame>
+      );
+    case "LPファーストビュー": // 縦に長いページの上部
       return (
         <Frame>
           <rect x="19" y="2" width="26" height="44" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <rect x="19" y="2" width="26" height="13" rx="2" fill={HONEY} />
-          <rect x="23" y="19" width="18" height="2" rx="1" fill={LINE} />
-          <rect x="23" y="23" width="18" height="2" rx="1" fill={LINE} />
-          <rect x="23" y="29" width="8" height="7" rx="1.5" fill={SOFT} />
-          <rect x="33" y="29" width="8" height="7" rx="1.5" fill={SOFT} />
-          <rect x="26" y="39" width="12" height="4" rx="2" fill={HONEY} />
+          <rect x="19" y="2" width="26" height="15" rx="2" fill={HONEY} />
+          <rect x="23" y="21" width="18" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="23" y="25.5" width="18" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="26" y="31" width="12" height="4.5" rx="2.2" fill={HIVE} />
+          <rect x="23" y="40" width="18" height="2" rx="1" fill={LINE} />
         </Frame>
       );
-    case "LINE構築": // スマホ + 吹き出し
+    case "投稿文＋画像": // 画像 + 文章
       return (
         <Frame>
-          <rect x="21" y="2" width="22" height="44" rx="4" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <rect x="24" y="9" width="12" height="7" rx="3.5" fill={SOFT} />
-          <rect x="28" y="19" width="12" height="7" rx="3.5" fill="#06C755" />
-          <rect x="24" y="29" width="14" height="7" rx="3.5" fill={SOFT} />
-          <rect x="27" y="40" width="10" height="2" rx="1" fill={LINE} />
+          <rect x="6" y="9" width="24" height="24" rx="2.5" fill={HONEY} />
+          <circle cx="13" cy="16" r="2.6" fill="#fff" />
+          <path d="M9 29l6-7 5 5 3-3 5 5H9z" fill="#fff" opacity=".85" />
+          <rect x="34" y="12" width="24" height="2.6" rx="1.3" fill={HIVE} />
+          <rect x="34" y="18.5" width="24" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="34" y="23" width="24" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="34" y="27.5" width="15" height="2.2" rx="1.1" fill={LINE} />
         </Frame>
       );
-    case "Instagram投稿": // 正方形 + グリッド
+    case "軽微な修正": // 書面 + 赤ペン
       return (
         <Frame>
-          <rect x="14" y="5" width="36" height="36" rx="4" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <rect x="18" y="9" width="13" height="13" rx="1.5" fill={HONEY} />
-          <rect x="33" y="9" width="13" height="13" rx="1.5" fill={SOFT} />
-          <rect x="18" y="24" width="13" height="13" rx="1.5" fill={SOFT} />
-          <rect x="33" y="24" width="13" height="13" rx="1.5" fill={HONEY} />
-        </Frame>
-      );
-    case "SEO記事作成": // 文書 + 見出し
-      return (
-        <Frame>
-          <rect x="17" y="3" width="30" height="42" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
-          <rect x="21" y="8" width="17" height="4" rx="1.5" fill={HIVE} />
-          <rect x="21" y="16" width="22" height="2" rx="1" fill={LINE} />
-          <rect x="21" y="20" width="22" height="2" rx="1" fill={LINE} />
-          <rect x="21" y="24" width="16" height="2" rx="1" fill={LINE} />
-          <rect x="21" y="31" width="10" height="3" rx="1.5" fill={HONEY} />
-          <rect x="21" y="37" width="22" height="2" rx="1" fill={LINE} />
+          <rect x="14" y="5" width="28" height="38" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="18" y="11" width="20" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="18" y="16" width="20" height="2.2" rx="1.1" fill={LINE} />
+          <rect x="18" y="21" width="12" height="2.2" rx="1.1" fill={LINE} />
+          <path d="M50 12l4 4-16 16-5.5 1.5 1.5-5.5z" fill={SOFT} stroke={HIVE} strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M47 15l4 4" stroke={HIVE} strokeWidth="1.4" />
         </Frame>
       );
     default:

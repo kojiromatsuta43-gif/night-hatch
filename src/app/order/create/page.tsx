@@ -13,6 +13,9 @@ import {
   MEDIA_OPTIONS,
   MIDCHECK_OPTIONS,
   POINTS_BY_CATEGORY,
+  isScriptCategory,
+  isVideoCategory,
+  DEFAULT_VIDEO_CATEGORY,
   PURPOSE_OPTIONS,
   SUBTITLE_OPTIONS,
   TONE_OPTIONS,
@@ -186,7 +189,7 @@ function OrderForm() {
     if (scriptId) {
       api<{ title: string; content: string }>(`/api/scripts/${scriptId}`)
         .then((s) => {
-          setCategory("動画編集");
+          setCategory(DEFAULT_VIDEO_CATEGORY);
           setScriptWish(s.content);
           setTitle((t) => t || `「${s.title}」の動画編集`);
           setDescription((d) => d || `保存済み台本「${s.title}」をもとにした動画編集を希望します。`);
@@ -203,8 +206,8 @@ function OrderForm() {
   }, []);
 
   const points = useMemo(() => (category ? POINTS_BY_CATEGORY[category] ?? 10 : 0), [category]);
-  const isScript = category === "台本作成";
-  const isVideo = category === "動画編集";
+  const isScript = isScriptCategory(category);
+  const isVideo = isVideoCategory(category);
   const agreements = agreementsFor(category);
 
   const step1Ok = category && title.trim() && description.trim() && deadline;

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { DEFAULT_VIDEO_CATEGORY } from "@/lib/data";
 import { marked } from "marked";
 import { api } from "@/lib/client";
 import ClientOnly from "@/components/ClientOnly";
@@ -50,7 +51,7 @@ function ScriptsPageInner() {
               <button onClick={async () => { if (confirm("削除しますか？")) { await api(`/api/scripts/${s.id}`, { method: "DELETE" }); load(); } }} className="hover:text-rose-500">削除</button>
             </div>
             <Link
-              href={`/order/create?category=${encodeURIComponent("動画編集")}&script=${s.id}`}
+              href={`/order/create?category=${encodeURIComponent(DEFAULT_VIDEO_CATEGORY)}&script=${s.id}`}
               className="mt-3 block rounded-lg bg-honey-400 py-2 text-center text-xs font-semibold text-hive-900 hover:bg-honey-300"
             >
               🐝 この台本で動画編集を発注する →
@@ -68,7 +69,7 @@ function ScriptsPageInner() {
             </div>
             <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: marked.parse(open.content) as string }} />
             <Link
-              href={`/order/create?category=${encodeURIComponent("動画編集")}&script=${open.id}`}
+              href={`/order/create?category=${encodeURIComponent(DEFAULT_VIDEO_CATEGORY)}&script=${open.id}`}
               className="mt-5 block rounded-lg bg-honey-400 py-2.5 text-center text-sm font-semibold text-hive-900 hover:bg-honey-300"
             >
               🐝 この台本で動画編集を発注する →

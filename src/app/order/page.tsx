@@ -7,7 +7,7 @@ import FormatIcon from "@/components/FormatIcon";
 import PlatformIcon from "@/components/PlatformIcon";
 import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
-import { POINTS_BY_CATEGORY } from "@/lib/data";
+import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
 
@@ -26,7 +26,7 @@ const OTHER_STARTS = [
     href: "/agent",
     cost: () => (
       <>
-        {POINTS_BY_CATEGORY["台本作成"]}
+        {POINTS_BY_CATEGORY[DEFAULT_SCRIPT_CATEGORY]}
         <PointInline />〜
       </>
     ),
@@ -35,10 +35,10 @@ const OTHER_STARTS = [
     who: "素材はある。編集してほしい",
     title: "動画編集を発注する",
     desc: "字幕・カット・BGMまで指定して依頼",
-    href: "/order/create?category=動画編集",
+    href: `/order/create?category=${encodeURIComponent(DEFAULT_VIDEO_CATEGORY)}`,
     cost: () => (
       <>
-        {POINTS_BY_CATEGORY["動画編集"]}
+        {POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}
         <PointInline />〜
       </>
     ),
@@ -50,21 +50,20 @@ const OTHER_GROUPS: {
   items: { label: string; category: string; size: string; days: string }[];
 }[] = [
   {
-    heading: "デザインをつくる",
+    heading: "動画まわり",
     items: [
-      { label: "バナーを作る", category: "バナー作成", size: "横長", days: "3日〜" },
-      { label: "チラシを作る", category: "チラシ作成", size: "A4たて", days: "5日〜" },
+      { label: "動画編集（3分）", category: "動画編集（3分）", size: "会社紹介・商品説明", days: "5日〜" },
+      { label: "台本を作る（長尺）", category: "台本作成（長尺）", size: "3分以上の構成台本", days: "3日〜" },
       { label: "サムネイルを作る", category: "サムネイル作成", size: "16:9", days: "2日〜" },
-      { label: "名刺を作る", category: "名刺作成", size: "91×55mm", days: "3日〜" },
     ],
   },
   {
-    heading: "Web・集客をつくる",
+    heading: "SNS・Webまわり",
     items: [
-      { label: "LPを作る・直す", category: "LP作成・修正", size: "1ページ", days: "2週間〜" },
-      { label: "LINEを構築する", category: "LINE構築", size: "公式アカウント", days: "2週間〜" },
-      { label: "Instagram投稿を作る", category: "Instagram投稿", size: "正方形", days: "3日〜" },
-      { label: "SEO記事を書く", category: "SEO記事作成", size: "記事", days: "5日〜" },
+      { label: "カルーセル投稿を作る", category: "カルーセル投稿", size: "Instagram複数枚", days: "4日〜" },
+      { label: "投稿文＋画像を作る", category: "投稿文＋画像", size: "SNS投稿1本ぶん", days: "3日〜" },
+      { label: "LPのファーストビュー", category: "LPファーストビュー", size: "訴求・デザイン込み", days: "1週間〜" },
+      { label: "軽微な修正を頼む", category: "軽微な修正", size: "テロップ差し替えなど", days: "1日〜" },
     ],
   },
 ];

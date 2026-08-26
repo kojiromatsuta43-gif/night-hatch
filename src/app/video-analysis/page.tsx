@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/lib/client";
+import PlatformIcon from "@/components/PlatformIcon";
 
 type Analysis = {
   title: string; summary: string; hook: string;
@@ -9,7 +10,18 @@ type Analysis = {
   retention: string[];
   applications: { priority: string; note: string }[];
   mock?: boolean;
+  source?: "tiktok" | "youtube";
+  inferred?: boolean;
+  thumbnail?: string;
+  author?: string;
+  caption?: string;
 };
+
+/** TikTokの埋め込み用に動画IDを取り出す */
+function tiktokVideoId(url: string): string | null {
+  const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  return m ? m[1] : null;
+}
 
 export default function VideoAnalysisPage() {
   const [url, setUrl] = useState("");
@@ -34,14 +46,22 @@ export default function VideoAnalysisPage() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold mb-2">動画分析</h1>
-      <p className="mb-6 text-sm text-slate-500">
-        参考にしたい動画のURL（YouTube / YouTubeショート）を入力すると、シーン分解・フック分析・応用ポイントをAIが提案します。
+      <p className="mb-4 text-sm text-slate-500">
+        参考にしたい動画のURLを入れると、シーン分解・フック分析・自社への応用ポイントをAIが提案します。
       </p>
+      <div className="mb-5 flex flex-wrap items-center gap-2 text-xs">
+        <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium">
+          <PlatformIcon platform="tiktok" className="h-3.5 w-3.5" /> TikTok
+        </span>
+        <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium">
+          <PlatformIcon platform="youtube" className="h-3.5 w-3.5" /> YouTube・ショート
+        </span>
+      </div>
       <div className="flex gap-2">
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://www.youtube.com/shorts/..."
+          placeholder="https://www.tiktok.com/@... または https://www.youtube.com/shorts/..."
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
         />
         <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">
@@ -52,6 +72,36 @@ export default function VideoAnalysisPage() {
 
       {result && (
         <div className="mt-8 space-y-5">
+          {result.inferred && !result.mock && (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-relaxed text-sky-800">
+              <b className="block text-sm">TikTokは推定分析です</b>
+              TikTokは動画の中身をAIが直接再生できないため、<b>キャプション・投稿者・TikTokの一般的な構成パターンからの推定</b>になります。
+              下の元動画を見ながらご確認ください。（YouTubeの場合は動画そのものを解析します）
+            </div>
+          )}
+          {(result.thumbnail || tiktokVideoId(url)) && (
+            <div className="flex flex-wrap items-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
+              {tiktokVideoId(url) ? (
+                <iframe
+                  src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(url)}`}
+                  className="h-[420px] w-[240px] shrink-0 rounded-xl border-0"
+                  allow="encrypted-media; fullscreen"
+                  title="元の動画"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={result.thumbnail} alt="" className="h-40 w-auto shrink-0 rounded-lg border border-slate-200 object-cover" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-semibold text-slate-500">元の動画</div>
+                {result.author && <div className="mt-1 text-sm font-bold">{result.author}</div>}
+                {result.caption && <p className="mt-1 text-sm text-slate-600">{result.caption}</p>}
+                <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-honey-600 hover:underline">
+                  TikTokで開く →
+                </a>
+              </div>
+            </div>
+          )}
           {result.mock && (
             <div className="rounded-lg bg-amber-50 px-4 py-2 text-xs text-amber-700">
               これはデモ結果です。実際の動画を分析するには .env.local に GEMINI_API_KEY（無料）を設定してサーバーを再起動してください。

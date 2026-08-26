@@ -21,25 +21,43 @@ const MOCK = {
 
 export async function POST(req: Request) {
   await requireUser();
-  const { url } = await req.json();
+  const { url } = (await req.json()) as { url?: string };
+  const target = (url ?? "").trim();
+
+  const isYouTube = /youtube\.com|youtu\.be/.test(target);
+  const isTikTok = /tiktok\.com/.test(target);
+  if (!isYouTube && !isTikTok) {
+    return NextResponse.json(
+      { error: "TikTok または YouTube の動画URLを入力してください。" },
+      { status: 400 }
+    );
+  }
+
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    return NextResponse.json({ ...MOCK, mock: true });
+    return NextResponse.json({ ...MOCK, mock: true, source: isTikTok ? "tiktok" : "youtube", inferred: isTikTok });
   }
-  // Geminiが直接読めるのはYouTube URLのみ。TikTok等は説明ベースの分析にフォールバック。
-  const isYouTube = /youtube\.com|youtu\.be/.test(url);
+
+  // Geminiが動画そのものを読めるのはYouTubeのみ。
+  // TikTokは公開情報（投稿者・キャプション・サムネイル）を集めてから推定分析する。
   let tiktokMeta = "";
-  if (!isYouTube && url.includes("tiktok.com")) {
+  let thumbnail = "";
+  let author = "";
+  let caption = "";
+  if (isTikTok) {
     try {
-      const oe = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, {
+      const oe = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(target)}`, {
         signal: AbortSignal.timeout(8000),
       });
       if (oe.ok) {
         const meta = await oe.json();
-        tiktokMeta = `\n参考情報 — 投稿者: ${meta.author_name ?? ""} / キャプション: ${meta.title ?? ""}`;
+        author = meta.author_name ?? "";
+        caption = meta.title ?? "";
+        thumbnail = meta.thumbnail_url ?? "";
+        tiktokMeta = `\n投稿者: ${author}\nキャプション: ${caption}`;
       }
     } catch {
-      // メタ取得に失敗しても分析は続行
+      // メタ取得に失敗しても、URLだけで推定を続行する
     }
   }
 
@@ -51,7 +69,7 @@ export async function POST(req: Request) {
           {
             text: (isYouTube
               ? "このショート動画を分析して、次のJSONだけを返してください:"
-              : `次のショート動画URLとキャプションから、想定される構成・フック・改善提案を推定してJSONだけを返してください。URL: ${url}${tiktokMeta}\n形式:`) + " {\"title\":string,\"summary\":string,\"hook\":string,\"scenes\":[{\"time\":string,\"label\":string,\"note\":string}],\"retention\":[string],\"applications\":[{\"priority\":\"高\"|\"中\"|\"低\",\"note\":string}]} 。シーンはタイムスタンプ付きで分解すること。日本語で。",
+              : `TikTokのショート動画を分析します。動画そのものは再生できないため、下記の公開情報とTikTokの一般的な構成パターンから推定してください。推定であることを summary の冒頭に必ず明記すること。\nURL: ${target}${tiktokMeta}\n形式:`) + " {\"title\":string,\"summary\":string,\"hook\":string,\"scenes\":[{\"time\":string,\"label\":string,\"note\":string}],\"retention\":[string],\"applications\":[{\"priority\":\"高\"|\"中\"|\"低\",\"note\":string}]} 。シーンはタイムスタンプ付きで分解すること。日本語で。",
           },
         ],
       },
@@ -69,7 +87,15 @@ export async function POST(req: Request) {
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
   try {
-    return NextResponse.json({ ...JSON.parse(text), mock: false });
+    return NextResponse.json({
+      ...JSON.parse(text),
+      mock: false,
+      source: isTikTok ? "tiktok" : "youtube",
+      inferred: isTikTok,
+      thumbnail,
+      author,
+      caption,
+    });
   } catch {
     return NextResponse.json({ error: "分析結果の解析に失敗しました" }, { status: 502 });
   }

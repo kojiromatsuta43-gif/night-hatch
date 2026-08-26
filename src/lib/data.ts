@@ -1,28 +1,40 @@
+/**
+ * 制作メニュー。SODATSUの作業ポイント表に合わせている。
+ * 営業資料の一覧と必ず一致させること（食い違うと商談で数字が合わなくなる）。
+ */
 export const CATEGORIES = [
-  "台本作成",
-  "チラシ作成",
-  "LP作成・修正",
-  "動画編集",
-  "名刺作成",
-  "バナー作成",
-  "Instagram投稿",
-  "SEO記事作成",
+  "ショート動画編集",
+  "動画編集（3分）",
+  "台本作成（ショート）",
+  "台本作成（長尺）",
   "サムネイル作成",
-  "LINE構築",
+  "カルーセル投稿",
+  "LPファーストビュー",
+  "投稿文＋画像",
+  "軽微な修正",
 ] as const;
 
 export const POINTS_BY_CATEGORY: Record<string, number> = {
-  "台本作成": 4,
-  "チラシ作成": 15,
-  "LP作成・修正": 40,
-  "動画編集": 30,
-  "名刺作成": 10,
-  "バナー作成": 12,
-  "Instagram投稿": 8,
-  "SEO記事作成": 20,
-  "サムネイル作成": 6,
-  "LINE構築": 50,
+  "ショート動画編集": 7,
+  "動画編集（3分）": 14,
+  "台本作成（ショート）": 4,
+  "台本作成（長尺）": 10,
+  "サムネイル作成": 7,
+  "カルーセル投稿": 14,
+  "LPファーストビュー": 20,
+  "投稿文＋画像": 10,
+  "軽微な修正": 2,
 };
+
+/** 詳細ヒアリングの出し分けに使う */
+export const SCRIPT_CATEGORIES: string[] = ["台本作成（ショート）", "台本作成（長尺）"];
+export const VIDEO_CATEGORIES: string[] = ["ショート動画編集", "動画編集（3分）"];
+export const isScriptCategory = (c: string) => SCRIPT_CATEGORIES.includes(c);
+export const isVideoCategory = (c: string) => VIDEO_CATEGORIES.includes(c);
+
+/** 発注トップや台本からの導線で使う既定カテゴリ */
+export const DEFAULT_SCRIPT_CATEGORY = "台本作成（ショート）";
+export const DEFAULT_VIDEO_CATEGORY = "ショート動画編集";
 
 export const MEDIA_OPTIONS = ["TikTok", "Instagramリール", "YouTubeショート／本編", "LINE VOOM", "その他"];
 export const DURATION_OPTIONS = ["15秒以内", "30秒以内", "1分以内", "3分以内", "指定なし"];
@@ -68,7 +80,7 @@ export const VIDEO_AGREEMENTS = [
 
 /** カテゴリごとの同意事項 */
 export function agreementsFor(category: string): string[] {
-  return category === "動画編集" ? VIDEO_AGREEMENTS : AGREEMENTS;
+  return isVideoCategory(category) ? VIDEO_AGREEMENTS : AGREEMENTS;
 }
 
 export const STATUSES = ["未公開", "募集中", "制作待ち", "フィードバック", "完了"] as const;
@@ -89,8 +101,8 @@ export type Project = {
 };
 
 export const SEED_PROJECTS: Project[] = [
-  { id: "seed-1", title: "地域イベント告知チラシ", category: "チラシ作成", description: "秋の商店街イベントの告知チラシ", points: 21, deadline: "2026-08-30", createdAt: "2026-08-18", status: "募集中" },
-  { id: "seed-2", title: "採用ショート動画 台本", category: "台本作成", description: "エンジニア採用向けTikTok台本", points: 4, deadline: "2026-09-05", createdAt: "2026-08-19", status: "制作待ち" },
-  { id: "seed-3", title: "新商品LPファーストビュー修正", category: "LP作成・修正", description: "CVR改善のためのFV差し替え", points: 40, deadline: "2026-09-10", createdAt: "2026-08-15", status: "フィードバック" },
-  { id: "seed-4", title: "会社紹介動画編集", category: "動画編集", description: "展示会用90秒動画の編集", points: 30, deadline: "2026-08-25", createdAt: "2026-08-10", status: "完了" },
-];
+  { id: "seed-1", title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 7, deadline: "2026-08-30", createdAt: "2026-08-18", status: "募集中" },
+  { id: "seed-2", title: "採用ショート動画 台本", category: "台本作成（ショート）", description: "エンジニア採用向けTikTok台本", points: 4, deadline: "2026-09-05", createdAt: "2026-08-19", status: "制作待ち" },
+  { id: "seed-3", title: "新商品LPファーストビュー修正", category: "LPファーストビュー", description: "CVR改善のためのFV差し替え", points: 20, deadline: "2026-09-10", createdAt: "2026-08-15", status: "フィードバック" },
+  { id: "seed-4", title: "会社紹介動画編集", category: "動画編集（3分）", description: "展示会用90秒動画の編集", points: 14, deadline: "2026-08-25", createdAt: "2026-08-10", status: "完了" },
+]

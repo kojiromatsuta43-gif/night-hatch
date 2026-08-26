@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
+import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 import { PointInline } from "@/components/MascotProvider";
 
 type RefVideo = { id: string; caption: string; url: string; thumbnail: string; hue: number };
@@ -61,7 +62,7 @@ export default function OrderPage() {
   );
   const shown = industry === "すべて" ? accounts : accounts.filter((a) => a.industry === industry);
 
-  const order = (kind: "台本作成" | "動画編集") => {
+  const order = (kind: string) => {
     if (!video || !selected) return;
     const params = new URLSearchParams({
       category: kind,
@@ -227,13 +228,13 @@ export default function OrderPage() {
             </p>
             <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <button onClick={() => order("台本作成")} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
+              <button onClick={() => order(DEFAULT_SCRIPT_CATEGORY)} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
                 台本作成で発注
-                <span className="block text-[10px] font-normal opacity-80">4<PointInline /></span>
+                <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_SCRIPT_CATEGORY]}<PointInline /></span>
               </button>
-              <button onClick={() => order("動画編集")} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
+              <button onClick={() => order(DEFAULT_VIDEO_CATEGORY)} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
                 動画編集で発注
-                <span className="block text-[10px] font-normal opacity-80">内容により変動</span>
+                <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}<PointInline /></span>
               </button>
             </div>
           </div>

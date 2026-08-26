@@ -280,10 +280,10 @@ function init(db: Database.Database) {
     const insertProject = db.prepare(
       "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    insertProject.run(crypto.randomUUID(), clientId, "地域イベント告知チラシ", "チラシ作成", "秋の商店街イベントの告知チラシ", 21, "2026-08-30", "募集中");
-    insertProject.run(crypto.randomUUID(), clientId, "採用ショート動画 台本", "台本作成", "エンジニア採用向けTikTok台本", 4, "2026-09-05", "制作待ち");
-    insertProject.run(crypto.randomUUID(), clientId, "新商品LPファーストビュー修正", "LP作成・修正", "CVR改善のためのFV差し替え", 40, "2026-09-10", "フィードバック");
-    insertProject.run(crypto.randomUUID(), clientId, "会社紹介動画編集", "動画編集", "展示会用90秒動画の編集", 30, "2026-08-25", "完了");
+    insertProject.run(crypto.randomUUID(), clientId, "秋の新商品ショート動画", "ショート動画編集", "秋の新商品を紹介する30秒動画", 7, "2026-08-30", "募集中");
+    insertProject.run(crypto.randomUUID(), clientId, "採用ショート動画 台本", "台本作成（ショート）", "エンジニア採用向けTikTok台本", 4, "2026-09-05", "制作待ち");
+    insertProject.run(crypto.randomUUID(), clientId, "新商品LPファーストビュー修正", "LPファーストビュー", "CVR改善のためのFV差し替え", 20, "2026-09-10", "フィードバック");
+    insertProject.run(crypto.randomUUID(), clientId, "会社紹介動画編集", "動画編集（3分）", "展示会用90秒動画の編集", 14, "2026-08-25", "完了");
 
     const insertNg = db.prepare("INSERT INTO ng_words (id, word) VALUES (?, ?)");
     for (const w of ["絶対に儲かる", "必ず痩せる", "日本一", "完治"]) {
@@ -304,6 +304,22 @@ function init(db: Database.Database) {
   const chatCols = (db.prepare("PRAGMA table_info(chat_messages)").all() as { name: string }[]).map((c) => c.name);
   for (const [col, def] of [["project_id", "TEXT"], ["upload_id", "TEXT"]] as const) {
     if (!chatCols.includes(col)) db.exec(`ALTER TABLE chat_messages ADD COLUMN ${col} ${def}`);
+  }
+
+  // 制作メニューをSODATSUの作業ポイント表に合わせたときの旧カテゴリ移行
+  for (const [before, after] of [
+    ["動画編集", "動画編集（3分）"],
+    ["台本作成", "台本作成（ショート）"],
+    ["LP作成・修正", "LPファーストビュー"],
+    ["サムネイル作成", "サムネイル作成"],
+    ["Instagram投稿", "投稿文＋画像"],
+    ["チラシ作成", "投稿文＋画像"],
+    ["バナー作成", "投稿文＋画像"],
+    ["名刺作成", "投稿文＋画像"],
+    ["SEO記事作成", "投稿文＋画像"],
+    ["LINE構築", "LPファーストビュー"],
+  ] as const) {
+    if (before !== after) db.prepare("UPDATE projects SET category = ? WHERE category = ?").run(after, before);
   }
 
   // チャットのオンライン表示用
