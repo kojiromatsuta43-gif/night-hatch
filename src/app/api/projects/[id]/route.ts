@@ -36,7 +36,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const deliverables = db
     .prepare(
-      `SELECT d.*, u.name AS author_name, up.name AS upload_name, up.mime AS upload_mime
+      `SELECT d.*, u.name AS author_name, up.filename AS upload_name, up.mime AS upload_mime
        FROM deliverables d
        LEFT JOIN users u ON u.id = d.user_id
        LEFT JOIN uploads up ON up.id = d.upload_id
