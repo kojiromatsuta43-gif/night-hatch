@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
+import ClientOnly from "@/components/ClientOnly";
 
 type Script = { id: string; title: string; content: string; favorite: number; created_at: string };
 
-export default function ScriptsPage() {
+function ScriptsPageInner() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "fav">("all");
@@ -76,5 +77,13 @@ export default function ScriptsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ScriptsPage() {
+  return (
+    <ClientOnly>
+      <ScriptsPageInner />
+    </ClientOnly>
   );
 }

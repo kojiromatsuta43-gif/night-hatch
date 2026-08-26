@@ -19,14 +19,16 @@ const CLIENT_NAV = [
   { href: "/chat", label: "チャット" },
 ];
 
-/** 制作する側（フリーランス）のメニュー */
+/**
+ * 制作する側（フリーランス）のメニュー。
+ * AIエージェントと保存済み台本は「何を作るか決める」ための発注側の道具なので出さない。
+ * 動画分析は、渡された参考動画を分解するのに使うので制作側にも出す。
+ */
 const FREELANCER_NAV = [
   { href: "/guide", label: "デモの歩き方" },
   { href: "/", label: "ダッシュボード" },
   { href: "/jobs", label: "お仕事をさがす" },
   { href: "/projects", label: "担当案件" },
-  { href: "/agent", label: "AIエージェント" },
-  { href: "/scripts", label: "保存済み台本" },
   { href: "/video-analysis", label: "動画分析" },
   { href: "/chat", label: "チャット" },
 ];

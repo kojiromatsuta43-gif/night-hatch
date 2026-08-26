@@ -5,6 +5,7 @@ import { marked } from "marked";
 import { api } from "@/lib/client";
 import { Mascot, useMascot } from "@/components/MascotProvider";
 import MicButton from "@/components/MicButton";
+import ClientOnly from "@/components/ClientOnly";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
@@ -18,7 +19,7 @@ const QUICK_ACTIONS = [
   { label: "企画を出してもらう", hint: "ネタ切れの時", prompt: "自社のショート動画の企画案を5つ出してください。まず業種と目的を質問してください。" },
 ];
 
-export default function AgentPage() {
+function AgentPageInner() {
   const [sessions, setSessions] = useState<AgentSession[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -231,5 +232,13 @@ export default function AgentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AgentPage() {
+  return (
+    <ClientOnly>
+      <AgentPageInner />
+    </ClientOnly>
   );
 }
