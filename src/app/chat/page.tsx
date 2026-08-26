@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/client";
 
-type ChatUser = { id: string; name: string; role: string };
+type ChatUser = { id: string; name: string; role: string; last_seen_at: string | null };
 type ChatProject = { id: string; title: string };
 type Message = {
   id: string;
@@ -22,6 +22,13 @@ type Message = {
 type ThreadKey = string | null;
 const GENERAL = "__general__";
 
+/** 5分以内にアクセスがあればオンラインとみなす */
+function isOnline(lastSeen: string | null) {
+  if (!lastSeen) return false;
+  const t = Date.parse(lastSeen.replace(" ", "T") + "Z");
+  return Number.isFinite(t) && Date.now() - t < 5 * 60 * 1000;
+}
+
 export default function ChatPage() {
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [projects, setProjects] = useState<ChatProject[]>([]);
@@ -30,6 +37,7 @@ export default function ChatPage() {
   const [peer, setPeer] = useState<string | null>(null);
   const [thread, setThread] = useState<ThreadKey>(null);
   const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
   const [attach, setAttach] = useState<{ id: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -76,10 +84,30 @@ export default function ChatPage() {
     return [...map.entries()].map(([id, title]) => ({ id, title }));
   }, [withPeer, projects]);
 
-  const shown = withPeer.filter((m) => (thread === null ? !m.project_id : m.project_id === thread));
+  const shown = withPeer
+    .filter((m) => (thread === null ? !m.project_id : m.project_id === thread))
+    .filter((m) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+      return m.body.toLowerCase().includes(q) || (m.upload_name ?? "").toLowerCase().includes(q);
+    });
 
   const unreadCountFor = (userId: string) =>
     messages.filter((m) => m.from_id === userId && m.to_id === me).length;
+
+  // 検索: 相手の名前か、その人とのメッセージ本文に当たれば残す
+  const shownUsers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) => {
+      if (u.name.toLowerCase().includes(q)) return true;
+      return messages.some(
+        (m) =>
+          (m.from_id === u.id || m.to_id === u.id) &&
+          (m.body.toLowerCase().includes(q) || (m.upload_name ?? "").toLowerCase().includes(q))
+      );
+    });
+  }, [users, messages, query]);
 
   const upload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -120,8 +148,21 @@ export default function ChatPage() {
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <aside className="w-60 shrink-0 overflow-y-auto border-r border-slate-200">
-        <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold">メッセージ</div>
-        {users.map((u) => (
+        <div className="border-b border-slate-200 px-4 py-3">
+          <div className="mb-2 text-sm font-semibold">メッセージ</div>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="名前・本文で検索"
+            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-honey-500 focus:outline-none"
+          />
+        </div>
+        {query.trim() && shownUsers.length === 0 && (
+          <div className="px-4 py-6 text-center text-xs text-slate-400">
+            「{query}」に一致する相手・メッセージはありません
+          </div>
+        )}
+        {shownUsers.map((u) => (
           <button
             key={u.id}
             onClick={() => {
@@ -130,13 +171,25 @@ export default function ChatPage() {
             }}
             className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-honey-50" : ""}`}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">
-              {u.name[0]}
+            <span className="relative shrink-0">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">
+                {u.name[0]}
+              </span>
+              {isOnline(u.last_seen_at) && (
+                <span
+                  title="オンライン"
+                  className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500"
+                />
+              )}
             </span>
             <span className="min-w-0">
               <span className="block truncate text-sm font-medium">{u.name}</span>
               <span className="block text-xs text-slate-400">
-                {u.role === "freelancer" ? "フリーランス" : "クライアント"}
+                {isOnline(u.last_seen_at) ? (
+                  <span className="font-medium text-emerald-600">オンライン</span>
+                ) : (
+                  (u.role === "freelancer" ? "フリーランス" : "クライアント")
+                )}
                 {unreadCountFor(u.id) > 0 && <span className="ml-1 text-honey-700">・{unreadCountFor(u.id)}件</span>}
               </span>
             </span>

@@ -306,6 +306,10 @@ function init(db: Database.Database) {
     if (!chatCols.includes(col)) db.exec(`ALTER TABLE chat_messages ADD COLUMN ${col} ${def}`);
   }
 
+  // チャットのオンライン表示用
+  const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
+  if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
+
   // 案件詳細ページ用に追加した列（担当者・依頼日）
   const projCols = (db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]).map((c) => c.name);
   for (const [col, def] of [

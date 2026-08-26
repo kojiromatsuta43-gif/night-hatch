@@ -9,7 +9,7 @@ export async function GET() {
   const db = getDb();
 
   const users = db
-    .prepare("SELECT id, name, role FROM users WHERE id != ? AND role != 'admin'")
+    .prepare("SELECT id, name, role, last_seen_at FROM users WHERE id != ? AND role != 'admin'")
     .all(user.id) as { id: string; name: string; role: string }[];
 
   // 案件名と添付ファイルを一緒に返す（相手の案件でもスレッド名を出せるようにする）

@@ -7,6 +7,7 @@ import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { PointInline } from "@/components/MascotProvider";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
+import MicButton from "@/components/MicButton";
 import { STATUSES } from "@/lib/data";
 
 type Deliverable = {
@@ -301,7 +302,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         {/* 投稿フォーム */}
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
-          <div className="mb-3 flex gap-2">
+          <div className="mb-3 flex items-center gap-2">
+            <MicButton onText={(t) => setBody((v) => (v ? v + t : t))} className="order-last ml-auto" />
             {(["提出", "フィードバック"] as const).map((k) => (
               <button
                 key={k}

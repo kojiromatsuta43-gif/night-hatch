@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { api } from "@/lib/client";
 import { Mascot, useMascot } from "@/components/MascotProvider";
+import MicButton from "@/components/MicButton";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
@@ -213,6 +214,11 @@ export default function AgentPage() {
               rows={2}
               placeholder={`${mascot.talkTo} — 例: フィットネスジムの体験申込を増やすリール台本を作って`}
               className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
+            />
+            <MicButton
+              onText={(t) => setInput((v) => (v ? v + t : t))}
+              title={`${mascot.name}に喋りかける`}
+              className="mt-1 self-start"
             />
             <button
               onClick={() => send()}

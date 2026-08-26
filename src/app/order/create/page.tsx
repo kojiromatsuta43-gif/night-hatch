@@ -21,6 +21,7 @@ import {
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
+import MicButton from "@/components/MicButton";
 import { PointInline, useMascot } from "@/components/MascotProvider";
 
 const inputClass =
@@ -134,6 +135,10 @@ function OrderForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [assigneeId, setAssigneeId] = useState("");
+  const [freelancers, setFreelancers] = useState<
+    { id: string; name: string; done_count: number }[]
+  >([]);
 
   // 台本作成
   const [media, setMedia] = useState<string[]>([]);
@@ -191,6 +196,12 @@ function OrderForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    api<{ id: string; name: string; done_count: number }[]>("/api/freelancers")
+      .then(setFreelancers)
+      .catch(() => {});
+  }, []);
+
   const points = useMemo(() => (category ? POINTS_BY_CATEGORY[category] ?? 10 : 0), [category]);
   const isScript = category === "台本作成";
   const isVideo = category === "動画編集";
@@ -244,7 +255,7 @@ function OrderForm() {
     try {
       await api("/api/projects", {
         method: "POST",
-        body: JSON.stringify({ title, category, description, points, deadline, detail: detail() }),
+        body: JSON.stringify({ title, category, description, points, deadline, detail: detail(), assignee_id: assigneeId || null }),
       });
       refresh();
       router.push("/projects");
@@ -302,15 +313,21 @@ function OrderForm() {
           </div>
           <label className="block">
             <span className="text-sm font-semibold">タイトル（案件名）</span>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="例: 企業紹介動画の台本"
-              className={inputClass}
-            />
+            <span className="flex items-center gap-2">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="例: 企業紹介動画の台本"
+                className={inputClass}
+              />
+              <MicButton onText={(t) => setTitle((v) => (v ? v + t : t))} className="mt-1" />
+            </span>
           </label>
           <label className="block">
-            <span className="text-sm font-semibold">概要説明（最大2000文字）</span>
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              概要説明（最大2000文字）
+              <MicButton onText={(t) => setDescription((v) => (v ? v + t : t))} />
+            </span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -319,6 +336,49 @@ function OrderForm() {
               className={inputClass}
             />
           </label>
+          <div className="block">
+            <span className="text-sm font-semibold">フリーランサー指定</span>
+            <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">任意</span>
+            <p className="mt-1 mb-2 text-xs text-slate-500">
+              指名しない場合は、こちらで最適な担当者を割り当てます。
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setAssigneeId("")}
+                className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                  assigneeId === ""
+                    ? "border-honey-500 bg-honey-400 text-hive-900"
+                    : "border-slate-300 bg-white hover:border-honey-400"
+                }`}
+              >
+                おまかせ
+              </button>
+              {freelancers.map((f) => (
+                <button
+                  type="button"
+                  key={f.id}
+                  onClick={() => setAssigneeId(f.id)}
+                  className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                    assigneeId === f.id
+                      ? "border-honey-500 bg-honey-400 text-hive-900"
+                      : "border-slate-300 bg-white hover:border-honey-400"
+                  }`}
+                >
+                  {f.name}
+                  {f.done_count > 0 && (
+                    <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                      実績{f.done_count}件
+                    </span>
+                  )}
+                </button>
+              ))}
+              {freelancers.length === 0 && (
+                <span className="text-sm text-slate-400">指名できるフリーランスがまだ登録されていません。</span>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="block">
               <span className="text-sm font-semibold">希望納期</span>
