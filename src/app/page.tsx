@@ -58,7 +58,7 @@ export default function Dashboard() {
             )}
             {open.map((p) => (
               <tr key={p.id} className="border-b border-slate-100 last:border-0">
-                <td className="px-4 py-3 font-medium">{p.title}</td>
+                <td className="px-4 py-3 font-medium"><Link href={`/projects/${p.id}`} className="hover:text-honey-700 hover:underline">{p.title}</Link></td>
                 <td className="px-4 py-3">{p.category}</td>
                 <td className="px-4 py-3">{p.deadline}</td>
                 <td className="px-4 py-3 text-right">{p.points}<PointInline /></td>

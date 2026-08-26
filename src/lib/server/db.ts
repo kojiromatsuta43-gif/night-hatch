@@ -166,6 +166,17 @@ function init(db: Database.Database) {
     due_on TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS deliverables (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT '提出',
+    title TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL DEFAULT '',
+    url TEXT NOT NULL DEFAULT '',
+    upload_id TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   CREATE TABLE IF NOT EXISTS invoice_items (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL,
@@ -294,6 +305,17 @@ function init(db: Database.Database) {
   for (const [col, def] of [["project_id", "TEXT"], ["upload_id", "TEXT"]] as const) {
     if (!chatCols.includes(col)) db.exec(`ALTER TABLE chat_messages ADD COLUMN ${col} ${def}`);
   }
+
+  // 案件詳細ページ用に追加した列（担当者・依頼日）
+  const projCols = (db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [
+    ["assignee_id", "TEXT"],
+    ["requested_on", "TEXT NOT NULL DEFAULT ''"],
+  ] as const) {
+    if (!projCols.includes(col)) db.exec(`ALTER TABLE projects ADD COLUMN ${col} ${def}`);
+  }
+  // 既存の案件は登録日を依頼日として埋める
+  db.exec("UPDATE projects SET requested_on = date(created_at) WHERE requested_on = ''");
 
   // インボイス（適格請求書）対応で追加した列
   const invCols = (db.prepare("PRAGMA table_info(invoices)").all() as { name: string }[]).map((c) => c.name);

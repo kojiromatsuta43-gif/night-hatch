@@ -84,6 +84,8 @@ export type Project = {
   createdAt: string;
   status: Status;
   detail?: Record<string, unknown>;
+  requested_on?: string;
+  assignee_id?: string | null;
 };
 
 export const SEED_PROJECTS: Project[] = [

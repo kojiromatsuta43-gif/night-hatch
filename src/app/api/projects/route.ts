@@ -23,8 +23,8 @@ export async function POST(req: Request) {
   const id = crypto.randomUUID();
   const tx = db.transaction(() => {
     db.prepare(
-      "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail) VALUES (?, ?, ?, ?, ?, ?, ?, '募集中', ?)"
-    ).run(id, user.id, body.title, body.category, body.description, body.points, body.deadline, JSON.stringify(body.detail ?? {}));
+      "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on) VALUES (?, ?, ?, ?, ?, ?, ?, '募集中', ?, ?)"
+    ).run(id, user.id, body.title, body.category, body.description, body.points, body.deadline, JSON.stringify(body.detail ?? {}), new Date().toISOString().slice(0, 10));
     db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(body.points, user.id);
     db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'spend', ?)").run(
       crypto.randomUUID(), user.id, -body.points, `案件登録: ${body.title}`
