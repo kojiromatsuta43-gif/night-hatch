@@ -166,6 +166,35 @@ function init(db: Database.Database) {
     due_on TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS invoice_items (
+    id TEXT PRIMARY KEY,
+    invoice_id TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    name TEXT NOT NULL,
+    delivered_on TEXT NOT NULL DEFAULT '',
+    quantity REAL NOT NULL DEFAULT 1,
+    unit TEXT NOT NULL DEFAULT '式',
+    unit_price INTEGER NOT NULL DEFAULT 0,
+    tax_rate INTEGER NOT NULL DEFAULT 10,
+    reduced INTEGER NOT NULL DEFAULT 0,
+    note TEXT NOT NULL DEFAULT ''
+  );
+  CREATE TABLE IF NOT EXISTS issuer_profiles (
+    user_id TEXT PRIMARY KEY,
+    company_name TEXT NOT NULL DEFAULT '',
+    registration_no TEXT NOT NULL DEFAULT '',
+    postal_code TEXT NOT NULL DEFAULT '',
+    address TEXT NOT NULL DEFAULT '',
+    tel TEXT NOT NULL DEFAULT '',
+    bank_name TEXT NOT NULL DEFAULT '',
+    branch_name TEXT NOT NULL DEFAULT '',
+    account_type TEXT NOT NULL DEFAULT '普通',
+    account_no TEXT NOT NULL DEFAULT '',
+    account_holder TEXT NOT NULL DEFAULT '',
+    seal_upload_id TEXT,
+    rounding TEXT NOT NULL DEFAULT '切り捨て',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   CREATE TABLE IF NOT EXISTS ng_words (
     id TEXT PRIMARY KEY,
     word TEXT UNIQUE NOT NULL,
@@ -264,6 +293,20 @@ function init(db: Database.Database) {
   const chatCols = (db.prepare("PRAGMA table_info(chat_messages)").all() as { name: string }[]).map((c) => c.name);
   for (const [col, def] of [["project_id", "TEXT"], ["upload_id", "TEXT"]] as const) {
     if (!chatCols.includes(col)) db.exec(`ALTER TABLE chat_messages ADD COLUMN ${col} ${def}`);
+  }
+
+  // インボイス（適格請求書）対応で追加した列
+  const invCols = (db.prepare("PRAGMA table_info(invoices)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [
+    ["invoice_no", "TEXT NOT NULL DEFAULT ''"],
+    ["partner_name", "TEXT NOT NULL DEFAULT ''"],
+    ["partner_address", "TEXT NOT NULL DEFAULT ''"],
+    ["subtotal", "INTEGER NOT NULL DEFAULT 0"],
+    ["tax_total", "INTEGER NOT NULL DEFAULT 0"],
+    ["note", "TEXT NOT NULL DEFAULT ''"],
+    ["project_id", "TEXT"],
+  ] as const) {
+    if (!invCols.includes(col)) db.exec(`ALTER TABLE invoices ADD COLUMN ${col} ${def}`);
   }
 
   const videoCols = (db.prepare("PRAGMA table_info(ref_videos)").all() as { name: string }[]).map((c) => c.name);
