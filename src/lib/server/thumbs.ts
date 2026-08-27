@@ -56,10 +56,24 @@ async function freshThumbUrl(videoUrl: string): Promise<string | null> {
 }
 
 /**
+ * 同じ画像を同時に何度も取りに行かないための待ち合わせ表。
+ * 一覧は30枚を一斉に要求するので、これが無いと同じoEmbedを何度も叩いてしまう。
+ */
+const inFlight = new Map<string, Promise<Buffer | null>>();
+
+export function getThumbnail(videoId: string): Promise<Buffer | null> {
+  const running = inFlight.get(videoId);
+  if (running) return running;
+  const task = fetchThumbnail(videoId).finally(() => inFlight.delete(videoId));
+  inFlight.set(videoId, task);
+  return task;
+}
+
+/**
  * サムネイル画像を返す。無ければ取りに行き、保存してから返す。
  * 取れなかった場合は null（呼び出し側で代替表示にする）。
  */
-export async function getThumbnail(videoId: string): Promise<Buffer | null> {
+async function fetchThumbnail(videoId: string): Promise<Buffer | null> {
   ensureThumbDir();
   const cached = filePathFor(videoId);
   if (fs.existsSync(cached)) {
@@ -93,4 +107,32 @@ export async function getThumbnail(videoId: string): Promise<Buffer | null> {
     // 保存に失敗しても画像は返す
   }
   return buf;
+}
+
+/**
+ * 1アカウント分のサムネイルを先に温めておく。
+ * 画面を開いた時点で走らせておくと、利用者が見るころには自前のディスクから出せる。
+ * 待たせないように呼び出し側では await しない。
+ */
+export function warmAccountThumbnails(accountId: string) {
+  const rows = getDb()
+    .prepare("SELECT id FROM ref_videos WHERE account_id = ?")
+    .all(accountId) as { id: string }[];
+
+  let i = 0;
+  const CONCURRENCY = 4;
+  const next = async (): Promise<void> => {
+    const row = rows[i++];
+    if (!row) return;
+    const file = filePathFor(row.id);
+    if (!fs.existsSync(file)) {
+      try {
+        await getThumbnail(row.id);
+      } catch {
+        // 1枚失敗しても続ける
+      }
+    }
+    return next();
+  };
+  for (let n = 0; n < CONCURRENCY; n++) void next();
 }

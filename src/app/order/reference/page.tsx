@@ -20,6 +20,21 @@ type RefAccount = {
   videos?: RefVideo[];
 };
 
+/**
+ * サムネイルの初回取得はサーバーがTikTokに取りに行くため時間がかかることがある。
+ * 一度だけ間を置いて取り直し、それでもだめなら背景だけ見せる。
+ */
+function retryThumbnail(e: React.SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget;
+  if (img.dataset.retried) {
+    img.style.display = "none";
+    return;
+  }
+  img.dataset.retried = "1";
+  const base = img.src.split("?")[0];
+  setTimeout(() => { img.src = `${base}?retry=1`; }, 2500);
+}
+
 function fmtFollowers(n: number) {
   return n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString();
 }
@@ -188,7 +203,7 @@ export default function OrderPage() {
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  onError={retryThumbnail}
                 />
                 <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                   <PlatformIcon platform="tiktok" className="h-3 w-3" mono /> ショート動画
@@ -237,7 +252,7 @@ export default function OrderPage() {
                   src={`/api/ref-videos/${video.id}/thumbnail`}
                   alt=""
                   className="absolute inset-0 h-full w-full object-cover"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  onError={retryThumbnail}
                 />
                 {tiktokVideoId(video.url) && (
                   <span className="absolute inset-0 z-10 flex items-center justify-center">
