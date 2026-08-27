@@ -37,6 +37,21 @@ function retryThumbnail(e: React.SyntheticEvent<HTMLImageElement>) {
   setTimeout(() => { img.src = `${base}?retry=1`; }, 2500);
 }
 
+/**
+ * TikTokのキャプションは説明文がまるごと入っていて長い（最大300文字）。
+ * サムネイルの上にそのまま出すと画像が文字で埋まってしまうので、
+ * 一覧では頭出しだけを見せる。元の文章はDBにそのまま残している。
+ */
+function shortCaption(caption: string, max = 32): string {
+  const text = (caption ?? "")
+    .replace(/#[^\s#]+/g, " ")           // ハッシュタグを外す
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return "参考動画";
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
 function fmtFollowers(n: number) {
   return n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString();
 }
@@ -116,7 +131,7 @@ export default function OrderPage() {
     const params = new URLSearchParams({
       category: kind,
       ref: video.url || `demo://${selected.handle}/${video.id}`,
-      refTitle: video.caption,
+      refTitle: shortCaption(video.caption, 40),
     });
     router.push(`/order/create?${params.toString()}`);
   };
@@ -297,8 +312,13 @@ export default function OrderPage() {
                 <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                   <PlatformIcon platform="tiktok" className="h-3 w-3" mono /> ショート動画
                 </span>
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6 text-xs font-semibold leading-snug text-white">
-                  {v.caption}
+                <span
+                  className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-7"
+                  title={v.caption}
+                >
+                  <span className="line-clamp-2 text-[11px] font-semibold leading-snug text-white">
+                    {shortCaption(v.caption)}
+                  </span>
                 </span>
               </button>
             ))}
@@ -352,8 +372,8 @@ export default function OrderPage() {
                     </span>
                   </span>
                 )}
-                <span className="relative z-10 text-left text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
-                  {video.caption}
+                <span className="relative z-10 line-clamp-2 text-left text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
+                  {shortCaption(video.caption, 40)}
                 </span>
               </button>
             )}
