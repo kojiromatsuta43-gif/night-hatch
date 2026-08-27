@@ -30,6 +30,7 @@ type Invoice = {
   partner_name: string;
   partner_address: string;
   note: string;
+  payment_url: string | null;
   items: (InvoiceItem & { id: string })[];
 };
 
@@ -283,6 +284,12 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
             <p className="mt-2 text-[10px] text-slate-500">
               恐れ入りますが、振込手数料は御社にてご負担をお願いいたします。
             </p>
+            {invoice.payment_url ? (
+              <div className="mt-3 border-t border-slate-200 pt-2">
+                <div className="mb-0.5 font-semibold">カードでのお支払い</div>
+                <div className="break-all text-[10px] leading-snug text-slate-600">{invoice.payment_url}</div>
+              </div>
+            ) : null}
           </div>
           {invoice.note ? (
             <div className="flex-1">

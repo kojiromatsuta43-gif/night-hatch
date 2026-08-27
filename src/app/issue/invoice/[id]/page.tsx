@@ -15,7 +15,13 @@ import {
   summarize,
 } from "@/lib/invoice";
 
-type Issuer = { company_name: string; registration_no: string; rounding: string };
+type Issuer = {
+  company_name: string;
+  registration_no: string;
+  rounding: string;
+  stripe_account_id: string | null;
+  stripe_account_name: string | null;
+};
 type Partner = { id: string; name: string; address?: string };
 
 type Invoice = {
@@ -28,6 +34,8 @@ type Invoice = {
   partner_name: string;
   partner_address: string;
   note: string;
+  payment_url: string | null;
+  paid_at: string | null;
   items: (InvoiceItem & { id: string })[];
 };
 
@@ -55,6 +63,11 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
   const [partnerAddress, setPartnerAddress] = useState("");
   const [note, setNote] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([emptyItem()]);
+  const [paymentUrl, setPaymentUrl] = useState("");
+  const [paidAt, setPaidAt] = useState<string | null>(null);
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkError, setLinkError] = useState("");
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -69,6 +82,8 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
         setIssuedOn(d.issued_on); setDueOn(d.due_on ?? "");
         setPartnerName(d.partner_name); setPartnerAddress(d.partner_address);
         setNote(d.note);
+        setPaymentUrl(d.payment_url ?? "");
+        setPaidAt(d.paid_at ?? null);
         setItems(d.items.length ? d.items : [emptyItem()]);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "読み込みに失敗しました"))
@@ -91,6 +106,30 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
     [issuer, issuedOn, partnerName, items]
   );
   const allOk = checks.every((c) => c.ok);
+
+  const createPaymentLink = async () => {
+    if (linkBusy) return;
+    setLinkBusy(true);
+    setLinkError("");
+    try {
+      const res = await api<{ url: string }>(`/api/invoices/${id}/checkout`, { method: "POST" });
+      setPaymentUrl(res.url);
+    } catch (e) {
+      setLinkError(e instanceof Error ? e.message : "支払いリンクを作れませんでした");
+    } finally {
+      setLinkBusy(false);
+    }
+  };
+
+  const copyPaymentLink = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setLinkError("コピーできませんでした。リンクを選択して手動でコピーしてください。");
+    }
+  };
 
   const setItem = (i: number, patch: Partial<InvoiceItem>) =>
     setItems((prev) => prev.map((it, n) => (n === i ? { ...it, ...patch } : it)));
@@ -339,6 +378,73 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
               ))}
             </div>
           </section>
+
+          {!isNew && (
+            <section className="rounded-xl border border-slate-200 bg-white p-5">
+              <h2 className="mb-1 text-sm font-bold text-hive-900">お支払いリンク</h2>
+              <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+                請求先にこのリンクを送ると、カードでお支払いいただけます。
+                <b className="text-hive-900">代金はお客様のStripeへ直接入金され、当社は預かりません。</b>
+              </p>
+
+              {paidAt ? (
+                <div className="rounded-lg bg-emerald-50 px-3 py-3 text-xs text-emerald-800">
+                  <b>入金済みです</b>
+                  <div className="mt-1 text-emerald-700">{paidAt} に確認しました</div>
+                </div>
+              ) : !issuer?.stripe_account_id ? (
+                <div className="rounded-lg bg-amber-50 px-3 py-3 text-xs text-amber-800">
+                  ご自身のStripeが未連携です。
+                  <Link href="/issue/payment" className="ml-1 font-bold underline">決済の設定</Link>
+                  から連携すると、ここでリンクを作れるようになります。
+                </div>
+              ) : paymentUrl ? (
+                <div className="space-y-2">
+                  <div className="break-all rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+                    {paymentUrl}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={copyPaymentLink}
+                      className="flex-1 rounded-lg bg-honey-400 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300"
+                    >
+                      {copied ? "コピーしました" : "リンクをコピー"}
+                    </button>
+                    <a
+                      href={paymentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:border-honey-400"
+                    >
+                      開く
+                    </a>
+                  </div>
+                  <button
+                    onClick={createPaymentLink}
+                    disabled={linkBusy}
+                    className="w-full text-[11px] text-slate-400 hover:text-honey-700 disabled:opacity-40"
+                  >
+                    {linkBusy ? "作り直しています..." : "金額を変えたので作り直す"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={createPaymentLink}
+                  disabled={linkBusy || totals.total <= 0}
+                  className="w-full rounded-lg bg-honey-400 py-2.5 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+                >
+                  {linkBusy ? "作成中..." : "お支払いリンクを作る"}
+                </button>
+              )}
+
+              {linkError && (
+                <div className="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-[11px] text-rose-600">{linkError}</div>
+              )}
+              <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
+                金額を変えたあとは、保存してからリンクを作り直してください。古いリンクは元の金額のままです。
+              </p>
+            </section>
+          )}
 
           {error && <div className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
 

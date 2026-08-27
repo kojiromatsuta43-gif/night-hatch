@@ -14,7 +14,10 @@ export const useMe = () => useContext(MeContext);
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isPublic = pathname === "/sign-in";
+  // ログイン不要で開ける画面。
+  //  /sign-in … ログイン画面
+  //  /pay/…   … 請求先（お客様の取引先）が支払い後に戻ってくる画面
+  const isPublic = pathname === "/sign-in" || pathname.startsWith("/pay");
   const [me, setMe] = useState<Me | null>(null);
   const [checked, setChecked] = useState(false);
 
