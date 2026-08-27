@@ -30,6 +30,8 @@ export default function OrderPage() {
   const [industry, setIndustry] = useState("すべて");
   const [selected, setSelected] = useState<RefAccount | null>(null);
   const [video, setVideo] = useState<RefVideo | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(false);
 
@@ -141,7 +143,7 @@ export default function OrderPage() {
         </>
       ) : (
         <>
-          <button onClick={() => { setSelected(null); setVideo(null); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
+          <button onClick={() => { setSelected(null); setVideo(null); setPlaying(false); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
             ← アカウント一覧に戻る
           </button>
           <div className="mb-6 flex items-center gap-4 rounded-xl border border-honey-200 bg-honey-50/50 px-5 py-4">
@@ -175,14 +177,19 @@ export default function OrderPage() {
             {(selected.videos ?? []).map((v) => (
               <button
                 key={v.id}
-                onClick={() => setVideo(v)}
+                onClick={() => { setVideo(v); setPlaying(false); setPlayerReady(false); }}
                 className="group relative aspect-[9/16] overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02]"
                 style={{ background: `linear-gradient(160deg, hsl(${v.hue}, 45%, 30%), hsl(${v.hue + 30}, 50%, 15%))` }}
               >
-                {v.thumbnail && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={v.thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/ref-videos/${v.id}/thumbnail`}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
                 <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                   <PlatformIcon platform="tiktok" className="h-3 w-3" mono /> ショート動画
                 </span>
@@ -196,34 +203,60 @@ export default function OrderPage() {
       )}
 
       {video && selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => setVideo(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => { setVideo(null); setPlaying(false); }}>
           <div className="w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-start justify-between">
               <h3 className="text-sm font-bold">動画プレビュー</h3>
-              <button onClick={() => setVideo(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => { setVideo(null); setPlaying(false); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
-            {tiktokVideoId(video.url) ? (
-              <iframe
-                src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(video.url)}`}
-                className="mx-auto block h-[480px] w-[270px] rounded-xl border-0"
-                allow="encrypted-media; fullscreen"
-              />
+            {tiktokVideoId(video.url) && playing ? (
+              <div className="relative mx-auto h-[480px] w-[270px]">
+                {!playerReady && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-slate-100 text-xs text-slate-500">
+                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-honey-500" />
+                    TikTokを読み込んでいます…
+                  </div>
+                )}
+                <iframe
+                  src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(video.url)}`}
+                  className="h-full w-full rounded-xl border-0"
+                  allow="encrypted-media; fullscreen; autoplay"
+                  onLoad={() => setPlayerReady(true)}
+                  title={video.caption}
+                />
+              </div>
             ) : (
-              <div
-                className="relative mx-auto flex aspect-[9/16] w-52 items-end overflow-hidden rounded-xl p-3"
+              <button
+                type="button"
+                onClick={() => tiktokVideoId(video.url) && setPlaying(true)}
+                className="group relative mx-auto flex aspect-[9/16] w-[270px] items-end overflow-hidden rounded-xl p-3"
                 style={{ background: `linear-gradient(160deg, hsl(${video.hue}, 45%, 30%), hsl(${video.hue + 30}, 50%, 15%))` }}
               >
-                {video.thumbnail && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={video.thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/ref-videos/${video.id}/thumbnail`}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+                {tiktokVideoId(video.url) && (
+                  <span className="absolute inset-0 z-10 flex items-center justify-center">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-110">
+                      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 5l12 7-12 7z" fill="#1C1710" />
+                      </svg>
+                    </span>
+                  </span>
                 )}
-                <p className="relative text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{video.caption}</p>
-              </div>
+                <span className="relative z-10 text-left text-sm font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
+                  {video.caption}
+                </span>
+              </button>
             )}
             <p className="mt-2 text-center text-xs text-slate-400">
               {selected.handle}
               {video.url ? (
-                <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 text-honey-500 hover:underline">元動画を開く</a>
+                <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 font-medium text-honey-600 hover:underline">TikTokで開く →</a>
               ) : "（デモ動画）"}
             </p>
             <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
