@@ -59,3 +59,49 @@ html[data-mascot="pig"] {
   --color-honey-700: #A83B60;
   --color-honey-800: #7A2B46;
 }
+
+/* ============================================================
+   印刷時の共通ルール
+   サイドバー・ヘッダーを消して、本文だけを紙に出す
+   （請求書の印刷レイアウトで使用）
+   ============================================================ */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+  aside,
+  header {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+}
+
+/* 請求書A4シート */
+.invoice-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 16mm 14mm;
+  box-sizing: border-box;
+}
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+@media print {
+  .invoice-sheet {
+    margin: 0;
+    box-shadow: none;
+  }
+  .invoice-sheet table {
+    break-inside: auto;
+  }
+  .invoice-sheet tr {
+    break-inside: avoid;
+  }
+  .invoice-sheet thead {
+    display: table-header-group;
+  }
+}

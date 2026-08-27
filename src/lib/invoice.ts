@@ -125,3 +125,7 @@ export function checkRequirements(input: {
     },
   ];
 }
+
+/** 請求書の状態。ここが唯一の定義。画面もWebhookもこれを使う。 */
+export const INVOICE_STATUSES = ["下書き", "請求済", "入金済"] as const;
+export const INVOICE_PAID = "入金済";

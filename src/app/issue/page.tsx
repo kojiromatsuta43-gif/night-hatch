@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/client";
+import { INVOICE_STATUSES } from "@/lib/invoice";
 
 type Partner = { id: string; name: string; contact: string; email: string };
 type Doc = { id: string; title: string; amount: number; status: string; issued_on: string; partner_id: string | null };
 
 const PO_STATUSES = ["下書き", "送付済", "受注", "失注"];
-const INV_STATUSES = ["下書き", "請求済", "入金済"];
+const INV_STATUSES = [...INVOICE_STATUSES];
 
 export default function IssuePage() {
   const [tab, setTab] = useState<"partners" | "po" | "inv">("po");
@@ -30,18 +31,18 @@ export default function IssuePage() {
     load();
   };
 
-  const addDoc = async (kind: "po" | "inv") => {
-    const title = prompt(kind === "po" ? "発注書の件名" : "請求書の件名");
+  const addPurchaseOrder = async () => {
+    const title = prompt("発注書の件名");
     if (!title) return;
     const amount = Number(prompt("金額（円）") ?? 0);
-    await api(kind === "po" ? "/api/purchase-orders" : "/api/invoices", {
+    await api("/api/purchase-orders", {
       method: "POST",
       body: JSON.stringify({ title, amount, issued_on: new Date().toISOString().slice(0, 10) }),
     });
     load();
   };
 
-  const docTable = (docs: Doc[], statuses: string[], base: string) => (
+  const docTable = (docs: Doc[], statuses: string[], base: string, editBase?: string) => (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="w-full text-sm">
         <thead>
@@ -50,13 +51,22 @@ export default function IssuePage() {
             <th className="px-4 py-3 font-medium text-right">金額</th>
             <th className="px-4 py-3 font-medium">発行日</th>
             <th className="px-4 py-3 font-medium">ステータス</th>
+            {editBase && <th className="px-4 py-3 font-medium" />}
           </tr>
         </thead>
         <tbody>
-          {docs.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">まだありません</td></tr>}
+          {docs.length === 0 && <tr><td colSpan={editBase ? 5 : 4} className="px-4 py-8 text-center text-slate-400">まだありません</td></tr>}
           {docs.map((d) => (
             <tr key={d.id} className="border-b border-slate-100 last:border-0">
-              <td className="px-4 py-3 font-medium">{d.title}</td>
+              <td className="px-4 py-3 font-medium">
+                {editBase ? (
+                  <Link href={`${editBase}/${d.id}`} className="text-hive-900 hover:text-honey-700 hover:underline">
+                    {d.title || "（件名なし）"}
+                  </Link>
+                ) : (
+                  d.title
+                )}
+              </td>
               <td className="px-4 py-3 text-right">¥{d.amount.toLocaleString()}</td>
               <td className="px-4 py-3">{d.issued_on}</td>
               <td className="px-4 py-3">
@@ -68,6 +78,12 @@ export default function IssuePage() {
                   {statuses.map((s) => <option key={s}>{s}</option>)}
                 </select>
               </td>
+              {editBase && (
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <Link href={`${editBase}/${d.id}`} className="text-xs text-slate-500 hover:text-honey-700">編集</Link>
+                  <Link href={`${editBase}/${d.id}/print`} className="ml-3 text-xs text-slate-500 hover:text-honey-700">印刷</Link>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -96,14 +112,21 @@ export default function IssuePage() {
 
       {tab === "po" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("po")} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 発注書作成</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={addPurchaseOrder} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 発注書作成</button></div>
           {docTable(pos, PO_STATUSES, "/api/purchase-orders")}
         </>
       )}
       {tab === "inv" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={() => addDoc("inv")} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">＋ 請求書作成</button></div>
-          {docTable(invs, INV_STATUSES, "/api/invoices")}
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-slate-500">
+              適格請求書（インボイス）に対応しています。作成画面で法定6項目の抜けを自動チェックします。
+            </p>
+            <Link href="/issue/invoice/new" className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900">
+              ＋ 請求書作成
+            </Link>
+          </div>
+          {docTable(invs, INV_STATUSES, "/api/invoices", "/issue/invoice")}
         </>
       )}
       {tab === "partners" && (

@@ -356,6 +356,10 @@ function init(db: Database.Database) {
     ["tax_total", "INTEGER NOT NULL DEFAULT 0"],
     ["note", "TEXT NOT NULL DEFAULT ''"],
     ["project_id", "TEXT"],
+    // Stripe決済リンクの状態
+    ["stripe_session_id", "TEXT"],
+    ["payment_url", "TEXT NOT NULL DEFAULT ''"],
+    ["paid_at", "TEXT"],
   ] as const) {
     if (!invCols.includes(col)) db.exec(`ALTER TABLE invoices ADD COLUMN ${col} ${def}`);
   }
