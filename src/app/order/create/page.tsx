@@ -128,6 +128,47 @@ function Section({ n, title, children }: { n: number; title: string; children: R
   );
 }
 
+/**
+ * 「次へ」が押せないときに、何が足りないのかを名前で見せる。
+ * ボタンが暗いだけでは、どこまで戻ればいいのか分からないため。
+ * numbered が true のときは、項目名の頭の数字を見出し番号のバッジとして出す。
+ */
+function MissingNotice({ items, numbered = false }: { items: string[]; numbered?: boolean }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+      <p className="text-sm font-bold text-amber-900">
+        あと{items.length}つ入力すると次へ進めます
+      </p>
+      <ul className="mt-2 space-y-1">
+        {items.map((item) => {
+          const m = numbered ? item.match(/^(\d+)\s+(.+)$/) : null;
+          return (
+            <li key={item} className="flex items-center gap-2 text-sm text-amber-900">
+              <span aria-hidden="true" className="text-amber-500">・</span>
+              {m ? (
+                <>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-200 text-[11px] font-bold">
+                    {m[1]}
+                  </span>
+                  <span>{m[2]}</span>
+                </>
+              ) : (
+                <span>{item}</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {numbered && (
+        <p className="mt-2 text-xs text-amber-800">
+          数字は上の見出し番号です。その項目まで戻って入力してください。
+        </p>
+      )}
+    </div>
+  );
+}
+
 function OrderForm() {
   const { mascot } = useMascot();
   const router = useRouter();
@@ -210,25 +251,37 @@ function OrderForm() {
   const isVideo = isVideoCategory(category);
   const agreements = agreementsFor(category);
 
-  const step1Ok = category && title.trim() && description.trim() && deadline;
+  // 「次へ」が押せないとき、何が足りないのかを名前で出せるようにする。
+  // ボタンが暗いだけだと、どこに戻ればいいのか分からないため。
+  const missingStep1 = [
+    !category && "作りたいもの",
+    !title.trim() && "件名",
+    !description.trim() && "依頼内容",
+    !deadline && "希望納期",
+  ].filter(Boolean) as string[];
 
-  const scriptOk =
-    media.length &&
-    duration.length &&
-    purpose.length &&
-    target.trim() &&
-    emotion.trim() &&
-    format.length &&
-    tone.length &&
-    elements.length;
+  const step1Ok = missingStep1.length === 0;
 
-  const videoOk =
-    (videoUse.length > 0 || videoUseOther.trim()) &&
-    videoLength.trim() &&
-    aspect &&
-    (materialUrl.trim() || materialFiles.length > 0);
+  const missingScript = [
+    !media.length && "1 使用媒体",
+    !duration.length && "1 想定動画の尺",
+    !purpose.length && "1 動画の目的",
+    !target.trim() && "1 想定ターゲット",
+    !emotion.trim() && "1 見た人にどう感じてほしいか",
+    !format.length && "2 台本の形式",
+    !tone.length && "2 トーンや雰囲気",
+    !elements.length && "2 盛り込みたい要素",
+  ].filter(Boolean) as string[];
 
-  const step2Ok = isScript ? Boolean(scriptOk) : isVideo ? Boolean(videoOk) : true;
+  const missingVideo = [
+    !(videoUse.length > 0 || videoUseOther.trim()) && "1 動画の用途",
+    !videoLength.trim() && "1 動画の長さ（分）",
+    !aspect && "1 希望する画面比率",
+    !(materialUrl.trim() || materialFiles.length > 0) && "2 素材動画（URLかファイル）",
+  ].filter(Boolean) as string[];
+
+  const missingStep2 = isScript ? missingScript : isVideo ? missingVideo : [];
+  const step2Ok = missingStep2.length === 0;
 
   const detail = () =>
     isVideo
@@ -394,6 +447,7 @@ function OrderForm() {
               </div>
             </div>
           </div>
+          <MissingNotice items={missingStep1} />
           <div className="flex justify-end">
             <button
               disabled={!step1Ok}
@@ -414,7 +468,7 @@ function OrderForm() {
               <CheckGroup label="想定動画の尺（完成後）" options={DURATION_OPTIONS} values={duration} onChange={setDuration} required />
               <CheckGroup label="動画の目的" options={PURPOSE_OPTIONS} values={purpose} onChange={setPurpose} required />
               <label className="block">
-                <span className="text-sm font-semibold">想定ターゲット（年齢・性別・悩み・属性など）</span>
+                <span className="text-sm font-semibold">想定ターゲット（年齢・性別・悩み・属性など）<span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span></span>
                 <input
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
@@ -423,7 +477,7 @@ function OrderForm() {
                 />
               </label>
               <label className="block">
-                <span className="text-sm font-semibold">動画を見た人にどう感じてほしいか？（感情）</span>
+                <span className="text-sm font-semibold">動画を見た人にどう感じてほしいか？（感情）<span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span></span>
                 <input
                   value={emotion}
                   onChange={(e) => setEmotion(e.target.value)}
@@ -494,6 +548,7 @@ function OrderForm() {
                 <label className="block">
                   <span className="text-sm font-semibold">
                     素材動画のURL（ギガファイル便・Googleドライブなど）
+                    <span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span>
                   </span>
                   <input
                     value={materialUrl}
@@ -592,6 +647,7 @@ function OrderForm() {
             </p>
           )}
 
+          <MissingNotice items={missingStep2} numbered />
           <div className="flex justify-between border-t border-slate-200 pt-6">
             <button onClick={() => setStep(0)} className="rounded-lg border border-slate-300 px-5 py-2 text-sm hover:bg-slate-100">
               戻る
