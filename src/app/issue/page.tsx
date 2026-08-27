@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { api } from "@/lib/client";
 
 type Partner = { id: string; name: string; contact: string; email: string };
@@ -76,7 +77,17 @@ export default function IssuePage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">発注書・請求書</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">発注書・請求書</h1>
+        <div className="flex gap-2 text-sm">
+          <Link href="/issue/issuer" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-honey-400">
+            自社情報
+          </Link>
+          <Link href="/issue/payment" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-honey-400">
+            決済の設定
+          </Link>
+        </div>
+      </div>
       <div className="mb-6 flex gap-2 text-sm">
         {([["po", "発注書"], ["inv", "請求書"], ["partners", "取引先"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>

@@ -322,6 +322,15 @@ function init(db: Database.Database) {
     if (before !== after) db.prepare("UPDATE projects SET category = ? WHERE category = ?").run(after, before);
   }
 
+  // Stripe連携で追加した列
+  const issuerCols = (db.prepare("PRAGMA table_info(issuer_profiles)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [
+    ["stripe_account_id", "TEXT"],
+    ["stripe_account_name", "TEXT NOT NULL DEFAULT ''"],
+  ] as const) {
+    if (!issuerCols.includes(col)) db.exec(`ALTER TABLE issuer_profiles ADD COLUMN ${col} ${def}`);
+  }
+
   // チャットのオンライン表示用
   const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
   if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
