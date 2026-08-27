@@ -105,7 +105,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const { me } = useMe();
   const [p, setP] = useState<Detail | null>(null);
   const [error, setError] = useState("");
-  const [kind, setKind] = useState<"提出" | "フィードバック">("提出");
+  const [pickedKind, setPickedKind] = useState<"提出" | "フィードバック">("提出");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
@@ -117,6 +117,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       .catch((e) => setError(e instanceof Error ? e.message : "読み込みに失敗しました"));
   }, [id]);
   useEffect(load, [load]);
+
+  // 出せるものは立場で決まる。
+  // 作る人（担当者）は「提出」、発注した人は「フィードバック」。
+  // 管理者だけは動作確認のため両方使える。
+  const isOwner = Boolean(me && p && p.user_id === me.id);
+  const isAssignee = Boolean(me && p && p.assignee_id === me.id);
+  const allowedKinds: ("提出" | "フィードバック")[] =
+    me?.role === "admin"
+      ? ["提出", "フィードバック"]
+      : isAssignee
+        ? ["提出"]
+        : isOwner
+          ? ["フィードバック"]
+          : [];
+  const kind = allowedKinds.includes(pickedKind) ? pickedKind : (allowedKinds[0] ?? "提出");
+  // 担当者が決まる前は、発注側にフィードバックの出しどころがない
+  const waitingForAssignee = isOwner && !isAssignee && !p?.assignee_id && me?.role !== "admin";
 
   const patch = async (payload: Record<string, unknown>) => {
     await api(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
@@ -153,7 +170,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const today = new Date().toISOString().slice(0, 10);
   const left = daysBetween(today, p.deadline);
   const elapsed = p.requested_on ? daysBetween(p.requested_on, today) : null;
-  const isOwner = me?.id === p.user_id;
   const canEdit = isOwner || me?.role === "admin";
 
   return (
@@ -247,7 +263,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         {p.deliverables.length === 0 && (
           <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
-            まだ提出物がありません。下のフォームから提出・フィードバックを追加できます。
+            {kind === "提出"
+              ? "まだ提出物がありません。完成したら下のフォームから提出してください。"
+              : "まだ提出物がありません。担当者から提出されると、ここに表示されます。"}
           </div>
         )}
 
@@ -301,18 +319,31 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* 投稿フォーム */}
+        {allowedKinds.length === 0 ? null : waitingForAssignee ? (
+          <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+            まだ担当者が決まっていません。決まりしだい、ここで提出物のやり取りができます。
+          </div>
+        ) : (
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-3 flex items-center gap-2">
             <MicButton onText={(t) => setBody((v) => (v ? v + t : t))} className="order-last ml-auto" />
-            {(["提出", "フィードバック"] as const).map((k) => (
-              <button
-                key={k}
-                onClick={() => setKind(k)}
-                className={`rounded-full border px-4 py-1.5 text-sm ${kind === k ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 text-slate-600 hover:border-honey-400"}`}
+            {allowedKinds.length > 1 ? (
+              allowedKinds.map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setPickedKind(k)}
+                  className={`rounded-full border px-4 py-1.5 text-sm ${kind === k ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 text-slate-600 hover:border-honey-400"}`}
+                >
+                  {k}
+                </button>
+              ))
+            ) : (
+              <span
+                className={`rounded-full px-3 py-1 text-sm font-bold ${kind === "提出" ? "bg-sky-200 text-sky-800" : "bg-honey-200 text-hive-900"}`}
               >
-                {k}
-              </button>
-            ))}
+                {kind === "提出" ? "制作物を提出する" : "フィードバックを送る"}
+              </span>
+            )}
           </div>
           <textarea
             value={body}
@@ -339,6 +370,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             {busy ? "送信中..." : `${kind}を送る`}
           </button>
         </div>
+        )}
       </section>
     </div>
   );

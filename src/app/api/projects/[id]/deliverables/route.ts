@@ -17,7 +17,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const allowed = project.user_id === user.id || project.assignee_id === user.id || user.role === "admin";
   if (!allowed) return NextResponse.json({ error: "権限がありません" }, { status: 403 });
 
-  const kind: string = b.kind === "フィードバック" ? "フィードバック" : "提出";
+  // 立場で出せるものを決める。画面側でも分けているが、ここでも必ず判定する。
+  //   担当者（作る人）… 提出
+  //   発注者          … フィードバック
+  //   管理者          … 動作確認のため両方
+  const requested: string = b.kind === "フィードバック" ? "フィードバック" : "提出";
+  let kind: string;
+  if (user.role === "admin") {
+    kind = requested;
+  } else if (project.assignee_id === user.id) {
+    kind = "提出";
+  } else if (project.user_id === user.id) {
+    kind = "フィードバック";
+  } else {
+    return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+  }
   if (!String(b.body ?? "").trim() && !b.upload_id && !String(b.url ?? "").trim()) {
     return NextResponse.json({ error: "内容かファイル、URLのいずれかを入れてください" }, { status: 400 });
   }
