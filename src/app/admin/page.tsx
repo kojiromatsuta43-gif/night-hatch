@@ -9,11 +9,13 @@ type User = { id: string; email: string; name: string; role: string; points: num
 type NgWord = { id: string; word: string };
 type MonitorMessage = { id: string; body: string; from_name: string; to_name: string; created_at: string };
 type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; loaded_videos: number };
+type Industry = { id: string; name: string; sort_order: number; active: number; account_count: number; requested: number };
+type IndustryRequest = { industry_name: string; count: number; last_at: string; names: string | null };
 
 export default function AdminPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
-  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs">("users");
+  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs" | "industries">("users");
   const [users, setUsers] = useState<User[]>([]);
   const [ngWords, setNgWords] = useState<NgWord[]>([]);
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
@@ -21,6 +23,10 @@ export default function AdminPage() {
   const [refs, setRefs] = useState<RefAccount[]>([]);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<string>("");
+  const [industries, setIndustries] = useState<Industry[]>([]);
+  const [indRequests, setIndRequests] = useState<IndustryRequest[]>([]);
+  const [newIndustry, setNewIndustry] = useState("");
+  const [indError, setIndError] = useState("");
   const [refForm, setRefForm] = useState<{ accountId?: string; name: string; handle: string; industry: string; followers: string; bio: string; videos: string }>({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
 
   const load = useCallback(() => {
@@ -28,6 +34,8 @@ export default function AdminPage() {
     api<NgWord[]>("/api/admin/ng-words").then(setNgWords).catch(() => {});
     api<{ messages: MonitorMessage[]; ngWords: string[] }>("/api/admin/chats").then(setMonitor).catch(() => {});
     api<RefAccount[]>("/api/ref-accounts").then(setRefs).catch(() => {});
+    api<Industry[]>("/api/industries?all=1").then(setIndustries).catch(() => {});
+    api<IndustryRequest[]>("/api/industries/requests").then(setIndRequests).catch(() => {});
   }, []);
   useEffect(load, [load]);
 
@@ -37,14 +45,122 @@ export default function AdminPage() {
 
   const hasNg = (body: string) => monitor.ngWords.some((w) => body.includes(w));
 
+  const industryAction = async (fn: () => Promise<unknown>) => {
+    setIndError("");
+    try {
+      await fn();
+      load();
+    } catch (e) {
+      setIndError(e instanceof Error ? e.message : "変更できませんでした");
+    }
+  };
+
   return (
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex gap-2 text-sm">
-        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"]] as const).map(([k, label]) => (
+        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["industries", "業種タブ"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
+
+      {tab === "industries" && (
+        <div className="space-y-5">
+          <div className="rounded-xl border border-honey-200 bg-honey-50/50 p-4 text-sm text-hive-900">
+            ここで並べた業種が、そのまま「参考アカウントから発注」のタブになります。
+            参考アカウントが0件の業種は、お客様には「準備中」と表示されます。
+          </div>
+
+          {indError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{indError}</div>
+          )}
+
+          {indRequests.length > 0 && (
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="text-sm font-bold">お客様からのリクエスト</h3>
+              <p className="mt-1 text-xs text-slate-500">「この業種のお手本を追加してほしい」を押した件数です。多い業種から手を付けるのがおすすめです。</p>
+              <div className="mt-3 space-y-2">
+                {indRequests.map((r) => (
+                  <div key={r.industry_name} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
+                    <span>
+                      <b>{r.industry_name}</b>
+                      <span className="ml-2 rounded-full bg-honey-400 px-2 py-0.5 text-xs font-bold text-hive-900">{r.count}件</span>
+                      {r.names && <span className="ml-2 text-xs text-slate-500">{r.names}</span>}
+                    </span>
+                    <button
+                      onClick={() => industryAction(() => api("/api/industries/requests", { method: "PATCH", body: JSON.stringify({ industry_name: r.industry_name }) }))}
+                      className="text-xs text-slate-500 hover:text-honey-700"
+                    >
+                      対応済みにする
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="mb-3 text-sm font-bold">業種を追加</h3>
+            <div className="flex gap-2">
+              <input
+                value={newIndustry}
+                onChange={(e) => setNewIndustry(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && newIndustry.trim()) { industryAction(async () => { await api("/api/industries", { method: "POST", body: JSON.stringify({ name: newIndustry.trim() }) }); setNewIndustry(""); }); } }}
+                placeholder="例: 整体・接骨院"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+              <button
+                onClick={() => { if (!newIndustry.trim()) return; industryAction(async () => { await api("/api/industries", { method: "POST", body: JSON.stringify({ name: newIndustry.trim() }) }); setNewIndustry(""); }); }}
+                className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900"
+              >
+                追加
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            {industries.map((i, idx) => (
+              <div key={i.id} className={`flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3 text-sm last:border-0 ${i.active ? "" : "bg-slate-50"}`}>
+                <div className="flex flex-col">
+                  <button
+                    onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ move: "up" }) }))}
+                    disabled={idx === 0}
+                    className="px-1 text-xs text-slate-400 hover:text-honey-700 disabled:opacity-20"
+                    title="上へ"
+                  >▲</button>
+                  <button
+                    onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ move: "down" }) }))}
+                    disabled={idx === industries.length - 1}
+                    className="px-1 text-xs text-slate-400 hover:text-honey-700 disabled:opacity-20"
+                    title="下へ"
+                  >▼</button>
+                </div>
+                <b className={i.active ? "" : "text-slate-400 line-through"}>{i.name}</b>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${i.account_count ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                  {i.account_count ? `${i.account_count}件` : "準備中"}
+                </span>
+                {i.requested > 0 && (
+                  <span className="rounded-full bg-honey-400 px-2 py-0.5 text-xs font-bold text-hive-900">リクエスト{i.requested}</span>
+                )}
+                <div className="ml-auto flex gap-3 text-xs">
+                  <button
+                    onClick={() => { const name = prompt("業種名を変更", i.name); if (name && name !== i.name) industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ name }) })); }}
+                    className="text-slate-500 hover:text-honey-700"
+                  >名前を変える</button>
+                  <button
+                    onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ active: !i.active }) }))}
+                    className="text-slate-500 hover:text-honey-700"
+                  >{i.active ? "非表示にする" : "表示に戻す"}</button>
+                  <button
+                    onClick={() => { if (confirm(`「${i.name}」を削除します。よろしいですか？`)) industryAction(() => api(`/api/industries/${i.id}`, { method: "DELETE" })); }}
+                    className="text-slate-400 hover:text-rose-600"
+                  >削除</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {tab === "users" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -139,7 +255,21 @@ export default function AdminPage() {
               {refs.map((r) => <option key={r.id} value={r.id}>{r.name} {r.handle}</option>)}
             </select>
             {!refForm.accountId && <h3 className="text-sm font-bold pt-2">新規アカウント情報</h3>}
-            {!refForm.accountId && ([["name", "アカウント名"], ["handle", "@ハンドル"], ["industry", "業界（美容室・飲食など）"], ["followers", "フォロワー数（数字）"], ["bio", "紹介文"]] as const).map(([k, ph]) => (
+            {!refForm.accountId && (
+              <select
+                value={refForm.industry}
+                onChange={(e) => setRefForm({ ...refForm, industry: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="">業種を選ぶ（タブに反映されます）</option>
+                {industries.filter((i) => i.active).map((i) => (
+                  <option key={i.id} value={i.name}>
+                    {i.name}{i.account_count ? `（${i.account_count}件）` : "（準備中）"}
+                  </option>
+                ))}
+              </select>
+            )}
+            {!refForm.accountId && ([["name", "アカウント名"], ["handle", "@ハンドル"], ["followers", "フォロワー数（数字）"], ["bio", "紹介文"]] as const).map(([k, ph]) => (
               <input
                 key={k}
                 value={refForm[k]}

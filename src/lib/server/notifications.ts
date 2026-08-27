@@ -127,3 +127,34 @@ export function notifyChatMessage(
     `${where}${body.slice(0, 60)}${body.length > 60 ? "…" : ""}`
   );
 }
+
+/**
+ * 新しい案件が公募に出たことをフリーランスに知らせる。
+ * ・指名つきの案件 … その人にだけ「あなたに指名」で通知する
+ * ・公募の案件     … フリーランス全員に通知する
+ * 同じ案件では1人1回しか通知しない（idを固定しているため）。
+ */
+export function notifyNewJob(project: {
+  id: string;
+  title: string;
+  category: string;
+  deadline: string;
+  assignee_id?: string | null;
+}) {
+  const db = getDb();
+  const targets = project.assignee_id
+    ? (db.prepare("SELECT id FROM users WHERE id = ? AND role = 'freelancer'").all(project.assignee_id) as { id: string }[])
+    : (db.prepare("SELECT id FROM users WHERE role = 'freelancer'").all() as { id: string }[]);
+
+  const nominated = Boolean(project.assignee_id);
+  for (const t of targets) {
+    notify(t.id, {
+      id: `newjob:${project.id}:${t.id}`,
+      kind: "job",
+      title: nominated ? `あなたに指名の依頼が届きました` : `新しいお仕事: ${project.title}`,
+      body: `${project.category}／納期 ${project.deadline}`,
+      link: "/jobs",
+    });
+  }
+  return targets.length;
+}

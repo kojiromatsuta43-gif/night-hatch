@@ -223,6 +223,24 @@ function init(db: Database.Database) {
     video_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS industries (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS industry_requests (
+    id TEXT PRIMARY KEY,
+    industry_name TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    handled INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  -- 同じ人が同じ業種を連打しても1件しか入らないようにする
+  CREATE UNIQUE INDEX IF NOT EXISTS ux_industry_requests
+    ON industry_requests(industry_name, user_id, handled);
   CREATE TABLE IF NOT EXISTS ref_videos (
     id TEXT PRIMARY KEY,
     account_id TEXT NOT NULL,
@@ -332,6 +350,36 @@ function init(db: Database.Database) {
   }
 
   // チャットのオンライン表示用
+  // 業種マスタの初期値。以降は管理画面から追加・並べ替えできる。
+  // 参考アカウントがまだ0件の業種（ネイル・マツエク・美容室）も「準備中」として最初から並べる。
+  const industryCount = (db.prepare("SELECT COUNT(*) AS c FROM industries").get() as { c: number }).c;
+  if (industryCount === 0) {
+    const insIndustry = db.prepare("INSERT INTO industries (id, name, sort_order) VALUES (?, ?, ?)");
+    [
+      "美容クリニック",
+      "美容サロン",
+      "美容室",
+      "ネイル",
+      "マツエク",
+      "飲食",
+      "フィットネス",
+      "医療・介護",
+      "不動産",
+      "建設・工務店",
+      "買取・リユース",
+      "製造業",
+      "人材・転職",
+    ].forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
+  }
+  // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
+  db.prepare(
+    `INSERT OR IGNORE INTO industries (id, name, sort_order)
+     SELECT lower(hex(randomblob(16))), a.industry,
+            (SELECT COALESCE(MAX(sort_order), 0) + 10 FROM industries)
+       FROM (SELECT DISTINCT industry FROM ref_accounts WHERE industry <> '') a
+      WHERE a.industry NOT IN (SELECT name FROM industries)`
+  ).run();
+
   const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
   if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
 

@@ -14,6 +14,8 @@ function tiktokVideoId(url: string): string | null {
   const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
   return m ? m[1] : null;
 }
+type Industry = { id: string; name: string; account_count: number; requested: number };
+
 type RefAccount = {
   id: string; name: string; handle: string; industry: string; followers: number; bio: string;
   icon_url: string; profile_url: string; video_count: number; loaded_videos: number;
@@ -43,6 +45,9 @@ export default function OrderPage() {
   const router = useRouter();
   const [accounts, setAccounts] = useState<RefAccount[]>([]);
   const [industry, setIndustry] = useState("すべて");
+  const [industries, setIndustries] = useState<Industry[]>([]);
+  const [requested, setRequested] = useState<string[]>([]);
+  const [requesting, setRequesting] = useState(false);
   const [selected, setSelected] = useState<RefAccount | null>(null);
   const [video, setVideo] = useState<RefVideo | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -55,6 +60,7 @@ export default function OrderPage() {
       .then(setAccounts)
       .catch(() => {})
       .finally(() => setLoading(false));
+    api<Industry[]>("/api/industries").then(setIndustries).catch(() => {});
   }, []);
 
   const openAccount = async (a: RefAccount) => {
@@ -73,11 +79,37 @@ export default function OrderPage() {
     }
   };
 
-  const industries = useMemo(
-    () => ["すべて", ...Array.from(new Set(accounts.map((a) => a.industry)))],
-    [accounts]
-  );
+  // 業種ごとの実際の登録数（マスタの件数より、いま画面にある数を正とする）
+  const countByIndustry = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const a of accounts) m.set(a.industry, (m.get(a.industry) ?? 0) + 1);
+    return m;
+  }, [accounts]);
+
+  const tabs = useMemo(() => {
+    const fromMaster = industries.map((i) => ({ ...i, count: countByIndustry.get(i.name) ?? 0 }));
+    // マスタに無い業種が参考アカウント側にあれば、取りこぼさず末尾に足す
+    const known = new Set(fromMaster.map((t) => t.name));
+    const extras = [...countByIndustry.keys()]
+      .filter((n) => !known.has(n))
+      .map((n) => ({ id: `x:${n}`, name: n, account_count: 0, requested: 0, count: countByIndustry.get(n) ?? 0 }));
+    return [...fromMaster, ...extras];
+  }, [industries, countByIndustry]);
+
   const shown = industry === "すべて" ? accounts : accounts.filter((a) => a.industry === industry);
+
+  const requestIndustry = async (name: string) => {
+    if (requesting) return;
+    setRequesting(true);
+    try {
+      await api("/api/industries/requests", { method: "POST", body: JSON.stringify({ industry_name: name }) });
+      setRequested((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    } catch {
+      // 送れなくても画面は壊さない
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   const order = (kind: string) => {
     if (!video || !selected) return;
@@ -107,17 +139,74 @@ export default function OrderPage() {
 
       {!selected ? (
         <>
-          <div className="mb-6 flex items-center gap-2 text-sm">
-            <span className="text-slate-500">業界:</span>
-            <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-1.5">
-              {industries.map((i) => <option key={i}>{i}</option>)}
-            </select>
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 text-sm">
+              <button
+                onClick={() => setIndustry("すべて")}
+                className={`rounded-full px-4 py-1.5 transition-colors ${
+                  industry === "すべて"
+                    ? "bg-honey-400 font-semibold text-hive-900"
+                    : "border border-slate-300 text-slate-600 hover:border-honey-400"
+                }`}
+              >
+                すべて
+                <span className="ml-1.5 text-xs opacity-70">{accounts.length}</span>
+              </button>
+              {tabs.map((t) => {
+                const active = industry === t.name;
+                const empty = t.count === 0;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setIndustry(t.name)}
+                    className={`rounded-full px-4 py-1.5 transition-colors ${
+                      active
+                        ? "bg-honey-400 font-semibold text-hive-900"
+                        : empty
+                          ? "border border-dashed border-slate-300 text-slate-400 hover:border-honey-400"
+                          : "border border-slate-300 text-slate-600 hover:border-honey-400"
+                    }`}
+                  >
+                    {t.name}
+                    <span className="ml-1.5 text-xs opacity-70">{empty ? "準備中" : t.count}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {loading && (
             <div className="rounded-xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
               参考アカウントを読み込んでいます...
             </div>
           )}
+          {!loading && shown.length === 0 && industry !== "すべて" && (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <p className="font-bold text-hive-900">「{industry}」のお手本はいま準備中です</p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                リクエストをいただくと、この業種で伸びているアカウントを集めて登録します。
+                お急ぎの場合は、下のボタンからフォームで直接ご依頼いただくこともできます。
+              </p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                {requested.includes(industry) ? (
+                  <span className="rounded-lg bg-emerald-50 px-5 py-2 text-sm font-semibold text-emerald-700">
+                    リクエストを受け付けました
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => requestIndustry(industry)}
+                    disabled={requesting}
+                    className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+                  >
+                    この業種のお手本を追加してほしい
+                  </button>
+                )}
+                <Link href="/order/create" className="text-sm text-slate-500 hover:text-honey-600">
+                  参考動画なしでフォームから発注する →
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((a) => (
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">

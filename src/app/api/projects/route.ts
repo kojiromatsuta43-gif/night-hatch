@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
+import { notifyNewJob } from "@/lib/server/notifications";
 
 export async function GET() {
   const user = await requireUser();
@@ -34,5 +35,15 @@ export async function POST(req: Request) {
     );
   });
   tx();
+
+  // 募集中で登録されるので、この時点でフリーランスに知らせる
+  notifyNewJob({
+    id,
+    title: body.title,
+    category: body.category,
+    deadline: body.deadline,
+    assignee_id: body.assignee_id ?? null,
+  });
+
   return NextResponse.json({ id });
 }
