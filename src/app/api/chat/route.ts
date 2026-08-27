@@ -24,9 +24,14 @@ export async function GET() {
     )
     .all(user.id, user.id);
 
-  // 新しくスレッドを始めるときの選択肢（自分の案件）
+  // 新しくスレッドを始めるときの選択肢。
+  // クライアントは自分が発注した案件、フリーランスは自分が担当する案件。
   const projects = db
-    .prepare("SELECT id, title FROM projects WHERE user_id = ? ORDER BY created_at DESC")
+    .prepare(
+      user.role === "freelancer"
+        ? "SELECT id, title FROM projects WHERE assignee_id = ? ORDER BY created_at DESC"
+        : "SELECT id, title FROM projects WHERE user_id = ? ORDER BY created_at DESC"
+    )
     .all(user.id) as { id: string; title: string }[];
 
   return NextResponse.json({ users, messages, projects, me: user.id });
