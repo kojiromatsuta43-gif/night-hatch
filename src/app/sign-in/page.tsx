@@ -4,8 +4,8 @@ import { useState } from "react";
 import BeeLogo from "@/components/BeeLogo";
 
 export default function SignInPage() {
-  const [email, setEmail] = useState("client@example.com");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const submit = async (e: React.FormEvent) => {
@@ -34,6 +34,8 @@ export default function SignInPage() {
         <label className="block mb-4">
           <span className="text-sm font-semibold">メールアドレス</span>
           <input
+            type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
@@ -43,6 +45,7 @@ export default function SignInPage() {
           <span className="text-sm font-semibold">パスワード</span>
           <input
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
@@ -52,14 +55,9 @@ export default function SignInPage() {
         <button className="w-full rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
           ログイン
         </button>
-        <div className="mt-6 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-          デモアカウント（パスワードはすべて demo1234）
-          <ul className="mt-1 space-y-0.5">
-            <li>client@example.com（発注者）</li>
-            <li>creator@example.com（フリーランス）</li>
-            <li>admin@example.com（管理者）</li>
-          </ul>
-        </div>
+        <p className="mt-6 text-center text-xs text-slate-400">
+          アカウントの発行はご契約時にご案内します
+        </p>
       </form>
     </div>
   );

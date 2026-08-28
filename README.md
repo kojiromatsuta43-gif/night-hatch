@@ -10,7 +10,7 @@ cp .env.local.example .env.local   # APIキーを記入（下記参照）
 npm run dev
 ```
 
-http://localhost:3000 → デモアカウントでログイン（パスワードは全て `demo1234`）
+http://localhost:3000 → デモアカウントでログイン
 
 | アカウント | ロール | 用途 |
 |---|---|---|
