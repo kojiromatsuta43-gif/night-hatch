@@ -1,23 +1,77 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
-import { Mascot, useMascot } from "@/components/MascotProvider";
+import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import MicButton from "@/components/MicButton";
 import ClientOnly from "@/components/ClientOnly";
+import PlatformIcon from "@/components/PlatformIcon";
+import { POINTS_BY_CATEGORY } from "@/lib/data";
 
-type Msg = { role: "user" | "assistant"; content: string };
+// ============================================================
+//  AIエージェント
+//  会話だけでなく、参考動画さがし → 台本 → 発注条件 → 内容確認 → 発注
+//  まで、この画面の中で完結する。
+// ============================================================
+
+type VideoHit = {
+  id: string; caption: string; url: string; hue: number;
+  accountName: string; handle: string; followers: number; industry: string;
+};
+type OrderDraft = {
+  category: string; title: string; deadline: string; note: string;
+  refUrl: string; refTitle: string; scriptText: string;
+};
+type Payload =
+  | { type: "videos"; keyword: string; items: VideoHit[] }
+  | { type: "script"; refUrl: string; refTitle: string }
+  | { type: "order_form"; draft: OrderDraft }
+  | { type: "order_confirm"; draft: OrderDraft; points: number; balance: number }
+  | { type: "order_done"; projectId: string; title: string; points: number };
+
+type Msg = { role: "user" | "assistant"; content: string; payload?: Payload };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
 type BrandProfile = { id: string; name: string };
 
-// ハチにすぐ頼めること（白紙のチャット欄を無くすための入口）
 const QUICK_ACTIONS = [
+  { label: "伸びてる動画をさがす", hint: "「◯◯で伸びてる動画見せて」", prompt: "美容室で伸びてる動画を見せて" },
   { label: "台本をつくる", hint: "ショート動画の構成から", prompt: "ショート動画の台本を作りたいです。まず何を教えればいいか質問してください。" },
   { label: "競合を分析する", hint: "伸びてる理由を分解", prompt: "競合アカウントを分析したいです。どんな情報が必要か質問してください。" },
-  { label: "発注内容を整理する", hint: "頼み方が分からない時", prompt: "制作を発注したいのですが、依頼内容がまとまっていません。質問しながら整理してください。" },
   { label: "企画を出してもらう", hint: "ネタ切れの時", prompt: "自社のショート動画の企画案を5つ出してください。まず業種と目的を質問してください。" },
 ];
+
+// プロンプト集（入力欄から検索して差し込める定型文）
+const PROMPT_LIBRARY = [
+  "美容室で伸びてる動画を見せて",
+  "飲食店で伸びてる動画を見せて",
+  "フィットネスで伸びてる動画を見せて",
+  "採用向けのショート動画の台本を作りたい",
+  "集客につながる動画の企画を3案出して",
+  "ショート動画の構成（フック→本編→CTA）を提案して",
+  "競合アカウントの伸びている理由を分析して",
+  "自社の強みが伝わる自己紹介動画の台本を作って",
+  "発注したい内容を整理するのを手伝って",
+  "InstagramリールとTikTokの使い分けを教えて",
+];
+
+const STAGES = ["発注準備", "台本作成", "発注条件", "内容確認", "発注完了"] as const;
+
+function stageOf(messages: Msg[]): number {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const p = messages[i].payload;
+    if (!p) continue;
+    if (p.type === "order_done") return 4;
+    if (p.type === "order_confirm") return 3;
+    if (p.type === "order_form") return 2;
+    if (p.type === "script") return 1;
+    if (p.type === "videos") return 0;
+  }
+  return 0;
+}
+
+const fmtFollowers = (n: number) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString());
 
 function AgentPageInner() {
   const [sessions, setSessions] = useState<AgentSession[]>([]);
@@ -29,6 +83,8 @@ function AgentPageInner() {
   const [profiles, setProfiles] = useState<BrandProfile[]>([]);
   const [profileId, setProfileId] = useState("");
   const [ngFlags, setNgFlags] = useState<string[]>([]);
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [promptQuery, setPromptQuery] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const { mascot } = useMascot();
 
@@ -41,29 +97,37 @@ function AgentPageInner() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, busy]);
 
-  const send = async (text?: string) => {
-    const message = (text ?? input).trim();
-    if (!message || busy) return;
-    setInput("");
+  const post = async (body: Record<string, unknown>, optimistic?: Msg) => {
+    if (busy) return;
     setError("");
     setNgFlags([]);
-    setMessages((m) => [...m, { role: "user", content: message }]);
+    if (optimistic) setMessages((m) => [...m, optimistic]);
     setBusy(true);
     try {
-      const res = await api<{ sessionId: string; reply: string; ngFlags: string[] }>("/api/agent", {
-        method: "POST",
-        body: JSON.stringify({ sessionId, message, brandProfileId: profileId || undefined }),
-      });
+      const res = await api<{ sessionId: string; reply: string; payload: Payload | null; ngFlags?: string[] }>(
+        "/api/agent",
+        { method: "POST", body: JSON.stringify({ sessionId, brandProfileId: profileId || undefined, ...body }) }
+      );
       setSessionId(res.sessionId);
-      setMessages((m) => [...m, { role: "assistant", content: res.reply }]);
-      setNgFlags(res.ngFlags);
+      setMessages((m) => [...m, { role: "assistant", content: res.reply, payload: res.payload ?? undefined }]);
+      if (res.ngFlags?.length) setNgFlags(res.ngFlags);
     } catch (e) {
       setError(e instanceof Error ? e.message : "エラーが発生しました");
-      setMessages((m) => m.slice(0, -1));
+      if (optimistic) setMessages((m) => m.slice(0, -1));
     } finally {
       setBusy(false);
     }
   };
+
+  const send = (text?: string) => {
+    const message = (text ?? input).trim();
+    if (!message) return;
+    setInput("");
+    post({ message }, { role: "user", content: message });
+  };
+
+  const act = (action: Record<string, unknown>, label: string) =>
+    post({ action }, { role: "user", content: label });
 
   const saveScript = async (content: string) => {
     const title = window.prompt("台本のタイトル", "無題の台本");
@@ -77,6 +141,9 @@ function AgentPageInner() {
     setMessages(s.messages);
     setError("");
   };
+
+  const stage = stageOf(messages);
+  const filteredPrompts = PROMPT_LIBRARY.filter((p) => !promptQuery || p.includes(promptQuery));
 
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">
@@ -118,6 +185,22 @@ function AgentPageInner() {
           </select>
         </div>
 
+        {/* 進行バー: いま発注のどの段階にいるか */}
+        {messages.length > 0 && (
+          <div className="flex items-center gap-1 border-b border-slate-100 px-4 py-2">
+            {STAGES.map((s, i) => (
+              <div key={s} className="flex flex-1 items-center gap-1">
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className={`truncate text-center text-[10px] ${i <= stage ? "font-bold text-honey-700" : "text-slate-300"}`}>
+                    {s}
+                  </span>
+                  <span className={`h-1 rounded-full ${i < stage ? "bg-honey-400" : i === stage ? "bg-honey-300" : "bg-slate-100"}`} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {messages.length === 0 && (
             <div className="mx-auto mt-8 max-w-2xl text-center">
@@ -125,7 +208,9 @@ function AgentPageInner() {
               <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-honey-200 bg-honey-50 px-6 py-4">
                 <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-honey-200 bg-honey-50" />
                 <p className="text-lg font-bold text-hive-900">{mascot.greeting}</p>
-                <p className="mt-1 text-sm text-slate-600">何をお手伝いしましょうか？下のボタンから選んでもいいですし、そのまま話しかけてもOKです。</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  参考動画さがし・台本作成から、発注の登録まで会話で進められます。
+                </p>
               </div>
 
               <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
@@ -144,19 +229,6 @@ function AgentPageInner() {
                   </button>
                 ))}
               </div>
-
-              <p className="mt-6 mb-2 text-xs font-semibold text-slate-400">こんな聞き方もできます</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {[
-                  "美容室の新規客向けInstagramリールの台本を作って",
-                  "飲食店のTikTok企画を5つ提案して",
-                  "LP改善の発注内容を整理したい",
-                ].map((q) => (
-                  <button key={q} onClick={() => send(q)} className="rounded-full border border-slate-300 px-4 py-1.5 text-xs text-slate-600 transition-colors hover:border-honey-400 hover:bg-honey-50">
-                    {q}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
           <div className="space-y-4">
@@ -165,16 +237,32 @@ function AgentPageInner() {
                 {m.role === "user" ? (
                   <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
                 ) : (
-                  <div className="flex max-w-[92%] gap-2.5">
+                  <div className="flex max-w-[95%] gap-2.5">
                     <Mascot className="mt-1 h-8 w-8 shrink-0" />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div
                         className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
                         dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
                       />
-                      <button onClick={() => saveScript(m.content)} className="mt-1 text-xs font-medium text-honey-600 hover:underline">
-                        台本として保存
-                      </button>
+                      {m.payload && (
+                        <PayloadView
+                          payload={m.payload}
+                          isLatest={i === messages.length - 1}
+                          busy={busy}
+                          act={act}
+                          content={m.content}
+                        />
+                      )}
+                      {!m.payload && (
+                        <button onClick={() => saveScript(m.content)} className="mt-1 text-xs font-medium text-honey-600 hover:underline">
+                          台本として保存
+                        </button>
+                      )}
+                      {m.payload?.type === "script" && (
+                        <button onClick={() => saveScript(m.content)} className="mt-1 mr-3 text-xs font-medium text-honey-600 hover:underline">
+                          台本として保存
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -202,7 +290,38 @@ function AgentPageInner() {
         </div>
 
         <div className="border-t border-slate-200 p-3">
+          {promptOpen && (
+            <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+              <input
+                value={promptQuery}
+                onChange={(e) => setPromptQuery(e.target.value)}
+                placeholder="プロンプトを検索..."
+                className="mb-1 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs focus:border-honey-500 focus:outline-none"
+              />
+              <div className="max-h-40 overflow-y-auto">
+                {filteredPrompts.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => { setInput(p); setPromptOpen(false); setPromptQuery(""); }}
+                    className="block w-full rounded-lg px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-honey-50"
+                  >
+                    {p}
+                  </button>
+                ))}
+                {filteredPrompts.length === 0 && (
+                  <p className="px-3 py-2 text-xs text-slate-400">見つかりませんでした</p>
+                )}
+              </div>
+            </div>
+          )}
           <div className="flex gap-2">
+            <button
+              onClick={() => setPromptOpen((v) => !v)}
+              className={`mt-1 self-start rounded-lg border px-2.5 py-1.5 text-xs ${promptOpen ? "border-honey-400 bg-honey-50 text-honey-700" : "border-slate-300 text-slate-500 hover:border-honey-400"}`}
+              title="定型プロンプトから選ぶ"
+            >
+              📋 プロンプト
+            </button>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -213,7 +332,7 @@ function AgentPageInner() {
                 }
               }}
               rows={2}
-              placeholder={`${mascot.talkTo} — 例: フィットネスジムの体験申込を増やすリール台本を作って`}
+              placeholder={`${mascot.talkTo} — 例: 美容室で伸びてる動画を見せて`}
               className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
             />
             <MicButton
@@ -231,6 +350,223 @@ function AgentPageInner() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** メッセージに付いた動画カード・発注フォームなどを描く */
+function PayloadView({
+  payload, isLatest, busy, act, content,
+}: {
+  payload: Payload;
+  isLatest: boolean;
+  busy: boolean;
+  act: (action: Record<string, unknown>, label: string) => void;
+  content: string;
+}) {
+  if (payload.type === "videos") {
+    if (payload.items.length === 0) return null;
+    return (
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {payload.items.map((v) => (
+          <div key={v.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div
+              className="relative aspect-[9/14] w-full"
+              style={{ background: `linear-gradient(160deg, hsl(${v.hue}, 45%, 30%), hsl(${v.hue + 30}, 50%, 15%))` }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/ref-videos/${v.id}/thumbnail`}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+              <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[9px] text-white">
+                <PlatformIcon platform="tiktok" className="h-2.5 w-2.5" mono /> TikTok
+              </span>
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-1.5 pt-6">
+                <span className="line-clamp-2 text-[10px] font-semibold leading-snug text-white">{v.caption}</span>
+              </span>
+            </div>
+            <div className="p-2">
+              <div className="truncate text-[10px] font-semibold text-hive-900">{v.accountName}</div>
+              <div className="text-[9px] text-slate-400">
+                {fmtFollowers(v.followers)}フォロワー ・ {v.industry}
+              </div>
+              <div className="mt-1.5 flex gap-1">
+                <button
+                  onClick={() => act({ type: "make_script", videoId: v.id }, `この動画で台本を作って: ${v.caption.slice(0, 30)}`)}
+                  disabled={busy}
+                  className="flex-1 rounded-md bg-honey-400 py-1 text-[10px] font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+                >
+                  この動画で台本を作る
+                </button>
+                {v.url && (
+                  <a href={v.url} target="_blank" rel="noreferrer" className="rounded-md border border-slate-200 px-1.5 py-1 text-[10px] text-slate-500 hover:border-honey-400">
+                    開く
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (payload.type === "script") {
+    return (
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button
+          onClick={() =>
+            act(
+              {
+                type: "start_order",
+                draft: {
+                  category: "ショート動画編集",
+                  title: "",
+                  deadline: "",
+                  note: "",
+                  refUrl: payload.refUrl,
+                  refTitle: payload.refTitle,
+                  scriptText: content,
+                },
+              },
+              "この台本で発注に進む"
+            )
+          }
+          disabled={busy}
+          className="rounded-lg bg-honey-400 px-4 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+        >
+          この台本で発注に進む →
+        </button>
+      </div>
+    );
+  }
+
+  if (payload.type === "order_form") {
+    return <OrderForm draft={payload.draft} disabled={!isLatest || busy} act={act} />;
+  }
+
+  if (payload.type === "order_confirm") {
+    const d = payload.draft;
+    const short = payload.points > payload.balance;
+    return (
+      <div className="mt-2 rounded-xl border border-honey-200 bg-white p-4 text-xs">
+        <div className="mb-2 text-sm font-bold text-hive-900">発注内容の確認</div>
+        <dl className="space-y-1.5">
+          {[
+            ["件名", d.title],
+            ["カテゴリ", d.category],
+            ["納期", d.deadline],
+            ["参考動画", d.refTitle || "なし"],
+            ["台本", d.scriptText ? "あり（作成済みの台本を引き継ぎます）" : "なし"],
+            ["補足", d.note || "なし"],
+          ].map(([k, v]) => (
+            <div key={k} className="flex gap-2">
+              <dt className="w-16 shrink-0 text-slate-400">{k}</dt>
+              <dd className="min-w-0 text-slate-700">{v}</dd>
+            </div>
+          ))}
+          <div className="flex gap-2 border-t border-slate-100 pt-1.5">
+            <dt className="w-16 shrink-0 text-slate-400">消費</dt>
+            <dd className="font-bold text-honey-700">
+              {payload.points}
+              <PointInline />（残高 {payload.balance}）
+            </dd>
+          </div>
+        </dl>
+        {short ? (
+          <Link href="/points" className="mt-3 block rounded-lg bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800 hover:bg-amber-100">
+            はちみつPが足りません — 追加購入へ →
+          </Link>
+        ) : (
+          <button
+            onClick={() => act({ type: "place_order", draft: d }, "この内容で発注する")}
+            disabled={!isLatest || busy}
+            className="mt-3 w-full rounded-lg bg-honey-400 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+          >
+            この内容で発注する
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (payload.type === "order_done") {
+    return (
+      <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs">
+        <div className="font-bold text-emerald-800">発注が完了しました 🎉</div>
+        <p className="mt-1 text-emerald-700">
+          「{payload.title}」（{payload.points}
+          <PointInline />）を募集中として登録しました。
+        </p>
+        <Link href={`/projects/${payload.projectId}`} className="mt-2 inline-block font-bold text-emerald-700 underline">
+          案件を見る →
+        </Link>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+/** 発注条件の入力フォーム（チャットの中に出る） */
+function OrderForm({
+  draft, disabled, act,
+}: {
+  draft: OrderDraft;
+  disabled: boolean;
+  act: (action: Record<string, unknown>, label: string) => void;
+}) {
+  const [category, setCategory] = useState(draft.category || "ショート動画編集");
+  const [title, setTitle] = useState(draft.title || (draft.refTitle ? `${draft.refTitle.slice(0, 20)}風ショート動画` : ""));
+  // 納期の初期値は2週間後
+  const [deadline, setDeadline] = useState(
+    () => draft.deadline || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+  );
+  const [note, setNote] = useState(draft.note);
+
+  const input = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-honey-500 focus:outline-none";
+  return (
+    <div className="mt-2 space-y-2 rounded-xl border border-honey-200 bg-white p-4">
+      <label className="block">
+        <span className="text-[11px] font-semibold text-slate-600">件名</span>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-0.5`} placeholder="例: 新メニュー紹介ショート動画" disabled={disabled} />
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-[11px] font-semibold text-slate-600">カテゴリ</span>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${input} mt-0.5`} disabled={disabled}>
+            {["ショート動画編集", "台本作成（ショート）"].map((c) => (
+              <option key={c} value={c}>
+                {c}（{POINTS_BY_CATEGORY[c]}pt）
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-[11px] font-semibold text-slate-600">納期</span>
+          <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={`${input} mt-0.5`} disabled={disabled} />
+        </label>
+      </div>
+      <label className="block">
+        <span className="text-[11px] font-semibold text-slate-600">補足・希望（任意）</span>
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={`${input} mt-0.5 resize-none`} placeholder="例: 字幕は大きめ、明るいトーンで" disabled={disabled} />
+      </label>
+      <button
+        onClick={() =>
+          act(
+            { type: "confirm_order", draft: { ...draft, category, title, deadline, note } },
+            "発注条件を入力した"
+          )
+        }
+        disabled={disabled || !title.trim() || !deadline}
+        className="w-full rounded-lg bg-honey-400 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+      >
+        内容を確認する →
+      </button>
     </div>
   );
 }
