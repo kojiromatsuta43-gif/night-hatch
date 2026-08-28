@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
+import { notify } from "@/lib/server/notifications";
 import { stripeEnv } from "@/lib/server/stripe";
 import { INVOICE_PAID } from "@/lib/invoice";
+import { isValidPack, priceInclTax } from "@/lib/points";
 
 /**
  * Stripe からの通知の受け口。
@@ -64,6 +66,54 @@ function markPaid(invoiceId: string, sessionId: string | null) {
   return "updated";
 }
 
+/**
+ * はちみつPを付与する。
+ * session_id を主キーにした表へ先に入れることで、同じ通知が二度届いても
+ * 二重に付与されない（2回目は INSERT が弾かれて何もしない）。
+ */
+function grantPoints(sessionId: string, meta: Record<string, string>) {
+  const userId = meta.user_id ?? "";
+  const points = Number(meta.points);
+  if (!userId || !isValidPack(points)) return "bad_metadata";
+  if (!sessionId) return "no_session";
+
+  const db = getDb();
+  const user = db.prepare("SELECT id, name FROM users WHERE id = ?").get(userId) as
+    | { id: string; name: string }
+    | undefined;
+  if (!user) return "user_not_found";
+
+  let result = "already_granted";
+  db.transaction(() => {
+    const ins = db
+      .prepare(
+        "INSERT OR IGNORE INTO point_purchases (session_id, user_id, points, amount_jpy) VALUES (?,?,?,?)"
+      )
+      .run(sessionId, userId, points, priceInclTax(points));
+    if (ins.changes === 0) return; // すでに付与済み
+
+    db.prepare("UPDATE users SET points = points + ? WHERE id = ?").run(points, userId);
+    db.prepare(
+      "INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?,?,?,'purchase',?)"
+    ).run(
+      crypto.randomUUID(),
+      userId,
+      points,
+      `はちみつP購入 ${points}pt（¥${priceInclTax(points).toLocaleString()} 税込）`
+    );
+    notify(userId, {
+      id: `points:${sessionId}`,
+      kind: "points",
+      title: `はちみつPを${points}pt追加しました`,
+      body: `お支払いを確認しました。残高に反映されています。`,
+      link: "/points",
+    });
+    result = "granted";
+  })();
+
+  return result;
+}
+
 type StripeEvent = {
   id?: string;
   type?: string;
@@ -100,13 +150,21 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
-        if (object.payment_status === "paid" || event.type === "checkout.session.completed") {
-          if (invoiceId) result = markPaid(invoiceId, String(object.id ?? "") || null);
+        const paid = object.payment_status === "paid" || event.type === "checkout.session.completed";
+        if (!paid) break;
+        if (metadata.kind === "points") {
+          // ポイントの追加購入
+          result = grantPoints(String(object.id ?? ""), metadata);
+        } else if (invoiceId) {
+          // 請求書のお支払い
+          result = markPaid(invoiceId, String(object.id ?? "") || null);
         }
         break;
       }
       case "payment_intent.succeeded": {
-        if (invoiceId) result = markPaid(invoiceId, null);
+        // ポイント購入は checkout.session.completed 側で確定させる。
+        // ここで二重に処理しないよう、請求書だけを見る。
+        if (metadata.kind !== "points" && invoiceId) result = markPaid(invoiceId, null);
         break;
       }
       default:

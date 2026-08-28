@@ -223,6 +223,15 @@ function init(db: Database.Database) {
     video_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  -- ポイントの追加購入。Stripeの決済セッション1件につき1行。
+  -- session_id を主キーにすることで、同じ通知が二重に届いても二重付与にならない。
+  CREATE TABLE IF NOT EXISTS point_purchases (
+    session_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    points INTEGER NOT NULL,
+    amount_jpy INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   CREATE TABLE IF NOT EXISTS industries (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
