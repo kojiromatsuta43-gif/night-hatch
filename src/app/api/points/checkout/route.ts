@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { BRAND } from "@/lib/brand";
 import { requireUser } from "@/lib/server/auth";
 import { isValidPack, priceInclTax } from "@/lib/points";
 import { publicUrl, stripeApi, stripeEnv } from "@/lib/server/stripe";
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
         "line_items[0][price_data][currency]": "jpy",
         "line_items[0][price_data][unit_amount]": String(amount),
         "line_items[0][price_data][product_data][name]": `はちみつP ${points}pt`,
-        "line_items[0][price_data][product_data][description]": "BRIDGE HATCH の制作ポイント（税込）",
+        "line_items[0][price_data][product_data][description]": `${BRAND.name} の制作ポイント（税込）`,
         success_url: `${base}/points?paid=1`,
         cancel_url: `${base}/points?canceled=1`,
         // Webhookで「誰に何ポイント足すか」を判断するための情報

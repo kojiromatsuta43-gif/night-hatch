@@ -56,6 +56,56 @@ function daysBetween(from: string, to: string) {
   return Math.round((b - a) / 86400000);
 }
 
+/**
+ * テレアポ案件の架電結果。提出の title に「架電結果 架電/接続/アポ」の形で入れておき、
+ * 案件ページの上部で合計を出す（別テーブルを増やさずに済ませる）。
+ */
+const CALL_RESULT = /^架電結果 (\d+)\/(\d+)\/(\d+)/;
+function sumCallResults(items: { kind: string; title: string }[]) {
+  const t = { calls: 0, connected: 0, appts: 0, reports: 0 };
+  for (const d of items) {
+    if (d.kind !== "提出") continue;
+    const m = CALL_RESULT.exec(d.title ?? "");
+    if (!m) continue;
+    t.calls += Number(m[1]); t.connected += Number(m[2]); t.appts += Number(m[3]); t.reports += 1;
+  }
+  return t;
+}
+
+function CallResultSummary({ p }: { p: Detail }) {
+  const t = sumCallResults(p.deliverables);
+  let target = 0;
+  try { target = Number((JSON.parse(p.detail ?? "{}") as Record<string, unknown>)["架電件数"] ?? 0); } catch { /* 無視 */ }
+  const pct = target > 0 ? Math.min(100, Math.round((t.calls / target) * 100)) : 0;
+  const rate = t.connected > 0 ? `${Math.round((t.appts / t.connected) * 1000) / 10}%` : "-";
+  return (
+    <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
+      <h2 className="mb-3 font-bold text-hive-900">架電の進み具合</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          ["架電数", `${t.calls}${target ? ` / ${target}` : ""}件`],
+          ["つながった数", `${t.connected}件`],
+          ["アポ数", `${t.appts}件`],
+          ["アポ率（接続比）", rate],
+        ].map(([k, v]) => (
+          <div key={k} className="rounded-lg bg-slate-50 px-3 py-2">
+            <div className="text-xs text-slate-500">{k}</div>
+            <div className="text-lg font-bold text-hive-900">{v}</div>
+          </div>
+        ))}
+      </div>
+      {target > 0 && (
+        <div className="mt-3">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full bg-honey-400" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="mt-1 text-xs text-slate-500">{pct}% 完了・報告{t.reports}回</div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 /** 発注フォームの入力内容を読みやすく並べる */
 function DetailList({ raw }: { raw: string | null }) {
   let data: Record<string, unknown> = {};
@@ -110,6 +160,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [url, setUrl] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [busy, setBusy] = useState(false);
+  // テレアポ案件の架電結果（提出のときだけ使う）
+  const [calls, setCalls] = useState("");
+  const [connected, setConnected] = useState("");
+  const [appts, setAppts] = useState("");
 
   const load = useCallback(() => {
     api<Detail>(`/api/projects/${id}`)
@@ -134,6 +188,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const kind = allowedKinds.includes(pickedKind) ? pickedKind : (allowedKinds[0] ?? "提出");
   // 担当者が決まる前は、発注側にフィードバックの出しどころがない
   const waitingForAssignee = isOwner && !isAssignee && !p?.assignee_id && me?.role !== "admin";
+  const isCallJob = p?.category === "テレアポ営業";
+  const callResultTitle =
+    isCallJob && kind === "提出" && (calls || connected || appts)
+      ? `架電結果 ${Number(calls) || 0}/${Number(connected) || 0}/${Number(appts) || 0}`
+      : "";
 
   const patch = async (payload: Record<string, unknown>) => {
     await api(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
@@ -146,9 +205,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     try {
       await api(`/api/projects/${id}/deliverables`, {
         method: "POST",
-        body: JSON.stringify({ kind, body, url, upload_id: files[0]?.id ?? null }),
+        body: JSON.stringify({ kind, body, url, upload_id: files[0]?.id ?? null, title: callResultTitle }),
       });
       setBody(""); setUrl(""); setFiles([]);
+      setCalls(""); setConnected(""); setAppts("");
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "送信に失敗しました");
@@ -254,6 +314,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </section>
 
+      {isCallJob && <CallResultSummary p={p} />}
+
       {/* 提出物とフィードバック */}
       <section className="mt-6">
         <h2 className="mb-3 text-lg font-bold text-hive-900">
@@ -291,6 +353,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   </button>
                 )}
               </div>
+              {d.title && CALL_RESULT.test(d.title) && (
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  {(() => { const m = CALL_RESULT.exec(d.title)!; return [["架電", m[1]], ["接続", m[2]], ["アポ", m[3]]]; })().map(([k, v]) => (
+                    <span key={k} className="rounded-full bg-white px-2.5 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">{k} {v}件</span>
+                  ))}
+                </div>
+              )}
               {d.body && (
                 <div
                   className="prose prose-sm prose-slate mt-2 max-w-none"
@@ -345,11 +414,31 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </span>
             )}
           </div>
+          {isCallJob && kind === "提出" && (
+            <div className="mb-2 grid grid-cols-3 gap-2">
+              {[["今回の架電数", calls, setCalls], ["つながった数", connected, setConnected], ["アポ数", appts, setAppts]].map(([label, v, set]) => (
+                <label key={label as string} className="block">
+                  <span className="text-xs font-semibold text-slate-600">{label as string}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={v as string}
+                    onChange={(e) => (set as (s: string) => void)(e.target.value)}
+                    className="mt-0.5 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-honey-500 focus:outline-none"
+                  />
+                </label>
+              ))}
+            </div>
+          )}
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={3}
-            placeholder={kind === "提出" ? "初稿ができました。ご確認をお願いします。" : "冒頭3秒のテンポをもう少し速くしてください。"}
+            placeholder={
+              isCallJob && kind === "提出"
+                ? "本日の架電レポート。アポ先の会社名・日時・担当者、次回の課題など。リストはファイルで添付してください。"
+                : kind === "提出" ? "初稿ができました。ご確認をお願いします。" : "冒頭3秒のテンポをもう少し速くしてください。"
+            }
             className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
           />
           <input

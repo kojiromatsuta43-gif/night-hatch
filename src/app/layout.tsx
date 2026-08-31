@@ -1,9 +1,10 @@
+import { BRAND } from "@/lib/brand";
 import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "BRIDGE HATCH",
+  title: BRAND.name,
   description: "制作案件の発注・管理プラットフォーム",
 };
 

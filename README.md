@@ -55,6 +55,13 @@ src/
 └── lib/server/           db.ts（スキーマ・シード）, auth.ts, llm.ts
 ```
 
+## 看板の切替（BRIDGE HATCH / FOOD HATCH）
+
+同じコードで2つのサービスを動かします。`NEXT_PUBLIC_APP_BRAND=food` で飲食店版（FOOD HATCH）になり、
+名前・制作メニュー・業種タブ・AIエージェントの口調とプロンプト集が切り替わります。
+定義は `src/lib/brands/bridge.ts` と `src/lib/brands/food.ts`、共通の型は `src/lib/brand-types.ts`。
+メニューに `questions` を書くと発注フォームの詳細ヒアリングに自動で出ます。`quantity` を書くと件数×単価のメニュー（テレアポ営業）になります。
+
 ## 主な機能
 
 - **参考動画からの発注** — 87アカウント・約1,400本のTikTok動画から選び、発注フォームに引き継ぎ。TikTok公式埋め込みで再生可能

@@ -45,6 +45,7 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 | `HOSTNAME` | `0.0.0.0` | **必須**（外部からの接続を受けるため） |
 | `GEMINI_API_KEY` | ご自身のキー | AI機能を使う場合 |
 | `ANTHROPIC_API_KEY` | ご自身のキー | Claudeを使う場合（任意） |
+| `NEXT_PUBLIC_APP_BRAND` | `bridge` または `food` | 看板の切替（未設定なら BRIDGE HATCH） |
 
 `PORT` はRailwayが自動で設定するため、こちらで指定する必要はありません。
 
@@ -77,6 +78,25 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 - **コードを更新したら**：`git push` するだけでRailwayが自動的に再デプロイします
 - **ログを見たい**：Railwayの「Deployments」→ 該当デプロイ →「View Logs」
 - **停止したい**：「Settings」→「Danger」→ サービスを削除、または一時停止
+
+## FOOD HATCH（飲食店版）を別サービスとして立てる
+
+BRIDGE HATCH と FOOD HATCH は同じコードで、`NEXT_PUBLIC_APP_BRAND` の値だけで看板・制作メニュー・業種タブ・AIの口調が切り替わります。
+飲食店版は **同じリポジトリから2つ目のサービス** を作ります（DBもボリュームも別になるので、顧客データは混ざりません）。
+
+1. Railway のプロジェクト画面で「+ New」→「GitHub Repo」→ 同じ `create-works` リポジトリを選ぶ
+2. できたサービスの名前を `food-hatch` に変える（Settings → Service Name）
+3. 手順3と同じく Volume を追加（Mount path `/data`）
+4. Variables に以下を入れて **Deploy** を押す
+   - `NEXT_PUBLIC_APP_BRAND` = `food` ← これが看板の切替
+   - `DATA_DIR` = `/data`、`HOSTNAME` = `0.0.0.0`
+   - `GEMINI_API_KEY`（BRIDGE 側と同じ値でよい）
+   - Stripe を使うなら `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`（同じ Stripe アカウントでよい。Webhook は FOOD 側のURLでもう1本登録する）
+   - `APP_PUBLIC_URL` = 手順5で発行したURL
+5. Settings → Networking → Generate Domain（`food-hatch-production.up.railway.app` のようなURL）
+
+`NEXT_PUBLIC_` 付きの変数はビルド時に埋め込まれるので、値を変えたら必ず再デプロイしてください。
+制作メニューの中身は `src/lib/brands/food.ts`（飲食）と `src/lib/brands/bridge.ts`（BRIDGE）にあり、単価や質問項目はここを直せば両方の画面に反映されます。
 
 ## 本番運用に移る場合の追加作業
 

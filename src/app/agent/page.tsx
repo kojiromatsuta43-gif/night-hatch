@@ -9,6 +9,7 @@ import MicButton from "@/components/MicButton";
 import ClientOnly from "@/components/ClientOnly";
 import PlatformIcon from "@/components/PlatformIcon";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
+import { BRAND } from "@/lib/brand";
 
 // ============================================================
 //  AIエージェント
@@ -35,26 +36,9 @@ type Msg = { role: "user" | "assistant"; content: string; payload?: Payload };
 type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
 type BrandProfile = { id: string; name: string };
 
-const QUICK_ACTIONS = [
-  { label: "伸びてる動画をさがす", hint: "「◯◯で伸びてる動画見せて」", prompt: "美容室で伸びてる動画を見せて" },
-  { label: "台本をつくる", hint: "ショート動画の構成から", prompt: "ショート動画の台本を作りたいです。まず何を教えればいいか質問してください。" },
-  { label: "競合を分析する", hint: "伸びてる理由を分解", prompt: "競合アカウントを分析したいです。どんな情報が必要か質問してください。" },
-  { label: "企画を出してもらう", hint: "ネタ切れの時", prompt: "自社のショート動画の企画案を5つ出してください。まず業種と目的を質問してください。" },
-];
-
-// プロンプト集（入力欄から検索して差し込める定型文）
-const PROMPT_LIBRARY = [
-  "美容室で伸びてる動画を見せて",
-  "飲食店で伸びてる動画を見せて",
-  "フィットネスで伸びてる動画を見せて",
-  "採用向けのショート動画の台本を作りたい",
-  "集客につながる動画の企画を3案出して",
-  "ショート動画の構成（フック→本編→CTA）を提案して",
-  "競合アカウントの伸びている理由を分析して",
-  "自社の強みが伝わる自己紹介動画の台本を作って",
-  "発注したい内容を整理するのを手伝って",
-  "InstagramリールとTikTokの使い分けを教えて",
-];
+// クイック操作とプロンプト集は看板ごと（src/lib/brands/*.ts）
+const QUICK_ACTIONS = BRAND.agent.quickActions;
+const PROMPT_LIBRARY = BRAND.agent.promptLibrary;
 
 const STAGES = ["発注準備", "台本作成", "発注条件", "内容確認", "発注完了"] as const;
 
@@ -539,7 +523,7 @@ function OrderForm({
         <label className="block">
           <span className="text-[11px] font-semibold text-slate-600">カテゴリ</span>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${input} mt-0.5`} disabled={disabled}>
-            {["ショート動画編集", "台本作成（ショート）"].map((c) => (
+            {BRAND.orderable.map((c) => (
               <option key={c} value={c}>
                 {c}（{POINTS_BY_CATEGORY[c]}pt）
               </option>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 import { Mascot } from "@/components/MascotProvider";
 
 const STEPS = [
@@ -54,7 +55,7 @@ export default function GuidePage() {
         <div className="text-sm font-medium opacity-80">デモのご案内</div>
         <h1 className="mt-1 flex items-center gap-3 text-3xl font-bold">
           <Mascot className="h-11 w-11" />
-          BRIDGE HATCH
+          {BRAND.name}
         </h1>
         <p className="mt-3 text-sm leading-relaxed opacity-90">
           制作案件の発注・管理プラットフォームのデモ版です。<br />

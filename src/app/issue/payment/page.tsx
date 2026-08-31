@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { BRAND } from "@/lib/brand";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
@@ -170,7 +171,7 @@ function PaymentSettings() {
       </section>
 
       <p className="mt-6 text-xs leading-relaxed text-slate-400">
-        カード決済手数料はStripeの料率（国内カード3.6%）が受取側にかかります。BRIDGE HATCHは決済手数料を上乗せしません。
+        カード決済手数料はStripeの料率（国内カード3.6%）が受取側にかかります。{BRAND.name}は決済手数料を上乗せしません。
       </p>
     </div>
   );

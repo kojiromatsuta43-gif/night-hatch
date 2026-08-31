@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 import { usePathname } from "next/navigation";
 import { Mascot, useMascot } from "./MascotProvider";
 import { useEffect, useState } from "react";
@@ -75,7 +76,7 @@ export default function Sidebar({ role }: { role?: string }) {
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white px-4 py-6 md:block">
         <div className="mb-8 flex items-center gap-2 px-2">
           <Mascot className="h-8 w-8 shrink-0" />
-          <span className="text-lg font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+          <span className="text-lg font-bold tracking-tight text-hive-900">{BRAND.name}</span>
         </div>
         {navLinks}
       </aside>
@@ -93,7 +94,7 @@ export default function Sidebar({ role }: { role?: string }) {
         </button>
         <span className="flex items-center gap-2">
           <Mascot className="h-7 w-7" />
-          <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+          <span className="text-base font-bold tracking-tight text-hive-900">{BRAND.name}</span>
         </span>
       </header>
 
@@ -108,7 +109,7 @@ export default function Sidebar({ role }: { role?: string }) {
             <div className="mb-6 flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <Mascot className="h-7 w-7" />
-                <span className="text-base font-bold tracking-tight text-hive-900">BRIDGE HATCH</span>
+                <span className="text-base font-bold tracking-tight text-hive-900">{BRAND.name}</span>
               </span>
               <button
                 onClick={() => setOpen(false)}

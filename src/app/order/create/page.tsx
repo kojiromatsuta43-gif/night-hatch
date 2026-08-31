@@ -1,18 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   agreementsFor,
   ASPECT_OPTIONS,
-  CATEGORIES,
   DURATION_OPTIONS,
   EDIT_STYLE_OPTIONS,
   ELEMENT_OPTIONS,
   FORMAT_OPTIONS,
   MEDIA_OPTIONS,
   MIDCHECK_OPTIONS,
-  POINTS_BY_CATEGORY,
   isScriptCategory,
   isVideoCategory,
   DEFAULT_VIDEO_CATEGORY,
@@ -21,6 +19,7 @@ import {
   TONE_OPTIONS,
   VIDEO_USE_OPTIONS,
 } from "@/lib/data";
+import { BRAND, catalogItem, catalogGroups, clampQuantity, pointsFor, type Question } from "@/lib/brand";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
@@ -128,6 +127,92 @@ function Section({ n, title, children }: { n: number; title: string; children: R
   );
 }
 
+/** 看板ごとの質問（src/lib/brands/*.ts）を1問ぶん描く。答えは detail に見出し付きで保存される */
+function QuestionField({
+  q,
+  value,
+  onChange,
+}: {
+  q: Question;
+  value: unknown;
+  onChange: (v: unknown) => void;
+}) {
+  const label = (
+    <span className="flex items-center gap-2 text-sm font-semibold">
+      {q.label}
+      {q.required && <span className="rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span>}
+    </span>
+  );
+  const hint = q.hint ? <p className="mt-1 text-xs text-slate-500">{q.hint}</p> : null;
+  if (q.type === "multi") {
+    return (
+      <div>
+        <CheckGroup label={q.label} options={q.options ?? []} values={(value as string[]) ?? []} onChange={onChange} required={q.required} hint={q.hint} />
+      </div>
+    );
+  }
+  if (q.type === "select") {
+    return (
+      <div>
+        <RadioGroup label={q.label} options={q.options ?? []} value={(value as string) ?? ""} onChange={onChange} required={q.required} />
+        {hint}
+      </div>
+    );
+  }
+  if (q.type === "file") {
+    const files = (value as UploadedFile[]) ?? [];
+    return (
+      <div>
+        {label}
+        <div className="mt-1">
+          <FileDrop label="ファイルを選ぶ" hint={q.hint} value={files} onChange={onChange} required={q.required} />
+        </div>
+      </div>
+    );
+  }
+  if (q.type === "textarea") {
+    return (
+      <label className="block">
+        <span className="flex items-center gap-2">
+          {label}
+          <MicButton onText={(t) => onChange(((value as string) ?? "") + t)} />
+        </span>
+        <textarea value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} rows={3} placeholder={q.placeholder} className={inputClass} />
+        {hint}
+      </label>
+    );
+  }
+  return (
+    <label className="block">
+      {label}
+      <input
+        type={q.type === "number" ? "number" : q.type === "date" ? "date" : "text"}
+        value={(value as string) ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={q.placeholder}
+        className={inputClass}
+      />
+      {hint}
+    </label>
+  );
+}
+
+/** 生の答えを、確認画面や案件詳細で読める形にする */
+function answerText(v: unknown): string {
+  if (Array.isArray(v)) {
+    if (v.length === 0) return "";
+    if (typeof v[0] === "object" && v[0] && "name" in (v[0] as object)) return `ファイル${v.length}件`;
+    return (v as string[]).join("、");
+  }
+  if (v === undefined || v === null) return "";
+  return String(v);
+}
+
+function answered(q: Question, v: unknown): boolean {
+  if (Array.isArray(v)) return v.length > 0;
+  return typeof v === "string" ? v.trim().length > 0 : v !== undefined && v !== null && v !== "";
+}
+
 /**
  * 「次へ」が押せないときに、何が足りないのかを名前で見せる。
  * ボタンが暗いだけでは、どこまで戻ればいいのか分からないため。
@@ -216,6 +301,12 @@ function OrderForm() {
   const [otherNote, setOtherNote] = useState("");
   const [midCheck, setMidCheck] = useState("");
 
+  // 看板ごとの質問（飲食メニュー・テレアポなど）への答え。見出し→値
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
+  const setAnswer = (key: string, v: unknown) => setAnswers((a) => ({ ...a, [key]: v }));
+  // 件数メニュー（テレアポ）の件数
+  const [qty, setQty] = useState<number>(0);
+
   const [agreed, setAgreed] = useState(false);
   const search = useSearchParams();
 
@@ -246,10 +337,17 @@ function OrderForm() {
       .catch(() => {});
   }, []);
 
-  const points = useMemo(() => (category ? POINTS_BY_CATEGORY[category] ?? 10 : 0), [category]);
-  const isScript = isScriptCategory(category);
-  const isVideo = isVideoCategory(category);
-  const agreements = agreementsFor(category);
+  const item = catalogItem(category);
+  const quantity = item?.quantity;
+  const qtyValue = quantity ? clampQuantity(item!, qty || quantity.min) : 0;
+  const points = category ? pointsFor(category, quantity ? { [quantity.key]: qtyValue } : undefined) : 0;
+  // 看板側に質問が用意されているカテゴリは、その質問を出す（動画・台本の専用フォームより優先）
+  const genericQuestions: Question[] = item?.questions ?? [];
+  const useGeneric = genericQuestions.length > 0;
+  const isScript = !useGeneric && isScriptCategory(category);
+  const isVideo = !useGeneric && isVideoCategory(category);
+  const agreements = item?.agreements ?? agreementsFor(category);
+  const allQuestions: Question[] = [...BRAND.commonQuestions, ...genericQuestions];
 
   // 「次へ」が押せないとき、何が足りないのかを名前で出せるようにする。
   // ボタンが暗いだけだと、どこに戻ればいいのか分からないため。
@@ -280,10 +378,28 @@ function OrderForm() {
     !(materialUrl.trim() || materialFiles.length > 0) && "2 素材動画（URLかファイル）",
   ].filter(Boolean) as string[];
 
-  const missingStep2 = isScript ? missingScript : isVideo ? missingVideo : [];
+  const missingGeneric = allQuestions.filter((q) => q.required && !answered(q, answers[q.key])).map((q) => q.label);
+
+  const missingStep2 = [
+    ...(isScript ? missingScript : isVideo ? missingVideo : []),
+    ...missingGeneric,
+  ];
   const step2Ok = missingStep2.length === 0;
 
-  const detail = () =>
+  const detail = (): Record<string, unknown> => {
+    const generic: Record<string, unknown> = {};
+    for (const q of allQuestions) {
+      const v = answers[q.key];
+      if (!answered(q, v)) continue;
+      generic[q.key] = Array.isArray(v) && typeof v[0] === "object"
+        ? (v as UploadedFile[]).map((f) => ({ name: f.name, url: f.url }))
+        : v;
+    }
+    if (quantity) generic[quantity.key] = qtyValue;
+    return { ...generic, ...specificDetail() };
+  };
+
+  const specificDetail = () =>
     isVideo
       ? {
           用途: videoUse,
@@ -305,7 +421,9 @@ function OrderForm() {
           その他指示: otherNote,
           中間チェック: midCheck,
         }
-      : { media, duration, purpose, target, emotion, format, tone, elements, keywords, ngWords, refUrl };
+      : isScript
+        ? { media, duration, purpose, target, emotion, format, tone, elements, keywords, ngWords, refUrl }
+        : {};
 
   const submit = async () => {
     try {
@@ -350,23 +468,65 @@ function OrderForm() {
         <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6">
           <div>
             <div className="text-sm font-semibold mb-2">案件の種類</div>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-                    category === c
-                      ? "border-honey-500 bg-honey-400 text-hive-900"
-                      : "border-slate-300 bg-white hover:border-honey-400"
-                  }`}
-                >
-                  {c}
-                </button>
+            <div className="space-y-3">
+              {catalogGroups().map((g) => (
+                <div key={g.heading}>
+                  <div className="mb-1.5 text-xs font-semibold text-slate-500">{g.heading}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {g.items.map((c) => (
+                      <button
+                        type="button"
+                        key={c.name}
+                        onClick={() => setCategory(c.name)}
+                        title={`${c.size}／${c.days}`}
+                        className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                          category === c.name
+                            ? "border-honey-500 bg-honey-400 text-hive-900"
+                            : "border-slate-300 bg-white hover:border-honey-400"
+                        }`}
+                      >
+                        {c.name}
+                        <span className="ml-1.5 text-xs opacity-70">
+                          {c.quantity ? `${c.points}pt〜` : `${c.points}pt`}
+                          {c.monthly ? "/月" : ""}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
+            {item && (
+              <p className="mt-2 text-xs text-slate-500">
+                {item.size}。目安 {item.days}
+                {item.monthly ? "。月額メニューは1か月ぶんを1件として発注します" : ""}
+              </p>
+            )}
           </div>
+          {quantity && item && (
+            <label className="block">
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                {quantity.key}
+                <span className="rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-600">必須</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={quantity.min}
+                  max={quantity.max}
+                  step={quantity.step}
+                  value={qty || quantity.min}
+                  onChange={(e) => setQty(Number(e.target.value))}
+                  onBlur={() => setQty(clampQuantity(item, qty || quantity.min))}
+                  className={`${inputClass} max-w-[10rem]`}
+                />
+                <span className="mt-1 text-sm text-slate-500">{quantity.unit}</span>
+              </span>
+              <p className="mt-1 text-xs text-slate-500">
+                {quantity.hint ?? ""}（{quantity.min}〜{quantity.max}{quantity.unit}、{quantity.step}{quantity.unit}きざみ）
+              </p>
+            </label>
+          )}
           <label className="block">
             <span className="text-sm font-semibold">タイトル（案件名）</span>
             <span className="flex items-center gap-2">
@@ -641,9 +801,25 @@ function OrderForm() {
             </>
           )}
 
-          {!isScript && !isVideo && (
+          {BRAND.commonQuestions.length > 0 && (
+            <Section n={1} title="お店のこと">
+              {BRAND.commonQuestions.map((q) => (
+                <QuestionField key={q.key} q={q} value={answers[q.key]} onChange={(v) => setAnswer(q.key, v)} />
+              ))}
+            </Section>
+          )}
+
+          {useGeneric && (
+            <Section n={BRAND.commonQuestions.length > 0 ? 2 : 1} title={`${category}について`}>
+              {genericQuestions.map((q) => (
+                <QuestionField key={q.key} q={q} value={answers[q.key]} onChange={(v) => setAnswer(q.key, v)} />
+              ))}
+            </Section>
+          )}
+
+          {!isScript && !isVideo && !useGeneric && (
             <p className="text-sm text-slate-500">
-              このカテゴリの詳細ヒアリングフォームは今後追加予定です。「次へ」で確認画面に進んでください。
+              このカテゴリは概要説明だけで発注できます。伝えたいことがあれば「戻る」で概要に書き足してください。
             </p>
           )}
 
@@ -718,6 +894,23 @@ function OrderForm() {
                   {subtitle || "-"} / {midCheck || "-"}
                 </dd>
               </div>
+            </dl>
+          )}
+
+          {(allQuestions.length > 0 || quantity) && (
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 rounded-lg bg-slate-50 p-4 text-sm">
+              {quantity && (
+                <div>
+                  <dt className="text-slate-500">{quantity.key}</dt>
+                  <dd className="font-medium">{qtyValue}{quantity.unit}</dd>
+                </div>
+              )}
+              {allQuestions.filter((q) => answered(q, answers[q.key])).map((q) => (
+                <div key={q.key} className={q.type === "textarea" ? "sm:col-span-2" : ""}>
+                  <dt className="text-slate-500">{q.label}</dt>
+                  <dd className="font-medium whitespace-pre-wrap break-words">{answerText(answers[q.key])}</dd>
+                </div>
+              ))}
             </dl>
           )}
 

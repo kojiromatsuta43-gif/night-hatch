@@ -6,9 +6,9 @@ import { generateText, activeProvider, NoProviderError } from "@/lib/server/llm"
 import { searchRefVideos, mightBeSearch, extractSearchKeyword, VideoHit } from "@/lib/server/agent-tools";
 import { notifyNewJob } from "@/lib/server/notifications";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
+import { BRAND } from "@/lib/brand";
 
-const SYSTEM = `あなたは「BRIDGE HATCHエージェント」。中小企業のSNS運用・制作発注を支援するアシスタントです。
-主な仕事: ショート動画の台本作成、構成案の提案、発注内容の整理、競合分析のアドバイス。
+const SYSTEM = `${BRAND.agent.system}
 台本を作るときは以下の形式で出力する:
 # タイトル
 ## フック (0:00-0:03)
@@ -41,7 +41,7 @@ type OrderDraft = {
 type Msg = { role: "user" | "assistant"; content: string; payload?: Payload };
 
 /** エージェント経由で発注できるカテゴリ（ポイントは共通表から引く） */
-const ORDERABLE = ["ショート動画編集", "台本作成（ショート）"];
+const ORDERABLE = BRAND.orderable;
 
 function loadSession(userId: string, sessionId: string | undefined, title: string) {
   const db = getDb();
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
     const projectId = crypto.randomUUID();
     const description = d.scriptText
       ? `AIエージェントで作成した台本を基に制作してください。\n\n${d.note}`.trim()
-      : (d.note || `参考動画「${d.refTitle}」のような${d.category}を希望`);
+      : (d.note || (d.refTitle ? `参考動画「${d.refTitle}」のような${d.category}を希望` : `${d.category}を希望（詳細はAIエージェントで相談済み）`));
     db.transaction(() => {
       db.prepare(
         "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on, assignee_id) VALUES (?,?,?,?,?,?,?,'募集中',?,?,NULL)"
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
       const content =
         items.length > 0
           ? `「${keyword}」に近い参考動画が ${items.length} 件見つかりました。気になる動画の「この動画で台本を作る」を押すと、その動画を参考にした台本をつくり、そのまま発注まで進めます。`
-          : `「${keyword}」に合う参考動画は、いま登録されている参考動画の中には見つかりませんでした。業種を変えて探すか、TikTokのURLを動画分析に貼っていただく方法もあります。`;
+          : `「${keyword}」に合う参考動画は、いま登録されている参考動画の中には見つかりませんでした。${BRAND.agent.searchEmptyHint}`;
       const msg: Msg = { role: "assistant", content, payload: { type: "videos", keyword, items } };
       return reply(session.id, [...history, userMsg], msg, { ngFlags: [] });
     }

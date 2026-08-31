@@ -1,30 +1,14 @@
+import { BRAND, CATALOG } from "./brand";
+
 /**
- * 制作メニュー。SODATSUの作業ポイント表に合わせている。
+ * 制作メニュー。中身は看板（BRIDGE / FOOD）ごとに src/lib/brands/ にある。
  * 営業資料の一覧と必ず一致させること（食い違うと商談で数字が合わなくなる）。
  */
-export const CATEGORIES = [
-  "ショート動画編集",
-  "動画編集（3分）",
-  "台本作成（ショート）",
-  "台本作成（長尺）",
-  "サムネイル作成",
-  "カルーセル投稿",
-  "LPファーストビュー",
-  "投稿文＋画像",
-  "軽微な修正",
-] as const;
+export const CATEGORIES: readonly string[] = CATALOG.map((c) => c.name);
 
-export const POINTS_BY_CATEGORY: Record<string, number> = {
-  "ショート動画編集": 7,
-  "動画編集（3分）": 14,
-  "台本作成（ショート）": 4,
-  "台本作成（長尺）": 10,
-  "サムネイル作成": 7,
-  "カルーセル投稿": 14,
-  "LPファーストビュー": 20,
-  "投稿文＋画像": 10,
-  "軽微な修正": 2,
-};
+export const POINTS_BY_CATEGORY: Record<string, number> = Object.fromEntries(CATALOG.map((c) => [c.name, c.points]));
+
+export const BRAND_NAME = BRAND.name;
 
 /** 詳細ヒアリングの出し分けに使う */
 export const SCRIPT_CATEGORIES: string[] = ["台本作成（ショート）", "台本作成（長尺）"];

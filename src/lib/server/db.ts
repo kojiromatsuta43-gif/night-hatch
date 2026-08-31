@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
+import { BRAND } from "../brand";
 import crypto from "crypto";
 import refSeed from "./ref-seed.json";
 
@@ -364,21 +365,7 @@ function init(db: Database.Database) {
   const industryCount = (db.prepare("SELECT COUNT(*) AS c FROM industries").get() as { c: number }).c;
   if (industryCount === 0) {
     const insIndustry = db.prepare("INSERT INTO industries (id, name, sort_order) VALUES (?, ?, ?)");
-    [
-      "美容クリニック",
-      "美容サロン",
-      "美容室",
-      "ネイル",
-      "マツエク",
-      "飲食",
-      "フィットネス",
-      "医療・介護",
-      "不動産",
-      "建設・工務店",
-      "買取・リユース",
-      "製造業",
-      "人材・転職",
-    ].forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
+    BRAND.industries.forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
   }
   // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
   db.prepare(

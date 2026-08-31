@@ -8,6 +8,7 @@ import PlatformIcon from "@/components/PlatformIcon";
 import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
 import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
+import { BRAND, catalogGroups } from "@/lib/brand";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
 
@@ -45,28 +46,16 @@ const OTHER_STARTS = [
   },
 ];
 
-const OTHER_GROUPS: {
-  heading: string;
-  items: { label: string; category: string; size: string; days: string }[];
-}[] = [
-  {
-    heading: "動画まわり",
-    items: [
-      { label: "動画編集（3分）", category: "動画編集（3分）", size: "会社紹介・商品説明", days: "5日〜" },
-      { label: "台本を作る（長尺）", category: "台本作成（長尺）", size: "3分以上の構成台本", days: "3日〜" },
-      { label: "サムネイルを作る", category: "サムネイル作成", size: "16:9", days: "2日〜" },
-    ],
-  },
-  {
-    heading: "SNS・Webまわり",
-    items: [
-      { label: "カルーセル投稿を作る", category: "カルーセル投稿", size: "Instagram複数枚", days: "4日〜" },
-      { label: "投稿文＋画像を作る", category: "投稿文＋画像", size: "SNS投稿1本ぶん", days: "3日〜" },
-      { label: "LPのファーストビュー", category: "LPファーストビュー", size: "訴求・デザイン込み", days: "1週間〜" },
-      { label: "軽微な修正を頼む", category: "軽微な修正", size: "テロップ差し替えなど", days: "1日〜" },
-    ],
-  },
-];
+// 発注トップに並べる「その他の制作物」。看板ごとのメニュー表から、上の大きな入口（ショート動画・台本）を除いたもの
+const HERO_CATEGORIES = [DEFAULT_VIDEO_CATEGORY, DEFAULT_SCRIPT_CATEGORY];
+const OTHER_GROUPS = catalogGroups()
+  .map((g) => ({
+    heading: g.heading,
+    items: g.items
+      .filter((c) => !HERO_CATEGORIES.includes(c.name))
+      .map((c) => ({ label: c.name, category: c.name, size: c.size, days: c.days, monthly: c.monthly, quantity: c.quantity })),
+  }))
+  .filter((g) => g.items.length > 0);
 
 function Avatar({ a }: { a: RefAccount }) {
   if (a.icon_url) {
@@ -116,7 +105,7 @@ export default function OrderTopPage() {
       {/* メイン: ショート動画 */}
       <section className="rounded-3xl border-2 border-honey-300 bg-gradient-to-br from-honey-50 to-honey-100 p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold text-hive-900">ショート動画をつくる</h1>
+          <h1 className="text-2xl font-bold text-hive-900">{BRAND.hero.title}</h1>
           <div className="flex gap-1.5">
             <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold text-hive-900 shadow-sm">
               <PlatformIcon platform="tiktok" /> TikTok
@@ -139,9 +128,7 @@ export default function OrderTopPage() {
             <span className="rounded-full bg-honey-400 px-2.5 py-0.5 text-xs font-bold text-hive-900">いちばん人気</span>
             <span className="text-lg font-bold text-hive-900 sm:text-xl">「このアカウントみたいに作りたい」から始める</span>
           </div>
-          <p className="mt-1.5 text-sm text-slate-500">
-            お手本のアカウントを選ぶ → 真似したい動画を選ぶ → そのまま台本作成・動画編集の発注に進めます。
-          </p>
+          <p className="mt-1.5 text-sm text-slate-500">{BRAND.hero.sub}。お手本のアカウントを選ぶ → 真似したい動画を選ぶ → そのまま台本作成・動画編集の発注に進めます。</p>
 
           <div className="mt-4 flex items-center gap-4">
             <div className="flex -space-x-2.5">
@@ -207,7 +194,7 @@ export default function OrderTopPage() {
                       <span className="block truncate text-sm font-semibold text-slate-700 group-hover:text-hive-900">{it.label}</span>
                       <span className="block text-[11px] text-slate-400">{it.size}</span>
                       <span className="block text-[11px] font-medium text-honey-700">
-                        {POINTS_BY_CATEGORY[it.category]}<PointInline /> ／ {it.days}
+                        {POINTS_BY_CATEGORY[it.category]}<PointInline />{it.quantity ? "〜" : ""}{it.monthly ? "／月" : ""} ／ {it.days}
                       </span>
                     </span>
                   </Link>

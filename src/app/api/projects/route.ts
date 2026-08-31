@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
 import { notifyNewJob } from "@/lib/server/notifications";
+import { pointsFor, catalogItem } from "@/lib/brand";
 
 export async function GET() {
   const user = await requireUser();
@@ -21,17 +22,23 @@ export async function POST(req: Request) {
   const user = await requireUser();
   const body = await req.json();
   const db = getDb();
-  if (user.points < body.points) {
-    return NextResponse.json({ error: "はちみつPが足りません" }, { status: 400 });
+  if (!catalogItem(String(body.category ?? ""))) {
+    return NextResponse.json({ error: "案件の種類を選んでください" }, { status: 400 });
+  }
+  const detail = (body.detail && typeof body.detail === "object" ? body.detail : {}) as Record<string, unknown>;
+  // 消費ptは画面から送られた数字ではなく、メニュー表（件数メニューは件数×単価）から計算し直す
+  const points = pointsFor(String(body.category), detail);
+  if (user.points < points) {
+    return NextResponse.json({ error: `はちみつPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
   }
   const id = crypto.randomUUID();
   const tx = db.transaction(() => {
     db.prepare(
       "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on, assignee_id) VALUES (?, ?, ?, ?, ?, ?, ?, '募集中', ?, ?, ?)"
-    ).run(id, user.id, body.title, body.category, body.description, body.points, body.deadline, JSON.stringify(body.detail ?? {}), new Date().toISOString().slice(0, 10), body.assignee_id ?? null);
-    db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(body.points, user.id);
+    ).run(id, user.id, body.title, body.category, body.description, points, body.deadline, JSON.stringify(detail), new Date().toISOString().slice(0, 10), body.assignee_id ?? null);
+    db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(points, user.id);
     db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'spend', ?)").run(
-      crypto.randomUUID(), user.id, -body.points, `案件登録: ${body.title}`
+      crypto.randomUUID(), user.id, -points, `案件登録: ${body.title}`
     );
   });
   tx();
