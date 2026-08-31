@@ -257,7 +257,7 @@ function FullOrderTop() {
                   >
                     <FormatIcon category={it.category} />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-slate-700 group-hover:text-hive-900">{it.label}</span>
+                      <span className="block text-sm font-semibold leading-snug text-slate-700 group-hover:text-hive-900">{it.label}</span>
                       <span className="block text-[11px] text-slate-400">{it.size}</span>
                       <span className="block text-[11px] font-medium text-honey-700">
                         {POINTS_BY_CATEGORY[it.category]}<PointInline />{it.quantity ? "〜" : ""}{it.monthly ? "／月" : ""} ／ {it.days}
