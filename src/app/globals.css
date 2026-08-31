@@ -43,22 +43,6 @@ body {
   .animate-bee-float, .animate-bee-dot { animation: none; }
 }
 
-/* ============================================================
-   キャラクター切替: ぶたモードの配色（ピンク）
-   機能ごと消す場合はこのブロックも削除してOK
-   ============================================================ */
-html[data-mascot="pig"] {
-  --app-bg: #FFF7FA;
-  --color-honey-50: #FFF1F5;
-  --color-honey-100: #FFE3EC;
-  --color-honey-200: #FFC8DA;
-  --color-honey-300: #FFA6C1;
-  --color-honey-400: #FF8FAF;
-  --color-honey-500: #F2699A;
-  --color-honey-600: #D44C7D;
-  --color-honey-700: #A83B60;
-  --color-honey-800: #7A2B46;
-}
 
 /* ============================================================
    印刷時の共通ルール

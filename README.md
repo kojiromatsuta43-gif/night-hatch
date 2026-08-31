@@ -74,26 +74,6 @@ src/
 
 ## 既知の制約 / 未実装
 
-- ポイント購入は決済を行わないモック実装
-- フリーランス側の応募・納品フローは未実装
-- 案件詳細ページは未実装（一覧のステータス変更のみ）
+- Stripeはテスト環境で運用中（本番切替時は Railway の STRIPE_* をライブ用に差し替え）
+- トレンド動画検索は自社DB（約1,400本）を対象。外部トレンドデータは未接続
 - SQLiteをファイルで持つため、Vercel等のサーバーレス環境には非対応。デプロイ先はRailway / Fly.io / VPS等（永続ボリュームが必要）を想定
-
-## キャラクター切替（遊び心の機能）
-
-ヘッダーのタブでマスコット・ポイントの呼び名・配色が切り替わります。
-
-- 🐝 ハチ（はちみつP🍯・既定）
-- 🐖 ぶた（飼料P🌿）
-
-選んだキャラは **その端末のブラウザにだけ** 保存されます（localStorage）。サーバー・DBには一切保存していないので、他の人の画面には影響しません。
-
-| やりたいこと | 方法 |
-|---|---|
-| 切替機能ごと無効化 | `src/lib/mascot.ts` の `MASCOT_SWITCHER_ENABLED` を `false` にする（全員ハチ固定） |
-| キャラを増やす | `src/lib/mascot.ts` の `MASCOTS` に足し、絵のコンポーネントを作って `MascotProvider.tsx` の `Mascot` に分岐を追加 |
-
-### コードごと削除する場合
-1. `src/lib/mascot.ts` / `src/components/MascotProvider.tsx` / `src/components/PigLogo.tsx` / `src/components/MascotSwitcher.tsx` を削除
-2. `src/app/globals.css` 末尾の `html[data-mascot="pig"]` ブロックを削除
-3. `<Mascot .../>` を `<BeeLogo .../>` に、`<PointInline />` を `🍯` に、`{mascot.pointName}` を `はちみつP` に戻す

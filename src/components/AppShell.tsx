@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
 import MascotProvider, { PointInline, useMascot } from "./MascotProvider";
-import MascotSwitcher from "./MascotSwitcher";
 import NotificationBell from "./NotificationBell";
 import { api, Me } from "@/lib/client";
 
@@ -43,7 +42,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <Sidebar role={me.role} />
         <div className="flex-1 min-w-0 pt-14 md:pt-0">
           <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
-            <MascotSwitcher />
             <NotificationBell />
             {me.role !== "freelancer" && <PointsChip points={me.points} />}
             <span className="text-sm text-slate-600">{me.name}</span>
