@@ -76,6 +76,10 @@ function CallResultSummary({ p }: { p: Detail }) {
   const t = sumCallResults(p.deliverables);
   let target = 0;
   try { target = Number((JSON.parse(p.detail ?? "{}") as Record<string, unknown>)["架電件数"] ?? 0); } catch { /* 無視 */ }
+  if (!target) {
+    const m = /(\d+)コール/.exec(p.category);
+    if (m) target = Number(m[1]);
+  }
   const pct = target > 0 ? Math.min(100, Math.round((t.calls / target) * 100)) : 0;
   const rate = t.connected > 0 ? `${Math.round((t.appts / t.connected) * 1000) / 10}%` : "-";
   return (
@@ -188,7 +192,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const kind = allowedKinds.includes(pickedKind) ? pickedKind : (allowedKinds[0] ?? "提出");
   // 担当者が決まる前は、発注側にフィードバックの出しどころがない
   const waitingForAssignee = isOwner && !isAssignee && !p?.assignee_id && me?.role !== "admin";
-  const isCallJob = p?.category === "テレアポ営業";
+  const isCallJob = /架電|テレアポ営業/.test(p?.category ?? "");
   const callResultTitle =
     isCallJob && kind === "提出" && (calls || connected || appts)
       ? `架電結果 ${Number(calls) || 0}/${Number(connected) || 0}/${Number(appts) || 0}`

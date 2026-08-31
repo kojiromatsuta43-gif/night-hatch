@@ -242,7 +242,12 @@ function FullOrderTop() {
         <div className="grid gap-4 md:grid-cols-2">
           {OTHER_GROUPS.map((g) => (
             <div key={g.heading} className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-hive-900">{g.heading}</h3>
+              <h3 className="mb-3 text-sm font-bold text-hive-900">
+                {g.heading}
+                {BRAND.groups.find((x) => x.name === g.heading)?.sub && (
+                  <span className="ml-2 text-xs font-normal text-slate-500">{BRAND.groups.find((x) => x.name === g.heading)?.sub}</span>
+                )}
+              </h3>
               <div className="grid gap-2 sm:grid-cols-2">
                 {g.items.map((it) => (
                   <Link

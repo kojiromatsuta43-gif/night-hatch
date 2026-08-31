@@ -98,6 +98,39 @@ export default function FormatIcon({ category }: { category: string }) {
           <path d="M47 15l4 4" stroke={HIVE} strokeWidth="1.4" />
         </Frame>
       );
+    case "テレアポ用トークスクリプト作成": // 台本 + 吹き出し
+      return (
+        <Frame>
+          <rect x="14" y="5" width="26" height="38" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="18" y="11" width="14" height="3" rx="1.5" fill={HIVE} />
+          <rect x="18" y="18" width="18" height="2" rx="1" fill={LINE} />
+          <rect x="18" y="23" width="18" height="2" rx="1" fill={LINE} />
+          <path d="M40 24h16a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-9l-5 4v-4h-2a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3z" fill={HONEY} />
+        </Frame>
+      );
+    case "営業リスト作成（200件）": // 表（リスト）
+      return (
+        <Frame>
+          <rect x="8" y="8" width="48" height="32" rx="2.5" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="8" y="8" width="48" height="8" rx="2.5" fill={HONEY} />
+          <rect x="12" y="20" width="12" height="2.5" rx="1" fill={HIVE} />
+          <rect x="28" y="20" width="24" height="2.5" rx="1" fill={LINE} />
+          <rect x="12" y="27" width="12" height="2.5" rx="1" fill={HIVE} />
+          <rect x="28" y="27" width="24" height="2.5" rx="1" fill={LINE} />
+          <rect x="12" y="34" width="12" height="2.5" rx="1" fill={HIVE} />
+          <rect x="28" y="34" width="24" height="2.5" rx="1" fill={LINE} />
+        </Frame>
+      );
+    case "テレアポ架電（200コール）": // 受話器
+    case "テレアポ営業":
+    case "宴会・法人向けテレアポ営業":
+      return (
+        <Frame>
+          <path d="M20 8c-3 0-6 2-6 6 0 14 12 26 26 26 4 0 6-3 6-6l-2-6-8 2-3-3-5-5 2-8-6-2z" fill={HIVE} />
+          <path d="M40 10a10 10 0 0 1 10 10" stroke={HONEY} strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path d="M40 4a16 16 0 0 1 16 16" stroke={HONEY} strokeWidth="3" fill="none" strokeLinecap="round" />
+        </Frame>
+      );
     default:
       return (
         <Frame>
