@@ -3,11 +3,15 @@ import path from "path";
 import { DATA_DIR, getDb } from "./db";
 
 /**
- * 参考動画のサムネイル置き場。
+ * 参考動画のサムネイルとアカウントのアイコンの置き場。
  *
- * TikTokのサムネイルURLは署名付きで、時間が経つと期限切れになり画像が出なくなる。
- * そこで一度取得した画像を自分のディスクに保存し、以降はそこから配る。
- * 期限切れだった場合は oEmbed で最新のURLを取り直して自己修復する。
+ * TikTokの画像URLは署名付きで、時間が経つと期限切れになり画像が出なくなる。
+ * そこで一度取得した画像を縮小して自分のディスクに保存し、以降はそこから配る。
+ *
+ * 速さの考え方:
+ *  - 画面からの要求では「ディスクにあるものだけ」を即返す。無ければ裏で取りに行く（画面を待たせない）
+ *  - 取り込み直後と定期的に、まだ無い画像を裏でまとめて温めておく
+ *  - 画像は縮小（サムネ 幅480 / アイコン 96px）して、一覧で何十枚出しても軽いようにする
  */
 export const THUMB_DIR = path.join(DATA_DIR, "thumbs");
 
@@ -18,9 +22,8 @@ export function ensureThumbDir() {
   if (!fs.existsSync(THUMB_DIR)) fs.mkdirSync(THUMB_DIR, { recursive: true });
 }
 
-function filePathFor(id: string) {
-  return path.join(THUMB_DIR, `${id}.jpg`);
-}
+const thumbPath = (id: string) => path.join(THUMB_DIR, `${id}.jpg`);
+const iconPath = (id: string) => path.join(THUMB_DIR, `icon-${id}.jpg`);
 
 async function download(url: string): Promise<Buffer | null> {
   if (!url) return null;
@@ -55,39 +58,69 @@ async function freshThumbUrl(videoUrl: string): Promise<string | null> {
   }
 }
 
-/**
- * 同じ画像を同時に何度も取りに行かないための待ち合わせ表。
- * 一覧は30枚を一斉に要求するので、これが無いと同じoEmbedを何度も叩いてしまう。
- */
-const inFlight = new Map<string, Promise<Buffer | null>>();
-
-export function getThumbnail(videoId: string): Promise<Buffer | null> {
-  const running = inFlight.get(videoId);
-  if (running) return running;
-  const task = fetchThumbnail(videoId).finally(() => inFlight.delete(videoId));
-  inFlight.set(videoId, task);
-  return task;
+/** 縮小して JPEG にする。sharp が無い環境ではそのまま返す */
+async function shrink(buf: Buffer, width: number): Promise<Buffer> {
+  try {
+    const sharp = (await import("sharp")).default;
+    return await sharp(buf).rotate().resize({ width, withoutEnlargement: true }).jpeg({ quality: 72, mozjpeg: true }).toBuffer();
+  } catch {
+    return buf;
+  }
 }
 
-/**
- * サムネイル画像を返す。無ければ取りに行き、保存してから返す。
- * 取れなかった場合は null（呼び出し側で代替表示にする）。
- */
-async function fetchThumbnail(videoId: string): Promise<Buffer | null> {
-  ensureThumbDir();
-  const cached = filePathFor(videoId);
-  if (fs.existsSync(cached)) {
-    try {
-      return fs.readFileSync(cached);
-    } catch {
-      // 壊れていたら取り直す
-    }
-  }
+// ── 裏で取りに行く仕組み（同時に走らせる数を絞り、同じものを二重に取らない） ──
+const inFlight = new Map<string, Promise<Buffer | null>>();
+const queue: (() => Promise<void>)[] = [];
+let running = 0;
+const CONCURRENCY = 4;
 
+function pump() {
+  while (running < CONCURRENCY && queue.length > 0) {
+    const job = queue.shift()!;
+    running++;
+    job().finally(() => {
+      running--;
+      pump();
+    });
+  }
+}
+
+function enqueue(key: string, work: () => Promise<Buffer | null>): Promise<Buffer | null> {
+  const existing = inFlight.get(key);
+  if (existing) return existing;
+  const p = new Promise<Buffer | null>((resolve) => {
+    queue.push(async () => {
+      try {
+        resolve(await work());
+      } catch {
+        resolve(null);
+      }
+    });
+    pump();
+  }).finally(() => inFlight.delete(key));
+  inFlight.set(key, p);
+  return p;
+}
+
+export function pendingCount() {
+  return queue.length + running;
+}
+
+// ── サムネイル ──
+export function readCachedThumbnail(videoId: string): Buffer | null {
+  try {
+    return fs.readFileSync(thumbPath(videoId));
+  } catch {
+    return null;
+  }
+}
+
+async function fetchAndStoreThumbnail(videoId: string): Promise<Buffer | null> {
+  ensureThumbDir();
   const db = getDb();
-  const row = db
-    .prepare("SELECT id, url, thumbnail FROM ref_videos WHERE id = ?")
-    .get(videoId) as { id: string; url: string; thumbnail: string } | undefined;
+  const row = db.prepare("SELECT id, url, thumbnail FROM ref_videos WHERE id = ?").get(videoId) as
+    | { id: string; url: string; thumbnail: string }
+    | undefined;
   if (!row) return null;
 
   // ①保存済みURLで試す ②だめなら oEmbed で取り直す
@@ -100,39 +133,84 @@ async function fetchThumbnail(videoId: string): Promise<Buffer | null> {
     }
   }
   if (!buf) return null;
-
+  const small = await shrink(buf, 480);
   try {
-    fs.writeFileSync(cached, buf);
+    fs.writeFileSync(thumbPath(videoId), small);
   } catch {
     // 保存に失敗しても画像は返す
   }
-  return buf;
+  return small;
+}
+
+/** 裏で取りに行く（待たない）。すでにあれば何もしない */
+export function queueThumbnail(videoId: string): Promise<Buffer | null> {
+  if (fs.existsSync(thumbPath(videoId))) return Promise.resolve(readCachedThumbnail(videoId));
+  return enqueue(`v:${videoId}`, () => fetchAndStoreThumbnail(videoId));
+}
+
+/** 画像を返す。無ければ取りに行って待つ（管理用途など、待ってよいときだけ） */
+export function getThumbnail(videoId: string): Promise<Buffer | null> {
+  return queueThumbnail(videoId);
+}
+
+// ── アカウントのアイコン ──
+export function readCachedIcon(accountId: string): Buffer | null {
+  try {
+    return fs.readFileSync(iconPath(accountId));
+  } catch {
+    return null;
+  }
+}
+
+async function fetchAndStoreIcon(accountId: string): Promise<Buffer | null> {
+  ensureThumbDir();
+  const row = getDb().prepare("SELECT icon_url FROM ref_accounts WHERE id = ?").get(accountId) as { icon_url: string } | undefined;
+  if (!row?.icon_url) return null;
+  const buf = await download(row.icon_url);
+  if (!buf) return null;
+  const small = await shrink(buf, 96);
+  try {
+    fs.writeFileSync(iconPath(accountId), small);
+  } catch {
+    // 保存に失敗しても画像は返す
+  }
+  return small;
+}
+
+export function queueIcon(accountId: string): Promise<Buffer | null> {
+  if (fs.existsSync(iconPath(accountId))) return Promise.resolve(readCachedIcon(accountId));
+  return enqueue(`a:${accountId}`, () => fetchAndStoreIcon(accountId));
+}
+
+// ── まとめて温める ──
+/** 1アカウント分のサムネイルを先に温めておく（応答は待たせない） */
+export function warmAccountThumbnails(accountId: string) {
+  const rows = getDb().prepare("SELECT id FROM ref_videos WHERE account_id = ?").all(accountId) as { id: string }[];
+  for (const r of rows) void queueThumbnail(r.id);
 }
 
 /**
- * 1アカウント分のサムネイルを先に温めておく。
- * 画面を開いた時点で走らせておくと、利用者が見るころには自前のディスクから出せる。
- * 待たせないように呼び出し側では await しない。
+ * まだディスクに無い画像を、再生数の多い順に最大 limit 件だけ裏で取りに行く。
+ * 取り込み直後と、定期処理から呼ぶ。
  */
-export function warmAccountThumbnails(accountId: string) {
-  const rows = getDb()
-    .prepare("SELECT id FROM ref_videos WHERE account_id = ?")
-    .all(accountId) as { id: string }[];
-
-  let i = 0;
-  const CONCURRENCY = 4;
-  const next = async (): Promise<void> => {
-    const row = rows[i++];
-    if (!row) return;
-    const file = filePathFor(row.id);
-    if (!fs.existsSync(file)) {
-      try {
-        await getThumbnail(row.id);
-      } catch {
-        // 1枚失敗しても続ける
-      }
-    }
-    return next();
-  };
-  for (let n = 0; n < CONCURRENCY; n++) void next();
+export function warmMissingImages(limit = 300): { thumbs: number; icons: number } {
+  ensureThumbDir();
+  const db = getDb();
+  let thumbs = 0;
+  let icons = 0;
+  const videos = db.prepare("SELECT id FROM ref_videos ORDER BY views DESC, created_at DESC LIMIT 5000").all() as { id: string }[];
+  for (const v of videos) {
+    if (thumbs >= limit) break;
+    if (fs.existsSync(thumbPath(v.id))) continue;
+    void queueThumbnail(v.id);
+    thumbs++;
+  }
+  const accounts = db.prepare("SELECT id FROM ref_accounts WHERE icon_url <> '' ORDER BY followers DESC").all() as { id: string }[];
+  for (const a of accounts) {
+    if (icons >= limit) break;
+    if (fs.existsSync(iconPath(a.id))) continue;
+    void queueIcon(a.id);
+    icons++;
+  }
+  return { thumbs, icons };
 }

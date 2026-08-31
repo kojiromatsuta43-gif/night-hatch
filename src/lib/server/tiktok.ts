@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getDb } from "./db";
 import { generateJson, activeProvider } from "./llm";
+import { warmMissingImages } from "./thumbs";
 
 /**
  * TikTok の参考動画を外部データサービス（Apify の TikTok Scraper）から取り込む。
@@ -289,6 +290,8 @@ export async function runTikTokSync(queryIds?: string[]): Promise<SyncResult> {
       for (const q of qs) stamp.run(new Date().toISOString(), err ? `失敗: ${err.slice(0, 120)}` : `${items.length}本`, q.id);
     }
     const pruned = pruneImported();
+    // 取り込んだ動画のサムネイルとアイコンを裏で先に温める（画面を開いたときに待たせない）
+    warmMissingImages(1500);
     // AIでお手本になるアカウントだけ残す（鍵が無いときは飛ばす）
     let judged = { checked: 0, removed: 0 };
     try {

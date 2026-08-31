@@ -1,5 +1,6 @@
 import { getDb } from "./db";
 import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
+import { warmMissingImages, pendingCount } from "./thumbs";
 
 /**
  * TikTok の参考動画を定期的に自動で取り込む。
@@ -42,10 +43,22 @@ async function tick() {
   }
 }
 
+/** まだ無いサムネイル・アイコンを少しずつ裏で取りに行く（起動直後と5分ごと） */
+function warm() {
+  try {
+    if (pendingCount() > 50) return; // 前の分がまだ残っていれば待つ
+    warmMissingImages(600);
+  } catch (e) {
+    console.error("[thumbs warm]", e instanceof Error ? e.message : e);
+  }
+}
+
 export function start() {
   if (started) return;
   started = true;
   // 起動直後は少し待ってから（DB初期化と重ならないように）
   setTimeout(() => void tick(), 60_000);
   setInterval(() => void tick(), 30 * 60_000);
+  setTimeout(warm, 20_000);
+  setInterval(warm, 5 * 60_000);
 }

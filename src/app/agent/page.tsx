@@ -10,6 +10,7 @@ import ClientOnly from "@/components/ClientOnly";
 import PlatformIcon from "@/components/PlatformIcon";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
 import { BRAND } from "@/lib/brand";
+import { retryImage } from "@/lib/client-img";
 
 // ============================================================
 //  AIエージェント
@@ -365,7 +366,7 @@ function PayloadView({
                 alt=""
                 loading="lazy"
                 className="absolute inset-0 h-full w-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                onError={retryImage}
               />
               <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[9px] text-white">
                 <PlatformIcon platform="tiktok" className="h-2.5 w-2.5" mono /> TikTok
