@@ -273,6 +273,13 @@ export const food: Brand = {
     { key: "店のURL", label: "HP・SNS・Googleマップのいずれか", type: "text" },
   ],
   catalog,
+  orderStyle: "simple",
+  groups: [
+    { name: "集客", sub: "新しいお客さんを呼びたい", examples: ["Googleマップ対策", "ホームページ", "チラシ"] },
+    { name: "店内・売上", sub: "客単価と利益を上げたい", examples: ["メニュー開発", "原価の見直し", "POP"] },
+    { name: "動画・SNS", sub: "TikTok・Instagramで知ってもらいたい", examples: ["ショート動画", "運用おまかせ", "投稿文"] },
+    { name: "運営", sub: "日々の面倒を減らしたい", examples: ["口コミ返信", "マニュアル", "補助金"] },
+  ],
   orderable: ["ショート動画編集", "台本作成（ショート）", "POP作成", "投稿文＋画像", "口コミ返信文（10件）", "メニュー開発"],
   agent: {
     system: `あなたは「FOOD HATCHエージェント」。飲食店の集客・メニュー開発・SNS運用を支援するアシスタントです。

@@ -49,6 +49,13 @@ export type Brand = {
   /** 全カテゴリで最初に聞くこと（店舗情報など） */
   commonQuestions: Question[];
   catalog: CatalogItem[];
+  /**
+   * 発注画面の形。full = 通常版（カテゴリ一覧＋詳細ヒアリング3段階）、
+   * simple = 店舗向け（困りごと→メニュー→1画面で入力→確認）
+   */
+  orderStyle: "full" | "simple";
+  /** グループの説明（simple の発注トップに出す） */
+  groups: { name: string; sub: string; examples: string[] }[];
   /** AIエージェント経由で発注できるカテゴリ */
   orderable: string[];
   agent: {

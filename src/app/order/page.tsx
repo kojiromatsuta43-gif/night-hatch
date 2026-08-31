@@ -73,7 +73,67 @@ function Avatar({ a }: { a: RefAccount }) {
   );
 }
 
+/**
+ * 店舗向けの発注トップ（FOOD HATCH）。
+ * 「困りごと」4つから選ぶだけ。メニューの一覧は次の画面で、そのグループの分だけ見せる。
+ */
+function SimpleOrderTop() {
+  const { me } = useMe();
+  const { mascot } = useMascot();
+  return (
+    <div className="max-w-3xl">
+      <div className="mb-6 flex items-start gap-3">
+        <Mascot className="h-12 w-12 shrink-0" />
+        <div className="relative rounded-2xl border border-honey-200 bg-white px-4 py-3 shadow-sm">
+          <span className="absolute -left-2 top-4 h-4 w-4 rotate-45 border-b border-l border-honey-200 bg-white" />
+          <p className="text-sm font-medium text-hive-900">こんにちは、{me?.name ?? "ゲスト"}さん！今日はお店の何を良くしますか？</p>
+          <p className="mt-1 text-xs text-slate-500">
+            いまの残高は <Link href="/points" className="font-semibold text-honey-600 hover:underline">{me?.points ?? 0}<PointInline /></Link>。
+            1<PointInline />＝1,000円（税別）です。
+          </p>
+        </div>
+      </div>
+
+      <h1 className="mb-3 text-xl font-bold text-hive-900">困りごとから選ぶ</h1>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {BRAND.groups.map((g) => (
+          <Link
+            key={g.name}
+            href={`/order/menu?group=${encodeURIComponent(g.name)}`}
+            className="group rounded-3xl border-2 border-honey-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-honey-400 hover:shadow-md"
+          >
+            <div className="text-lg font-bold text-hive-900">{g.sub}</div>
+            <div className="mt-1 text-xs font-semibold text-honey-700">{g.name}</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {g.examples.map((e) => (
+                <span key={e} className="rounded-full bg-honey-50 px-2.5 py-1 text-xs text-hive-900">{e}</span>
+              ))}
+            </div>
+            <div className="mt-3 text-right text-sm font-bold text-honey-700 group-hover:underline">メニューを見る →</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Link href="/order/reference" className="rounded-2xl border border-slate-200 bg-white px-5 py-4 transition-colors hover:border-honey-400">
+          <div className="text-sm font-bold text-hive-900">伸びている飲食店の動画をまねる</div>
+          <div className="mt-1 text-xs text-slate-500">お手本の動画を選ぶと、台本と動画編集の発注にそのまま進めます</div>
+        </Link>
+        <Link href="/agent" className="rounded-2xl border border-slate-200 bg-white px-5 py-4 transition-colors hover:border-honey-400">
+          <div className="text-sm font-bold text-hive-900">{mascot.consult}</div>
+          <div className="mt-1 text-xs text-slate-500">「新メニューを考えたい」「口コミに返したい」など、話しかけるだけで整理します</div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderTopPage() {
+  if (BRAND.orderStyle === "simple") return <SimpleOrderTop />;
+  return <FullOrderTop />;
+}
+
+function FullOrderTop() {
   const { me } = useMe();
   const { mascot } = useMascot();
   const [accounts, setAccounts] = useState<RefAccount[]>([]);

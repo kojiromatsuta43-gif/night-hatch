@@ -50,6 +50,8 @@ export const bridge: Brand = {
   ],
   commonQuestions: [],
   catalog,
+  orderStyle: "full",
+  groups: [],
   orderable: ["ショート動画編集", "台本作成（ショート）"],
   agent: {
     system: `あなたは「BRIDGE HATCHエージェント」。中小企業のSNS運用・制作発注を支援するアシスタントです。
