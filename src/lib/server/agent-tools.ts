@@ -3,9 +3,9 @@ import { generateJson } from "./llm";
 
 // ============================================================
 //  エージェントの道具箱
-//  「◯◯で伸びてる動画見せて」→ 自社DB（87アカウント・約1,400本）を検索する。
-//  外部のトレンドデータ源が決まったら、この searchRefVideos の中身を
-//  差し替えるだけで画面はそのまま使える。
+//  「◯◯で伸びてる動画見せて」→ 自社DB を検索する。
+//  TikTok自動取り込み（管理画面）で再生数が入っている動画は再生数順、
+//  手入力の動画（再生数0）はフォロワー順で後ろに並ぶ。
 // ============================================================
 
 export type VideoHit = {
@@ -17,6 +17,8 @@ export type VideoHit = {
   handle: string;
   followers: number;
   industry: string;
+  views: number;
+  posted_at: string;
 };
 
 /** キーワードで参考動画を探す。アカウント名・業種・紹介文・キャプションを横断 */
@@ -37,12 +39,12 @@ export function searchRefVideos(keyword: string, limit = 9): VideoHit[] {
 
   return db
     .prepare(
-      `SELECT v.id, v.caption, v.url, v.hue,
+      `SELECT v.id, v.caption, v.url, v.hue, v.views, v.posted_at,
               a.name AS accountName, a.handle, a.followers, a.industry
          FROM ref_videos v
          JOIN ref_accounts a ON a.id = v.account_id
         WHERE ${cond}
-        ORDER BY a.followers DESC
+        ORDER BY v.views DESC, a.followers DESC
         LIMIT ?`
     )
     .all(...params, limit) as VideoHit[];

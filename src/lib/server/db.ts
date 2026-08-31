@@ -350,7 +350,14 @@ function init(db: Database.Database) {
   }
 
   const accCols = (db.prepare("PRAGMA table_info(ref_accounts)").all() as { name: string }[]).map((c) => c.name);
-  for (const [col, def] of [["icon_url", "TEXT NOT NULL DEFAULT ''"], ["profile_url", "TEXT NOT NULL DEFAULT ''"], ["video_count", "INTEGER NOT NULL DEFAULT 0"]] as const) {
+  for (const [col, def] of [
+    ["icon_url", "TEXT NOT NULL DEFAULT ''"],
+    ["profile_url", "TEXT NOT NULL DEFAULT ''"],
+    ["video_count", "INTEGER NOT NULL DEFAULT 0"],
+    // TikTok自動取り込みの記録
+    ["last_synced_at", "TEXT NOT NULL DEFAULT ''"],
+    ["source", "TEXT NOT NULL DEFAULT ''"], // 'apify' なら自動取り込みで作られた
+  ] as const) {
     if (!accCols.includes(col)) db.exec(`ALTER TABLE ref_accounts ADD COLUMN ${col} ${def}`);
   }
 
@@ -419,9 +426,55 @@ function init(db: Database.Database) {
   }
 
   const videoCols = (db.prepare("PRAGMA table_info(ref_videos)").all() as { name: string }[]).map((c) => c.name);
-  if (!videoCols.includes("thumbnail")) {
-    db.exec("ALTER TABLE ref_videos ADD COLUMN thumbnail TEXT NOT NULL DEFAULT ''");
+  // TikTok自動取り込み（Apify）で入る数値。手入力の動画は0のまま
+  for (const [col, def] of [
+    ["thumbnail", "TEXT NOT NULL DEFAULT ''"],
+    ["views", "INTEGER NOT NULL DEFAULT 0"],
+    ["likes", "INTEGER NOT NULL DEFAULT 0"],
+    ["comments", "INTEGER NOT NULL DEFAULT 0"],
+    ["shares", "INTEGER NOT NULL DEFAULT 0"],
+    ["posted_at", "TEXT NOT NULL DEFAULT ''"],
+    ["fetched_at", "TEXT NOT NULL DEFAULT ''"],
+    ["source_id", "TEXT NOT NULL DEFAULT ''"], // TikTok側の動画ID。同じ動画を二重登録しないための鍵
+  ] as const) {
+    if (!videoCols.includes(col)) db.exec(`ALTER TABLE ref_videos ADD COLUMN ${col} ${def}`);
   }
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS ux_ref_videos_source ON ref_videos(source_id) WHERE source_id <> ''");
+  db.exec("CREATE INDEX IF NOT EXISTS ix_ref_videos_views ON ref_videos(views DESC)");
+
+  // 再生数の履歴（日ごと）。「今週伸びた動画」はこの差分で出す
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ref_video_stats (
+      video_id TEXT NOT NULL,
+      day TEXT NOT NULL,
+      views INTEGER NOT NULL DEFAULT 0,
+      likes INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (video_id, day)
+    );
+    -- 自動取り込みの設定。profile=@ハンドル、search=検索ワード、hashtag=#タグ
+    CREATE TABLE IF NOT EXISTS tiktok_queries (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL,
+      value TEXT NOT NULL,
+      industry TEXT NOT NULL DEFAULT '',
+      active INTEGER NOT NULL DEFAULT 1,
+      last_run_at TEXT,
+      last_result TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_tiktok_queries ON tiktok_queries(kind, value);
+    -- 取り込みの実行記録（管理画面に出す）
+    CREATE TABLE IF NOT EXISTS tiktok_sync_runs (
+      id TEXT PRIMARY KEY,
+      started_at TEXT NOT NULL DEFAULT (datetime('now')),
+      finished_at TEXT,
+      status TEXT NOT NULL DEFAULT 'running',
+      queries INTEGER NOT NULL DEFAULT 0,
+      videos INTEGER NOT NULL DEFAULT 0,
+      accounts INTEGER NOT NULL DEFAULT 0,
+      message TEXT NOT NULL DEFAULT ''
+    );
+  `);
 
   const licensed = db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE handle = '@higakiyakitori'").get() as { c: number };
   if (licensed.c === 0) {

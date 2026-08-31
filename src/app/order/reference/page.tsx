@@ -8,7 +8,28 @@ import PlatformIcon from "@/components/PlatformIcon";
 import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 import { PointInline } from "@/components/MascotProvider";
 
-type RefVideo = { id: string; caption: string; url: string; thumbnail: string; hue: number };
+type RefVideo = {
+  id: string; caption: string; url: string; thumbnail: string; hue: number;
+  views?: number; likes?: number; posted_at?: string; growth?: number;
+};
+type Trending = RefVideo & { account_id: string; accountName: string; handle: string; followers: number; industry: string; growth: number; spread: number };
+type VideoSort = "views" | "growth" | "new";
+
+const fmtCount = (n: number) => (n >= 100000000 ? `${(n / 100000000).toFixed(1)}億` : n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString());
+const fmtDate = (iso?: string) => (iso ? iso.slice(0, 10).replace(/-/g, "/") : "");
+
+/** サムネイルの上に出す再生数・伸びのバッジ（再生数が無い手入力の動画には出さない） */
+function VideoBadges({ v }: { v: RefVideo }) {
+  if (!v.views) return null;
+  return (
+    <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
+      <span className="rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white">▶ {fmtCount(v.views)}</span>
+      {(v.growth ?? 0) > 0 && (
+        <span className="rounded bg-honey-400 px-1.5 py-0.5 text-[10px] font-bold text-hive-900">↑ {fmtCount(v.growth!)}/週</span>
+      )}
+    </span>
+  );
+}
 
 function tiktokVideoId(url: string): string | null {
   const m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
@@ -69,6 +90,9 @@ export default function OrderPage() {
   const [playerReady, setPlayerReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(false);
+  const [videoSort, setVideoSort] = useState<VideoSort>("views");
+  const [trending, setTrending] = useState<Trending[]>([]);
+  const [trendSort, setTrendSort] = useState<VideoSort>("growth");
 
   useEffect(() => {
     api<RefAccount[]>("/api/ref-accounts")
@@ -77,6 +101,21 @@ export default function OrderPage() {
       .finally(() => setLoading(false));
     api<Industry[]>("/api/industries").then(setIndustries).catch(() => {});
   }, []);
+
+  // いま伸びている動画（自動取り込み分があるときだけ出る）
+  useEffect(() => {
+    api<Trending[]>(`/api/ref-videos/trending?industry=${encodeURIComponent(industry)}&sort=${trendSort}&limit=12`)
+      .then(setTrending)
+      .catch(() => setTrending([]));
+  }, [industry, trendSort]);
+
+  const sortedVideos = useMemo(() => {
+    const vs = [...(selected?.videos ?? [])];
+    if (videoSort === "growth") return vs.sort((a, b) => (b.growth ?? 0) - (a.growth ?? 0) || (b.views ?? 0) - (a.views ?? 0));
+    if (videoSort === "new") return vs.sort((a, b) => (b.posted_at ?? "").localeCompare(a.posted_at ?? ""));
+    return vs.sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
+  }, [selected?.videos, videoSort]);
+  const hasStats = (selected?.videos ?? []).some((v) => (v.views ?? 0) > 0);
 
   const openAccount = async (a: RefAccount) => {
     setSelected(a);
@@ -222,6 +261,48 @@ export default function OrderPage() {
             </div>
           )}
 
+          {trending.length > 0 && (
+            <section className="mb-8">
+              <div className="mb-2 flex flex-wrap items-center gap-3">
+                <h2 className="text-base font-bold text-hive-900">いま伸びている動画</h2>
+                <div className="flex gap-1 text-xs">
+                  {([["growth", "今週の伸び"], ["views", "再生数"], ["new", "新着"]] as const).map(([k, label]) => (
+                    <button
+                      key={k}
+                      onClick={() => setTrendSort(k)}
+                      className={`rounded-full px-2.5 py-1 ${trendSort === k ? "bg-honey-400 font-semibold text-hive-900" : "border border-slate-300 text-slate-500"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-slate-400">{industry === "すべて" ? "全業種" : industry}・毎日更新</span>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {trending.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      const acc = accounts.find((a) => a.id === t.account_id);
+                      if (acc) void openAccount(acc).then(() => { setVideo(t); setPlaying(false); setPlayerReady(false); });
+                    }}
+                    className="group relative w-32 shrink-0 overflow-hidden rounded-xl text-left"
+                    style={{ aspectRatio: "9/16", background: `linear-gradient(160deg, hsl(${t.hue}, 45%, 30%), hsl(${t.hue + 30}, 50%, 15%))` }}
+                    title={t.caption}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/api/ref-videos/${t.id}/thumbnail`} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" onError={retryThumbnail} />
+                    <VideoBadges v={t} />
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-6">
+                      <span className="line-clamp-2 text-[11px] font-semibold leading-snug text-white">{shortCaption(t.caption, 24)}</span>
+                      <span className="mt-0.5 block truncate text-[10px] text-white/80">{t.accountName}{t.spread > 0 ? `・拡散${t.spread}倍` : ""}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((a) => (
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
@@ -275,7 +356,22 @@ export default function OrderPage() {
               <span><b>{selected.videos?.length ?? selected.video_count}</b> 本</span>
             </div>
           </div>
-          <h2 className="mb-3 text-sm font-semibold">参考動画を選択</h2>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <h2 className="text-sm font-semibold">参考動画を選択</h2>
+            {hasStats && (
+              <div className="flex gap-1 text-xs">
+                {([["views", "再生数順"], ["growth", "今週伸びた順"], ["new", "新着順"]] as const).map(([k, label]) => (
+                  <button
+                    key={k}
+                    onClick={() => setVideoSort(k)}
+                    className={`rounded-full px-2.5 py-1 ${videoSort === k ? "bg-honey-400 font-semibold text-hive-900" : "border border-slate-300 text-slate-500"}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {loadingVideos && (
             <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
               動画を読み込んでいます...
@@ -293,7 +389,7 @@ export default function OrderPage() {
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {(selected.videos ?? []).map((v) => (
+            {sortedVideos.map((v) => (
               <button
                 key={v.id}
                 onClick={() => { setVideo(v); setPlaying(false); setPlayerReady(false); }}
@@ -312,6 +408,7 @@ export default function OrderPage() {
                 <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                   <PlatformIcon platform="tiktok" className="h-3 w-3" mono /> ショート動画
                 </span>
+                <VideoBadges v={v} />
                 <span
                   className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-7"
                   title={v.caption}
@@ -319,6 +416,7 @@ export default function OrderPage() {
                   <span className="line-clamp-2 text-[11px] font-semibold leading-snug text-white">
                     {shortCaption(v.caption)}
                   </span>
+                  {v.posted_at && <span className="mt-0.5 block text-[10px] text-white/70">{fmtDate(v.posted_at)}</span>}
                 </span>
               </button>
             ))}
@@ -377,6 +475,15 @@ export default function OrderPage() {
                 </span>
               </button>
             )}
+            {video.views ? (
+              <p className="mt-2 flex justify-center gap-3 text-xs text-slate-600">
+                <span>▶ {fmtCount(video.views)} 再生</span>
+                {video.likes ? <span>♥ {fmtCount(video.likes)}</span> : null}
+                {(video.growth ?? 0) > 0 && <span className="font-semibold text-honey-700">↑ 今週 +{fmtCount(video.growth!)}</span>}
+                {selected.followers > 0 && <span>拡散 {Math.round((video.views / selected.followers) * 10) / 10}倍</span>}
+                {video.posted_at && <span>{fmtDate(video.posted_at)} 投稿</span>}
+              </p>
+            ) : null}
             <p className="mt-2 text-center text-xs text-slate-400">
               {selected.handle}
               {video.url ? (

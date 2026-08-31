@@ -20,6 +20,7 @@ import { BRAND } from "@/lib/brand";
 type VideoHit = {
   id: string; caption: string; url: string; hue: number;
   accountName: string; handle: string; followers: number; industry: string;
+  views?: number; posted_at?: string;
 };
 type OrderDraft = {
   category: string; title: string; deadline: string; note: string;
@@ -376,7 +377,7 @@ function PayloadView({
             <div className="p-2">
               <div className="truncate text-[10px] font-semibold text-hive-900">{v.accountName}</div>
               <div className="text-[9px] text-slate-400">
-                {fmtFollowers(v.followers)}フォロワー ・ {v.industry}
+                {v.views ? `▶ ${fmtFollowers(v.views)}再生 ・ ` : ""}{fmtFollowers(v.followers)}フォロワー ・ {v.industry}
               </div>
               <div className="mt-1.5 flex gap-1">
                 <button

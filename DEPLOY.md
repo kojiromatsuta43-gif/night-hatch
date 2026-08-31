@@ -46,6 +46,9 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 | `GEMINI_API_KEY` | ご自身のキー | AI機能を使う場合 |
 | `ANTHROPIC_API_KEY` | ご自身のキー | Claudeを使う場合（任意） |
 | `NEXT_PUBLIC_APP_BRAND` | `bridge` または `food` | 看板の切替（未設定なら BRIDGE HATCH） |
+| `APIFY_TOKEN` | Apify の API トークン | TikTok 参考動画の自動取り込みを使う場合 |
+| `TIKTOK_AUTO_SYNC` | `on`（既定）/ `off` | 毎日の自動取り込みを止めたいとき |
+| `TIKTOK_SYNC_HOUR` | `4`（既定・日本時間） | 自動取り込みの時刻 |
 
 `PORT` はRailwayが自動で設定するため、こちらで指定する必要はありません。
 
@@ -97,6 +100,19 @@ BRIDGE HATCH と FOOD HATCH は同じコードで、`NEXT_PUBLIC_APP_BRAND` の�
 
 `NEXT_PUBLIC_` 付きの変数はビルド時に埋め込まれるので、値を変えたら必ず再デプロイしてください。
 制作メニューの中身は `src/lib/brands/food.ts`（飲食）と `src/lib/brands/bridge.ts`（BRIDGE）にあり、単価や質問項目はここを直せば両方の画面に反映されます。
+
+## TikTok 参考動画の自動取り込み（Apify）
+
+管理画面の「TikTok取り込み」タブで @ハンドル／検索ワード／#タグ を業種付きで登録し、「今すぐ全部取り込む」を押すと、
+外部データサービス（Apify の TikTok Scraper）から動画・再生数・いいね・投稿日・サムネイルが入ります。
+以後は毎日1回（日本時間4時以降）自動で更新され、再生数の履歴から「今週伸びた動画」を出します。
+
+1. https://apify.com でアカウントを作る（無料プランは月5ドル分の枠。1,000本あたり約1.7ドル）
+2. Settings → API tokens でトークンを作る
+3. Railway の Variables に `APIFY_TOKEN` として貼り付け → Deploy（値はチャット等に貼らない）
+4. 管理画面 → TikTok取り込み で設定を追加 → 今すぐ全部取り込む
+
+費用の目安: 設定1件あたり最新30本。30件の設定を週1回なら月3,600本＝約6ドル。毎日なら約25ドル。
 
 ## 本番運用に移る場合の追加作業
 

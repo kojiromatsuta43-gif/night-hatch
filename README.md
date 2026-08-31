@@ -62,6 +62,11 @@ src/
 定義は `src/lib/brands/bridge.ts` と `src/lib/brands/food.ts`、共通の型は `src/lib/brand-types.ts`。
 メニューに `questions` を書くと発注フォームの詳細ヒアリングに自動で出ます。`quantity` を書くと件数×単価のメニュー（テレアポ営業）になります。
 
+## TikTok 参考動画の自動取り込み
+
+`APIFY_TOKEN` を設定すると、管理画面「TikTok取り込み」から @ハンドル／検索ワード／#タグ を登録して動画と再生数を取り込めます（`src/lib/server/tiktok.ts`）。
+毎日の自動更新は `src/instrumentation.ts` → `src/lib/server/scheduler.ts`。再生数の履歴は `ref_video_stats`、「今週伸びた動画」は `/api/ref-videos/trending`。
+
 ## 主な機能
 
 - **参考動画からの発注** — 87アカウント・約1,400本のTikTok動画から選び、発注フォームに引き継ぎ。TikTok公式埋め込みで再生可能

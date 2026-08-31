@@ -1,0 +1,307 @@
+import crypto from "crypto";
+import { getDb } from "./db";
+
+/**
+ * TikTok の参考動画を外部データサービス（Apify の TikTok Scraper）から取り込む。
+ *
+ * すべてサーバー側で動き、ブラウザには業者名も鍵も出ない。
+ * 鍵は Railway の Variables `APIFY_TOKEN` に入れる（コードには書かない）。
+ *
+ * 流れ: 取り込み設定（@ハンドル／検索ワード／#タグ）を業種ごとにまとめて1回の実行にし、
+ *       返ってきた動画を source_id（TikTok側の動画ID）で二重登録せずに更新する。
+ *       再生数は日ごとに履歴（ref_video_stats）へ残し、「今週伸びた動画」の計算に使う。
+ */
+
+const APIFY_BASE = "https://api.apify.com/v2";
+const ACTOR = process.env.APIFY_TIKTOK_ACTOR ?? "clockworks~tiktok-scraper";
+const PER_QUERY = Number(process.env.TIKTOK_RESULTS_PER_QUERY ?? 30);
+
+export class NoApifyTokenError extends Error {
+  constructor() {
+    super("TikTok取り込みの鍵（APIFY_TOKEN）が設定されていません。Railway の Variables に追加してください。");
+  }
+}
+
+export type TikTokQuery = {
+  id: string;
+  kind: "profile" | "search" | "hashtag";
+  value: string;
+  industry: string;
+  active: number;
+  last_run_at: string | null;
+  last_result: string;
+};
+
+/** Apify から返る1本ぶん（必要な項目だけ。無い項目は空のまま扱う） */
+type ApifyItem = {
+  id?: string | number;
+  text?: string;
+  createTimeISO?: string;
+  createTime?: number;
+  webVideoUrl?: string;
+  playCount?: number;
+  diggCount?: number;
+  commentCount?: number;
+  shareCount?: number;
+  videoMeta?: { coverUrl?: string; originalCoverUrl?: string };
+  authorMeta?: {
+    name?: string; // @なしのハンドル
+    nickName?: string;
+    signature?: string;
+    avatar?: string;
+    fans?: number;
+    video?: number;
+    profileUrl?: string;
+  };
+};
+
+export type SyncResult = {
+  runId: string;
+  queries: number;
+  videos: number;
+  accounts: number;
+  message: string;
+};
+
+function token(): string {
+  const t = (process.env.APIFY_TOKEN ?? "").trim();
+  if (!t) throw new NoApifyTokenError();
+  return t;
+}
+
+export function isTikTokSyncConfigured(): boolean {
+  return Boolean((process.env.APIFY_TOKEN ?? "").trim());
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Actor を起動して終わるまで待ち、結果の一覧を返す */
+async function runActor(input: Record<string, unknown>, maxWaitMs = 15 * 60 * 1000): Promise<ApifyItem[]> {
+  const t = token();
+  const start = await fetch(`${APIFY_BASE}/acts/${ACTOR}/runs?token=${encodeURIComponent(t)}&waitForFinish=60`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!start.ok) {
+    const body = await start.text().catch(() => "");
+    throw new Error(`取り込みサービスの起動に失敗しました (HTTP ${start.status}) ${body.slice(0, 200)}`);
+  }
+  let run = (await start.json()).data as { id: string; status: string; defaultDatasetId: string };
+
+  const deadline = Date.now() + maxWaitMs;
+  while (!["SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"].includes(run.status)) {
+    if (Date.now() > deadline) throw new Error("取り込みに時間がかかりすぎたため中断しました（後でもう一度お試しください）");
+    await sleep(10_000);
+    const res = await fetch(`${APIFY_BASE}/actor-runs/${run.id}?token=${encodeURIComponent(t)}`, {
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) throw new Error(`実行状況の確認に失敗しました (HTTP ${res.status})`);
+    run = (await res.json()).data;
+  }
+  if (run.status !== "SUCCEEDED") throw new Error(`取り込みが完了しませんでした（状態: ${run.status}）`);
+
+  const items = await fetch(
+    `${APIFY_BASE}/datasets/${run.defaultDatasetId}/items?token=${encodeURIComponent(t)}&clean=true&format=json`,
+    { signal: AbortSignal.timeout(120_000) }
+  );
+  if (!items.ok) throw new Error(`結果の取得に失敗しました (HTTP ${items.status})`);
+  const data = (await items.json()) as unknown;
+  return Array.isArray(data) ? (data as ApifyItem[]) : [];
+}
+
+function normHandle(name: string): string {
+  const h = name.trim().replace(/^https?:\/\/(www\.)?tiktok\.com\//i, "").replace(/[/?].*$/, "");
+  return h.startsWith("@") ? h : `@${h}`;
+}
+
+/** 返ってきた動画を DB に反映する。戻り値は 追加/更新した動画数と 新規アカウント数 */
+function upsertItems(items: ApifyItem[], industry: string): { videos: number; accounts: number } {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10);
+
+  const findAccount = db.prepare("SELECT id, industry FROM ref_accounts WHERE handle = ?");
+  const insertAccount = db.prepare(
+    `INSERT INTO ref_accounts (id, name, handle, industry, followers, bio, icon_url, profile_url, video_count, last_synced_at, source)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'apify')`
+  );
+  const updateAccount = db.prepare(
+    `UPDATE ref_accounts SET name = COALESCE(NULLIF(?, ''), name), followers = CASE WHEN ? > 0 THEN ? ELSE followers END,
+        bio = COALESCE(NULLIF(?, ''), bio), icon_url = COALESCE(NULLIF(?, ''), icon_url),
+        profile_url = COALESCE(NULLIF(?, ''), profile_url), video_count = CASE WHEN ? > 0 THEN ? ELSE video_count END,
+        last_synced_at = ? WHERE id = ?`
+  );
+  const findVideo = db.prepare("SELECT id FROM ref_videos WHERE source_id = ?");
+  const findVideoByUrl = db.prepare("SELECT id FROM ref_videos WHERE url = ? AND source_id = ''");
+  const insertVideo = db.prepare(
+    `INSERT INTO ref_videos (id, account_id, caption, url, thumbnail, hue, views, likes, comments, shares, posted_at, fetched_at, source_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const updateVideo = db.prepare(
+    `UPDATE ref_videos SET caption = COALESCE(NULLIF(?, ''), caption), url = COALESCE(NULLIF(?, ''), url),
+        thumbnail = COALESCE(NULLIF(?, ''), thumbnail), views = ?, likes = ?, comments = ?, shares = ?,
+        posted_at = COALESCE(NULLIF(?, ''), posted_at), fetched_at = ?, source_id = ? WHERE id = ?`
+  );
+  const upsertStat = db.prepare(
+    "INSERT OR REPLACE INTO ref_video_stats (video_id, day, views, likes) VALUES (?, ?, ?, ?)"
+  );
+
+  let videos = 0;
+  let accounts = 0;
+  const tx = db.transaction(() => {
+    for (const it of items) {
+      const sourceId = String(it.id ?? "").trim();
+      const url = (it.webVideoUrl ?? "").trim();
+      if (!sourceId && !url) continue;
+      const a = it.authorMeta ?? {};
+      if (!a.name) continue;
+      const handle = normHandle(a.name);
+
+      // アカウント（無ければ作る。業種は取り込み設定のもの）
+      let acc = findAccount.get(handle) as { id: string; industry: string } | undefined;
+      if (!acc) {
+        const id = crypto.randomUUID();
+        insertAccount.run(
+          id, a.nickName || a.name, handle, industry || "その他", a.fans ?? 0, a.signature ?? "",
+          a.avatar ?? "", a.profileUrl ?? `https://www.tiktok.com/${handle}`, a.video ?? 0, now
+        );
+        acc = { id, industry };
+        accounts++;
+      } else {
+        updateAccount.run(
+          a.nickName ?? "", a.fans ?? 0, a.fans ?? 0, a.signature ?? "", a.avatar ?? "",
+          a.profileUrl ?? "", a.video ?? 0, a.video ?? 0, now, acc.id
+        );
+      }
+
+      const caption = (it.text ?? "").trim().slice(0, 300) || "参考動画";
+      const cover = it.videoMeta?.coverUrl || it.videoMeta?.originalCoverUrl || "";
+      const posted = it.createTimeISO || (it.createTime ? new Date(it.createTime * 1000).toISOString() : "");
+      const views = Number(it.playCount ?? 0) || 0;
+      const likes = Number(it.diggCount ?? 0) || 0;
+      const comments = Number(it.commentCount ?? 0) || 0;
+      const shares = Number(it.shareCount ?? 0) || 0;
+
+      // 既存の動画: source_id が同じ → 更新。手入力で同じURLのものがあれば、それに source_id を付けて更新
+      let v = (sourceId ? findVideo.get(sourceId) : undefined) as { id: string } | undefined;
+      if (!v && url) v = findVideoByUrl.get(url) as { id: string } | undefined;
+      let videoId: string;
+      if (v) {
+        updateVideo.run(caption, url, cover, views, likes, comments, shares, posted, now, sourceId, v.id);
+        videoId = v.id;
+      } else {
+        videoId = crypto.randomUUID();
+        insertVideo.run(videoId, acc.id, caption, url, cover, Math.floor(Math.random() * 360), views, likes, comments, shares, posted, now, sourceId);
+      }
+      upsertStat.run(videoId, today, views, likes);
+      videos++;
+    }
+  });
+  tx();
+  return { videos, accounts };
+}
+
+let syncing = false;
+export function isSyncing() {
+  return syncing;
+}
+
+/**
+ * 取り込みを実行する。queryIds を渡すとその設定だけ、省略時は有効な設定すべて。
+ * 業種ごとに1回の実行にまとめる（検索ワードで見つかった投稿者に業種を付けるため）。
+ */
+export async function runTikTokSync(queryIds?: string[]): Promise<SyncResult> {
+  if (syncing) throw new Error("取り込みを実行中です。終わるまでお待ちください。");
+  token(); // 未設定なら早めに止める
+  const db = getDb();
+  let queries = db.prepare("SELECT * FROM tiktok_queries WHERE active = 1 ORDER BY created_at").all() as TikTokQuery[];
+  if (queryIds?.length) queries = queries.filter((q) => queryIds.includes(q.id));
+  if (queries.length === 0) throw new Error("取り込む設定がありません。@ハンドルか検索ワードを登録してください。");
+
+  const runId = crypto.randomUUID();
+  db.prepare("INSERT INTO tiktok_sync_runs (id, queries) VALUES (?, ?)").run(runId, queries.length);
+  syncing = true;
+  let videos = 0;
+  let accounts = 0;
+  const notes: string[] = [];
+  try {
+    const groups = new Map<string, TikTokQuery[]>();
+    for (const q of queries) {
+      const key = q.industry || "";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(q);
+    }
+    for (const [industry, qs] of groups) {
+      const input: Record<string, unknown> = {
+        resultsPerPage: PER_QUERY,
+        profileSorting: "latest",
+        excludePinnedPosts: false,
+        shouldDownloadVideos: false,
+        shouldDownloadCovers: false,
+        shouldDownloadSubtitles: false,
+        shouldDownloadSlideshowImages: false,
+        shouldDownloadAvatars: false,
+      };
+      const profiles = qs.filter((q) => q.kind === "profile").map((q) => normHandle(q.value).slice(1));
+      const searches = qs.filter((q) => q.kind === "search").map((q) => q.value.trim());
+      const hashtags = qs.filter((q) => q.kind === "hashtag").map((q) => q.value.trim().replace(/^#/, ""));
+      if (profiles.length) input.profiles = profiles;
+      if (searches.length) {
+        input.searchQueries = searches;
+        input.searchSection = "/video";
+      }
+      if (hashtags.length) input.hashtags = hashtags;
+
+      let items: ApifyItem[] = [];
+      let err = "";
+      try {
+        items = await runActor(input);
+        const r = upsertItems(items, industry);
+        videos += r.videos;
+        accounts += r.accounts;
+      } catch (e) {
+        err = e instanceof Error ? e.message : String(e);
+        notes.push(`${industry || "業種なし"}: ${err}`);
+      }
+      const stamp = db.prepare("UPDATE tiktok_queries SET last_run_at = ?, last_result = ? WHERE id = ?");
+      for (const q of qs) stamp.run(new Date().toISOString(), err ? `失敗: ${err.slice(0, 120)}` : `${items.length}本`, q.id);
+    }
+    const message = notes.length ? notes.join(" / ") : `動画${videos}本を取り込み（新規アカウント${accounts}）`;
+    db.prepare("UPDATE tiktok_sync_runs SET finished_at = ?, status = ?, videos = ?, accounts = ?, message = ? WHERE id = ?").run(
+      new Date().toISOString(), notes.length && videos === 0 ? "failed" : "done", videos, accounts, message, runId
+    );
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_last_sync_at', ?)").run(new Date().toISOString());
+    return { runId, queries: queries.length, videos, accounts, message };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    db.prepare("UPDATE tiktok_sync_runs SET finished_at = ?, status = 'failed', message = ? WHERE id = ?").run(
+      new Date().toISOString(), message, runId
+    );
+    throw e;
+  } finally {
+    syncing = false;
+  }
+}
+
+/** 直近7日間の再生数の伸び（動画ごと）。履歴が無い動画は 0 */
+export function viewGrowth7d(videoIds: string[]): Map<string, number> {
+  const out = new Map<string, number>();
+  if (videoIds.length === 0) return out;
+  const db = getDb();
+  const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  // 7日以上前の記録があればその最新、無ければ一番古い記録（取り込みを始めたばかりのとき）と比べる
+  const stmt = db.prepare(
+    `SELECT s.video_id, v.views - s.views AS growth
+       FROM ref_video_stats s JOIN ref_videos v ON v.id = s.video_id
+      WHERE s.video_id = ?
+      ORDER BY (s.day <= ?) DESC, CASE WHEN s.day <= ? THEN s.day ELSE '' END DESC, s.day ASC
+      LIMIT 1`
+  );
+  for (const id of videoIds) {
+    const row = stmt.get(id, since, since) as { growth: number } | undefined;
+    out.set(id, row ? Math.max(0, row.growth) : 0);
+  }
+  return out;
+}
