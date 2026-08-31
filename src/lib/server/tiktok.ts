@@ -14,7 +14,7 @@ import { getDb } from "./db";
 
 const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR = process.env.APIFY_TIKTOK_ACTOR ?? "clockworks~tiktok-scraper";
-const PER_QUERY = Number(process.env.TIKTOK_RESULTS_PER_QUERY ?? 30);
+const PER_QUERY = Number(process.env.TIKTOK_RESULTS_PER_QUERY ?? 20);
 // 検索・タグで見つかった投稿のうち、お手本にならないものを除く条件
 //  - 日本語が入っていないキャプション（海外の投稿）
 //  - フォロワーが多すぎるアカウント（テレビ局・芸能人など、中小企業のお手本にならない）

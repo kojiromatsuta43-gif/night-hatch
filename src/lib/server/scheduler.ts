@@ -2,9 +2,10 @@ import { getDb } from "./db";
 import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
 
 /**
- * 毎日1回、TikTok の参考動画を自動で取り込む。
- * サーバー起動時に instrumentation.ts から start() が呼ばれ、30分ごとに「今日の分をまだやっていないか」を見る。
- * 実行時刻は日本時間の TIKTOK_SYNC_HOUR 時（既定 4時）以降の最初のチェック。
+ * TikTok の参考動画を定期的に自動で取り込む。
+ * サーバー起動時に instrumentation.ts から start() が呼ばれ、30分ごとに「そろそろか」を見る。
+ * 間隔は TIKTOK_SYNC_INTERVAL_DAYS 日（既定 7日）、実行時刻は日本時間 TIKTOK_SYNC_HOUR 時（既定 4時）以降。
+ * 費用の目安: 設定33件×20本=660本/回 ≒ 1.1ドル。週1回なら月5ドルの無料枠に収まる。毎日にするなら有料プランが要る。
  * TIKTOK_AUTO_SYNC=off で止められる。
  */
 let started = false;
@@ -22,8 +23,16 @@ async function tick() {
     if (now.getUTCHours() < hour) return;
     const today = now.toISOString().slice(0, 10);
     const db = getDb();
+    const intervalDays = Math.max(1, Number(process.env.TIKTOK_SYNC_INTERVAL_DAYS ?? 7));
     const last = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_auto_day'").get() as { value: string } | undefined)?.value;
-    if (last === today) return;
+    if (last) {
+      const elapsed = (new Date(today).getTime() - new Date(last).getTime()) / 86400000;
+      if (elapsed < intervalDays) return;
+    } else {
+      // 初回は手動の取り込み日を起点にする（入れた直後にもう一度回さない）
+      const lastSync = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_last_sync_at'").get() as { value: string } | undefined)?.value;
+      if (lastSync && (Date.now() - new Date(lastSync).getTime()) / 86400000 < intervalDays) return;
+    }
     const count = (db.prepare("SELECT COUNT(*) AS c FROM tiktok_queries WHERE active = 1").get() as { c: number }).c;
     if (count === 0) return;
     db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_auto_day', ?)").run(today);

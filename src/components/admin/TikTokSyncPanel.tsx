@@ -66,7 +66,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
         {st === null
           ? "読み込み中…"
           : st.configured
-            ? <>登録したアカウント・検索ワードの動画と再生数を、毎日1回自動で取り込みます。手動で入れた動画はそのまま残ります。
+            ? <>登録したアカウント・検索ワードの動画と再生数を、週1回自動で取り込みます（1回あたり設定1件につき最新20本）。手動で入れた動画はそのまま残ります。
                 <span className="ml-2 text-xs text-slate-500">最終取り込み {fmt(st.lastSync)}／取り込み済み {st.totals.synced} 本（全 {st.totals.videos} 本）</span></>
             : "取り込みの鍵（APIFY_TOKEN）がまだ設定されていません。Railway の Variables に追加すると使えるようになります。"}
       </div>
@@ -94,7 +94,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
           <button onClick={add} disabled={!value.trim() || !industry} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">追加</button>
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          検索ワードで見つかった投稿者は、ここで選んだ業種の参考アカウントとして自動登録されます。1回の取り込みで設定1件あたり最新30本まで。
+          検索ワードで見つかった投稿者は、ここで選んだ業種の参考アカウントとして自動登録されます。1回の取り込みで設定1件あたり最新20本まで。
         </p>
       </div>
 
