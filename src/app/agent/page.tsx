@@ -10,7 +10,7 @@ import ClientOnly from "@/components/ClientOnly";
 import PlatformIcon from "@/components/PlatformIcon";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
 import { BRAND } from "@/lib/brand";
-import { retryImage } from "@/lib/client-img";
+import { retryImage, thumbUrl } from "@/lib/client-img";
 
 // ============================================================
 //  AIエージェント
@@ -362,7 +362,7 @@ function PayloadView({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/ref-videos/${v.id}/thumbnail`}
+                src={thumbUrl(v.id)}
                 alt=""
                 loading="lazy"
                 className="absolute inset-0 h-full w-full object-cover"

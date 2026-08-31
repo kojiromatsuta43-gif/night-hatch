@@ -9,7 +9,7 @@ import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
 import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 import { BRAND, catalogGroups } from "@/lib/brand";
-import { retryImage } from "@/lib/client-img";
+import { retryImage, iconUrl } from "@/lib/client-img";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
 
@@ -61,7 +61,7 @@ const OTHER_GROUPS = catalogGroups()
 function Avatar({ a }: { a: RefAccount }) {
   if (a.icon_url) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`/api/ref-accounts/${a.id}/icon`} alt={a.name} title={a.name} onError={retryImage} className="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />;
+    return <img src={iconUrl(a.id)} alt={a.name} title={a.name} onError={retryImage} className="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />;
   }
   return (
     <span

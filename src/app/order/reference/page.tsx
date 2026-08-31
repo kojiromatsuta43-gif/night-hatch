@@ -7,7 +7,7 @@ import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
 import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 import { PointInline } from "@/components/MascotProvider";
-import { retryImage } from "@/lib/client-img";
+import { retryImage, thumbUrl, iconUrl } from "@/lib/client-img";
 
 type RefVideo = {
   id: string; caption: string; url: string; thumbnail: string; hue: number;
@@ -283,7 +283,7 @@ export default function OrderPage() {
                     title={t.caption}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/ref-videos/${t.id}/thumbnail`} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" onError={retryImage} />
+                    <img src={thumbUrl(t.id)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" onError={retryImage} />
                     <VideoBadges v={t} />
                     <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-2 pb-2 pt-6">
                       <span className="line-clamp-2 text-[11px] font-semibold leading-snug text-white">{shortCaption(t.caption, 24)}</span>
@@ -300,7 +300,7 @@ export default function OrderPage() {
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
                 {a.icon_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/ref-accounts/${a.id}/icon`} alt="" loading="lazy" decoding="async" onError={retryImage} className="mx-auto h-16 w-16 rounded-full object-cover" />
+                  <img src={iconUrl(a.id)} alt="" loading="lazy" decoding="async" onError={retryImage} className="mx-auto h-16 w-16 rounded-full object-cover" />
                 ) : (
                   <div
                     className="mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white"
@@ -407,7 +407,7 @@ export default function OrderPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/ref-videos/${v.id}/thumbnail`}
+                  src={thumbUrl(v.id)}
                   alt=""
                   loading="lazy"
                   decoding="async"
@@ -465,7 +465,7 @@ export default function OrderPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/ref-videos/${video.id}/thumbnail`}
+                  src={thumbUrl(video.id)}
                   alt=""
                   className="absolute inset-0 h-full w-full object-cover"
                   onError={retryImage}

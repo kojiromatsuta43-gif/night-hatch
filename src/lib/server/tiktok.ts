@@ -21,9 +21,10 @@ const PER_QUERY = Number(process.env.TIKTOK_RESULTS_PER_QUERY ?? 20);
 //  - 日本語が入っていないキャプション（海外の投稿）
 //  - フォロワーが多すぎるアカウント（テレビ局・芸能人など、中小企業のお手本にならない）
 const MAX_FOLLOWERS = Number(process.env.TIKTOK_MAX_FOLLOWERS ?? 2_000_000);
-const JP = /[\u3040-\u30ff\u4e00-\u9fff]/;
+// ひらがな・カタカナが入っていれば日本語とみなす（漢字だけだと中国語の投稿も通ってしまう）
+const KANA = /[\u3040-\u30ff]/;
 export function looksJapanese(text: string): boolean {
-  return JP.test(text ?? "");
+  return KANA.test(text ?? "");
 }
 
 export class NoApifyTokenError extends Error {
