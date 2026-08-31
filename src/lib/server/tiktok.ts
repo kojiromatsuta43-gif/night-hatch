@@ -433,9 +433,14 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
 
     let checked = 0;
     let removed = 0;
-    const CHUNK = 15;
-    for (let i = 0; i < rows.length; i += CHUNK) {
-      const chunk = rows.slice(i, i + CHUNK);
+    const CHUNK = 20;
+    const CONCURRENCY = 4; // AIの応答待ちが長いので、複数のかたまりを同時に投げる
+    const chunks: typeof rows[] = [];
+    for (let i = 0; i < rows.length; i += CHUNK) chunks.push(rows.slice(i, i + CHUNK));
+    let cursor = 0;
+    let failures = 0;
+
+    const judgeChunk = async (chunk: typeof rows) => {
       const prompt = chunk
         .map(
           (r, n) =>
@@ -445,17 +450,16 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
       let out: { results: { handle: string; keep: boolean; persona: string }[] };
       try {
         out = await generateJson(system, `次の${chunk.length}件を判定してください。\n\n${prompt}`, schema);
-      } catch (e) {
-        // 1回失敗したら残りは次回に回す（判定済みにはしない）
-        if (checked === 0) throw e;
-        break;
+      } catch {
+        failures++;
+        return; // 失敗ぶんは判定済みにせず次回に回す
       }
       const byHandle = new Map(out.results.map((x) => [x.handle.trim().toLowerCase(), x]));
       const now = new Date().toISOString();
-      const tx = db.transaction(() => {
+      db.transaction(() => {
         for (const r of chunk) {
           const j = byHandle.get(r.handle.toLowerCase());
-          if (!j) continue; // 返ってこなかったものは次回
+          if (!j) continue;
           checked++;
           if (j.keep) {
             mark.run(j.persona.slice(0, 40), now, r.id);
@@ -466,9 +470,16 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
             removed++;
           }
         }
-      });
-      tx();
-    }
+      })();
+    };
+    const worker = async () => {
+      while (cursor < chunks.length && failures < 3) {
+        const c = chunks[cursor++];
+        await judgeChunk(c);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, chunks.length) }, worker));
+    if (checked === 0 && failures > 0) throw new Error("AI審査の応答が得られませんでした（AIの鍵と残高を確認してください）");
     return { checked, removed };
   } finally {
     classifying = false;
