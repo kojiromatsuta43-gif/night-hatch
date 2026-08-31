@@ -433,8 +433,8 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
 
     let checked = 0;
     let removed = 0;
-    const CHUNK = 20;
-    const CONCURRENCY = 4; // AIの応答待ちが長いので、複数のかたまりを同時に投げる
+    const CHUNK = 10; // AIの1回の応答が長くなりすぎない量
+    const CONCURRENCY = 3; // AIの応答待ちが長いので複数同時に投げる（多すぎると混雑エラーになる）
     const chunks: typeof rows[] = [];
     for (let i = 0; i < rows.length; i += CHUNK) chunks.push(rows.slice(i, i + CHUNK));
     let cursor = 0;
@@ -450,8 +450,15 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
       let out: { results: { handle: string; keep: boolean; persona: string }[] };
       try {
         out = await generateJson(system, `次の${chunk.length}件を判定してください。\n\n${prompt}`, schema);
-      } catch {
+      } catch (e) {
         failures++;
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("[tiktok classify]", msg.slice(0, 300));
+        db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_classify_error', ?)").run(
+          `${new Date().toISOString()} ${msg.slice(0, 300)}`
+        );
+        // AIの混雑（429など）なら少し待ってから続ける
+        await sleep(15_000);
         return; // 失敗ぶんは判定済みにせず次回に回す
       }
       const byHandle = new Map(out.results.map((x) => [x.handle.trim().toLowerCase(), x]));
@@ -473,13 +480,14 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
       })();
     };
     const worker = async () => {
-      while (cursor < chunks.length && failures < 3) {
+      while (cursor < chunks.length && failures < 8) {
         const c = chunks[cursor++];
         await judgeChunk(c);
       }
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, chunks.length) }, worker));
     if (checked === 0 && failures > 0) throw new Error("AI審査の応答が得られませんでした（AIの鍵と残高を確認してください）");
+    if (failures === 0) db.prepare("DELETE FROM app_meta WHERE key = 'tiktok_classify_error'").run();
     return { checked, removed };
   } finally {
     classifying = false;

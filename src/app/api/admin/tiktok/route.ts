@@ -14,7 +14,8 @@ export async function GET() {
   const lastSync = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_last_sync_at'").get() as { value: string } | undefined)?.value ?? null;
   const totals = db.prepare("SELECT COUNT(*) AS videos, SUM(CASE WHEN source_id <> '' THEN 1 ELSE 0 END) AS synced FROM ref_videos").get();
   const unclassified = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE source = 'apify' AND classified_at = ''").get() as { c: number }).c;
-  return NextResponse.json({ configured: isTikTokSyncConfigured(), syncing: isSyncing(), classifying: isClassifying(), unclassified, queries, runs, lastSync, totals });
+  const classifyError = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_classify_error'").get() as { value: string } | undefined)?.value ?? null;
+  return NextResponse.json({ configured: isTikTokSyncConfigured(), syncing: isSyncing(), classifying: isClassifying(), unclassified, classifyError, queries, runs, lastSync, totals });
 }
 
 /** 取り込み設定を追加。kind: profile | search | hashtag */

@@ -10,7 +10,7 @@ import { api } from "@/lib/client";
 
 type Query = { id: string; kind: "profile" | "search" | "hashtag"; value: string; industry: string; active: number; last_run_at: string | null; last_result: string };
 type Run = { id: string; started_at: string; finished_at: string | null; status: string; queries: number; videos: number; accounts: number; message: string };
-type Status = { configured: boolean; syncing: boolean; classifying: boolean; unclassified: number; queries: Query[]; runs: Run[]; lastSync: string | null; totals: { videos: number; synced: number } };
+type Status = { configured: boolean; syncing: boolean; classifying: boolean; unclassified: number; classifyError: string | null; queries: Query[]; runs: Run[]; lastSync: string | null; totals: { videos: number; synced: number } };
 
 const KIND_LABEL: Record<Query["kind"], string> = { profile: "アカウント", search: "検索ワード", hashtag: "ハッシュタグ" };
 const fmt = (iso: string | null) => (iso ? iso.replace("T", " ").slice(0, 16) : "-");
@@ -168,6 +168,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
       </div>
 
       {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+      {st?.classifyError && <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">AI審査で止まった箇所があります: {st.classifyError}</div>}
 
       {st && st.runs.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white">
