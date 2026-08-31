@@ -30,8 +30,8 @@ const SNS_MONTHLY_QUESTIONS: Question[] = [
 
 const catalog: CatalogItem[] = [
   // ── 動画・SNS ──
-  { name: "ショート動画編集", points: 7, group: "動画・SNS", size: "TikTok・リール・ショート", days: "3日〜", questions: VIDEO_QUESTIONS },
-  { name: "台本作成（ショート）", points: 4, group: "動画・SNS", size: "フック→本編→CTA", days: "2日〜",
+  { name: "ショート動画編集", points: 7, group: "SNS・動画", size: "TikTok・リール・ショート", days: "3日〜", questions: VIDEO_QUESTIONS },
+  { name: "台本作成（ショート）", points: 4, group: "SNS・動画", size: "フック→本編→CTA", days: "2日〜",
     questions: [
       { key: "媒体", label: "使う媒体", type: "multi", required: true, options: ["TikTok", "Instagramリール", "YouTubeショート", "その他"] },
       q.purpose(["新規のお客さんを増やす", "リピーターを増やす", "新メニューを知らせる", "採用", "認知・話題づくり"]),
@@ -40,28 +40,28 @@ const catalog: CatalogItem[] = [
       q.ref("参考にしたい動画（URL）"),
       q.ng(),
     ] },
-  { name: "投稿文＋画像", points: 10, group: "動画・SNS", size: "SNS投稿1本ぶん", days: "3日〜",
+  { name: "投稿文＋画像", points: 10, group: "SNS・動画", size: "SNS投稿1本ぶん", days: "3日〜",
     questions: [
       { key: "媒体", label: "投稿する媒体", type: "multi", required: true, options: ["Instagram", "X", "Facebook", "LINE VOOM", "Googleビジネスプロフィール"] },
       { key: "内容", label: "知らせたい内容", type: "textarea", required: true, placeholder: "例: 9月の限定パフェ、金曜のハッピーアワー" },
       q.files("使ってほしい写真"),
       q.ng(),
     ] },
-  { name: "LINE配信文＋画像", points: 4, group: "動画・SNS", size: "1配信ぶん", days: "2日〜",
+  { name: "LINE配信文＋画像", points: 4, group: "SNS・動画", size: "1配信ぶん", days: "2日〜",
     questions: [
       { key: "内容", label: "配信したい内容", type: "textarea", required: true, placeholder: "例: 雨の日クーポン、予約開始のお知らせ" },
       { key: "特典", label: "つける特典（あれば）", type: "text", placeholder: "例: ドリンク1杯無料" },
       q.files("使ってほしい写真"),
     ] },
-  { name: "インフルエンサー来店企画", points: 8, group: "動画・SNS", size: "候補5名＋依頼文", days: "5日〜",
+  { name: "インフルエンサー来店企画", points: 8, group: "SNS・動画", size: "候補5名＋依頼文", days: "5日〜",
     questions: [
       { key: "エリア", label: "呼びたい人の活動エリア", type: "text", required: true },
       { key: "規模", label: "希望するフォロワー規模", type: "select", required: true, options: ["1万未満（ご近所インフルエンサー）", "1〜5万", "5万以上"] },
       { key: "お礼", label: "お礼の内容", type: "select", required: true, options: ["飲食無料", "飲食無料＋謝礼", "相談したい"] },
       { key: "推し", label: "食べてほしいメニュー", type: "textarea", required: true },
     ] },
-  { name: "TikTok運用おまかせ（月額）", points: 40, group: "動画・SNS", size: "企画4本＋編集4本＋投稿代行", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
-  { name: "Instagram運用（月額）", points: 30, group: "動画・SNS", size: "月8投稿＋ストーリーズ案", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
+  { name: "TikTok運用おまかせ（月額）", points: 40, group: "SNS・動画", size: "企画4本＋編集4本＋投稿代行", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
+  { name: "Instagram運用（月額）", points: 30, group: "SNS・動画", size: "月8投稿＋ストーリーズ案", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
 
   // ── 集客 ──
   { name: "MEO対策（初期整備）", points: 15, group: "集客", size: "Googleマップの整備", days: "1週間〜",
@@ -109,6 +109,15 @@ const catalog: CatalogItem[] = [
       { key: "ページURL", label: "掲載ページのURL", type: "textarea", required: true },
       { key: "推し", label: "もっと伝えたい強み", type: "textarea", required: true },
     ] },
+  { name: "グルメサイト運用（月額）", points: 12, group: "集客", size: "食べログ・ぐるなび・ホットペッパーの更新と口コミ返信", days: "月単位", monthly: true,
+    questions: [
+      { key: "媒体", label: "運用する媒体", type: "multi", required: true, options: ["食べログ", "ぐるなび", "ホットペッパーグルメ", "Retty", "Googleマップ", "その他"] },
+      { key: "管理画面", label: "管理画面の使い方", type: "select", required: true, options: ["更新まで代行（ログイン情報は別途安全に共有）", "更新は店側で行う（文章と写真を納品）"] },
+      { key: "今月の推し", label: "今月押したいこと（新メニュー・クーポン・季節フェアなど）", type: "textarea", required: true },
+      { key: "口コミ返信", label: "口コミへの返信", type: "select", required: true, options: ["代行してほしい（下書き確認あり）", "代行してほしい（おまかせ）", "自分で返す"] },
+      { key: "予約", label: "ネット予約の設定", type: "select", options: ["設定済み", "設定したい（手伝ってほしい）", "使わない"] },
+      q.files("今月使う写真"),
+    ] },
   { name: "LINE公式アカウント構築", points: 20, group: "集客", size: "リッチメニュー・あいさつ・クーポン設計", days: "1週間〜",
     questions: [
       { key: "現状", label: "LINE公式アカウント", type: "select", required: true, options: ["まだない（開設から）", "ある（整えたい）"] },
@@ -125,7 +134,7 @@ const catalog: CatalogItem[] = [
       q.ref("参考にしたいチラシ"),
       { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ", "印刷も手配してほしい（実費別）"] },
     ] },
-  { name: "求人原稿作成", points: 4, group: "集客", size: "Indeed・タウンワーク向け1職種", days: "2日〜",
+  { name: "求人原稿作成", points: 4, group: "採用", size: "Indeed・タウンワーク向け1職種", days: "2日〜",
     questions: [
       { key: "職種", label: "募集する職種", type: "text", required: true, placeholder: "例: ホールスタッフ（アルバイト）" },
       { key: "条件", label: "時給・シフト・待遇", type: "textarea", required: true },
@@ -134,7 +143,7 @@ const catalog: CatalogItem[] = [
     ] },
 
   // ── 店内・売上 ──
-  { name: "メニュー開発", points: 15, group: "店内・売上", size: "新メニュー3品（レシピ・原価・売価案）", days: "1週間〜",
+  { name: "メニュー開発", points: 15, group: "メニュー・売上", size: "新メニュー3品（レシピ・原価・売価案）", days: "1週間〜",
     questions: [
       q.purpose(["客単価を上げたい", "看板メニューを作りたい", "季節感を出したい", "原価を下げたい", "SNS映えするものがほしい"]),
       { key: "価格帯", label: "想定する売価", type: "text", required: true, placeholder: "例: 780〜980円" },
@@ -144,27 +153,27 @@ const catalog: CatalogItem[] = [
       { key: "現メニュー", label: "いまのメニュー表", type: "file", hint: "写真やPDFで" },
       q.ng(),
     ] },
-  { name: "季節・限定メニュー企画", points: 12, group: "店内・売上", size: "1シーズン5品", days: "1週間〜",
+  { name: "季節・限定メニュー企画", points: 12, group: "メニュー・売上", size: "1シーズン5品", days: "1週間〜",
     questions: [
       { key: "時期", label: "時期・イベント", type: "text", required: true, placeholder: "例: 秋（9〜11月）、クリスマス、忘年会" },
       { key: "価格帯", label: "想定する売価", type: "text", required: true },
       { key: "制約", label: "厨房の制約", type: "textarea" },
       { key: "現メニュー", label: "いまのメニュー表", type: "file" },
     ] },
-  { name: "ドリンクメニュー開発", points: 8, group: "店内・売上", size: "5品（レシピ・原価・売価案）", days: "5日〜",
+  { name: "ドリンクメニュー開発", points: 8, group: "メニュー・売上", size: "5品（レシピ・原価・売価案）", days: "5日〜",
     questions: [
       { key: "種類", label: "ほしい種類", type: "multi", required: true, options: ["アルコール", "ノンアル・モクテル", "ソフトドリンク", "コーヒー・紅茶", "季節限定"] },
       { key: "価格帯", label: "想定する売価", type: "text", required: true },
       { key: "設備", label: "使える設備", type: "multi", options: ["ビールサーバー", "エスプレッソマシン", "ブレンダー", "製氷機", "特になし"] },
     ] },
-  { name: "原価率の見直し", points: 15, group: "店内・売上", size: "既存20品の原価計算と売価提案", days: "1週間〜",
+  { name: "原価率の見直し", points: 15, group: "メニュー・売上", size: "既存20品の原価計算と売価提案", days: "1週間〜",
     questions: [
       { key: "現メニュー", label: "いまのメニュー表（価格入り）", type: "file", required: true },
       { key: "仕入れ", label: "主な食材の仕入れ価格がわかる資料", type: "file", hint: "納品書・仕入れ台帳など。なければ概算でヒアリングします" },
       { key: "現原価率", label: "いまの原価率（わかれば）", type: "text", placeholder: "例: 35%くらい" },
       { key: "目標", label: "目標", type: "select", required: true, options: ["原価率を下げたい", "値上げの根拠がほしい", "赤字メニューを知りたい", "全部"] },
     ] },
-  { name: "メニュー表デザイン", points: 12, group: "店内・売上", size: "グランドメニュー1面", days: "1週間〜",
+  { name: "メニュー表デザイン", points: 12, group: "メニュー・売上", size: "グランドメニュー1面", days: "1週間〜",
     questions: [
       { key: "形", label: "形", type: "select", required: true, options: ["A4 1枚", "A3 二つ折り", "卓上スタンド", "壁掛け・黒板風", "タブレット表示用"] },
       { key: "品数", label: "掲載する品数", type: "text", required: true, placeholder: "例: フード30品、ドリンク20品" },
@@ -173,18 +182,18 @@ const catalog: CatalogItem[] = [
       q.ref("参考にしたいメニュー表"),
       { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ", "印刷も手配してほしい（実費別）"] },
     ] },
-  { name: "メニュー表の差し替え修正", points: 3, group: "店内・売上", size: "価格・品目の差し替え", days: "2日〜",
+  { name: "メニュー表の差し替え修正", points: 3, group: "メニュー・売上", size: "価格・品目の差し替え", days: "2日〜",
     questions: [
       { key: "修正内容", label: "直したい箇所", type: "textarea", required: true },
       { key: "現データ", label: "いまのメニュー表のデータ", type: "file", required: true, hint: "AI・PDF・PowerPointなど" },
     ] },
-  { name: "メニュー表の並び改善", points: 8, group: "店内・売上", size: "売れる並び・見せ方の提案", days: "5日〜",
+  { name: "メニュー表の並び改善", points: 8, group: "メニュー・売上", size: "売れる並び・見せ方の提案", days: "5日〜",
     questions: [
       { key: "現メニュー", label: "いまのメニュー表", type: "file", required: true },
       { key: "売りたい", label: "いちばん売りたい品（利益が出る品）", type: "textarea", required: true },
       { key: "売上データ", label: "品目別の売上（わかれば）", type: "file", hint: "POSの集計など" },
     ] },
-  { name: "POP作成", points: 4, group: "店内・売上", size: "卓上・店頭 1点", days: "2日〜",
+  { name: "POP作成", points: 4, group: "メニュー・売上", size: "卓上・店頭 1点", days: "2日〜",
     questions: [
       { key: "種類", label: "POPの種類", type: "select", required: true, options: ["卓上POP", "店頭ポスター", "レジ横", "トイレ・壁", "メニューブック差し込み"] },
       { key: "内容", label: "推したい内容", type: "textarea", required: true, placeholder: "例: 本日のおすすめ、飲み放題、LINE友だち追加" },
@@ -192,13 +201,13 @@ const catalog: CatalogItem[] = [
       q.files("使ってほしい写真・ロゴ"),
       { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ（店で印刷）", "印刷も手配してほしい（実費別）"] },
     ] },
-  { name: "料理写真レタッチ", points: 4, group: "店内・売上", size: "5枚（明るさ・色・切り抜き）", days: "2日〜",
+  { name: "料理写真レタッチ", points: 4, group: "メニュー・売上", size: "5枚（明るさ・色・切り抜き）", days: "2日〜",
     questions: [
       { key: "写真", label: "写真（5枚まで）", type: "file", required: true },
       { key: "用途", label: "使う場所", type: "multi", required: true, options: ["メニュー表", "SNS", "グルメサイト", "HP", "デリバリーアプリ"] },
       { key: "希望", label: "仕上がりの希望", type: "textarea", placeholder: "例: もっとシズル感を、背景を白に" },
     ] },
-  { name: "店頭看板デザイン", points: 6, group: "店内・売上", size: "A型看板・のぼり・ウィンドウ", days: "5日〜",
+  { name: "店頭看板デザイン", points: 6, group: "メニュー・売上", size: "A型看板・のぼり・ウィンドウ", days: "5日〜",
     questions: [
       { key: "種類", label: "種類", type: "select", required: true, options: ["A型看板", "のぼり", "ウィンドウシート", "タペストリー", "その他"] },
       { key: "サイズ", label: "サイズ（わかれば）", type: "text" },
@@ -206,18 +215,73 @@ const catalog: CatalogItem[] = [
       q.files("ロゴ・写真"),
       { key: "印刷", label: "制作", type: "select", required: true, options: ["データ納品のみ", "印刷・製作も手配してほしい（実費別）"] },
     ] },
-  { name: "デリバリー用メニュー登録", points: 10, group: "店内・売上", size: "10品の写真＋説明文", days: "5日〜",
+  { name: "デリバリー用メニュー登録", points: 10, group: "メニュー・売上", size: "10品の写真＋説明文", days: "5日〜",
     questions: [
       { key: "サービス", label: "登録するサービス", type: "multi", required: true, options: ["Uber Eats", "出前館", "Wolt", "menu", "自社テイクアウト"] },
       { key: "品目", label: "登録したい品と価格", type: "textarea", required: true },
       q.files("料理写真", "なければレタッチ込みでご相談"),
     ] },
-  { name: "ショップカード・ポイントカード", points: 4, group: "店内・売上", size: "名刺サイズ 1点", days: "3日〜",
+  { name: "ショップカード・ポイントカード", points: 4, group: "メニュー・売上", size: "名刺サイズ 1点", days: "3日〜",
     questions: [
       { key: "種類", label: "種類", type: "select", required: true, options: ["ショップカード", "ポイントカード", "クーポン券", "その他"] },
       { key: "内容", label: "載せたい内容（店名・住所・SNS・特典など）", type: "textarea", required: true },
       q.files("ロゴ"),
       { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ", "印刷も手配してほしい（実費別）"] },
+    ] },
+
+  // ── 採用 ──
+  { name: "採用向けショート動画", points: 7, group: "採用", size: "働く様子・先輩の声を30秒に", days: "3日〜",
+    questions: [
+      { key: "職種", label: "募集する職種", type: "text", required: true },
+      { key: "見せたいこと", label: "見せたいこと", type: "multi", required: true, options: ["店の雰囲気", "先輩スタッフの声", "まかない", "1日の流れ", "店主の人柄"] },
+      { key: "素材", label: "素材動画（URL）", type: "text" },
+      q.files("素材ファイル", "スマホで撮った縦動画でOK"),
+      { key: "掲載先", label: "使う場所", type: "multi", options: ["TikTok", "Instagram", "Indeed", "店頭サイネージ"] },
+    ] },
+  { name: "求人媒体の掲載文リライト", points: 4, group: "採用", size: "応募が来る書き方に直す", days: "2日〜",
+    questions: [
+      { key: "現原稿", label: "いまの求人原稿（貼り付けかURL）", type: "textarea", required: true },
+      { key: "応募状況", label: "いまの応募状況", type: "select", required: true, options: ["ほぼ来ない", "来るが定着しない", "ミスマッチが多い"] },
+      { key: "職場の良さ", label: "職場の良さ（本音でOK）", type: "textarea", required: true },
+    ] },
+
+  // ── 営業（宴会・法人） ──
+  {
+    name: "宴会・法人向けテレアポ営業",
+    points: 20,
+    group: "営業",
+    size: "近隣企業に宴会・仕出しを案内",
+    days: "1週間〜",
+    quantity: { key: "架電件数", unit: "件", pointsPer: 0.2, min: 100, max: 2000, step: 50, hint: "1件0.2pt。100件=20pt、300件=60pt" },
+    questions: [
+      { key: "案内したいこと", label: "案内したいこと", type: "multi", required: true, options: ["忘年会・歓送迎会の宴会", "貸切", "仕出し・ケータリング", "法人の定期利用（接待・ランチ）", "その他"] },
+      { key: "ターゲット", label: "架電先（エリア・業種・規模）", type: "textarea", required: true, placeholder: "例: 店から徒歩10分圏内の従業員20名以上の会社" },
+      { key: "架電リスト", label: "架電リスト", type: "select", required: true, options: ["手元にある（CSVを添付）", "リスト作成も依頼する（1件0.1ptを追加でご相談）"] },
+      { key: "リストファイル", label: "架電リストのファイル", type: "file" },
+      { key: "プラン", label: "案内するプランと価格", type: "textarea", required: true, placeholder: "例: 飲み放題付き4,500円コース、幹事無料" },
+      { key: "架電時間帯", label: "架電してよい時間帯", type: "multi", required: true, options: ["平日 10〜12時", "平日 13〜15時", "平日 15〜18時", "指定なし"] },
+      { key: "NG事項", label: "NG事項（かけてはいけない先など）", type: "textarea" },
+      { key: "報告頻度", label: "報告の頻度", type: "select", required: true, options: ["毎日", "週2回", "週1回", "終了時にまとめて"] },
+    ],
+    agreements: [
+      "架電先は法人・事業者に限ります（個人宅への電話勧誘は受け付けません）",
+      "「今後かけないでほしい」と言われた先には再架電しません",
+      "架電リストに含まれる個人情報は案件終了後に破棄します",
+      "予約の成立数は先方の事情にも左右されるため、件数の保証はできません",
+    ],
+  },
+  { name: "宴会プラン企画", points: 8, group: "営業", size: "コース内容・価格・幹事特典の設計", days: "5日〜",
+    questions: [
+      { key: "時期", label: "時期", type: "text", required: true, placeholder: "例: 12月の忘年会、3〜4月の歓送迎会" },
+      { key: "価格帯", label: "想定する1人あたりの価格", type: "text", required: true },
+      { key: "席数", label: "受けられる人数・席数", type: "text", required: true },
+      { key: "現メニュー", label: "いまのメニュー表", type: "file" },
+    ] },
+  { name: "法人向け案内資料（A4）", points: 8, group: "営業", size: "宴会・仕出しの案内チラシ・FAX用", days: "5日〜",
+    questions: [
+      { key: "内容", label: "載せたい内容（プラン・価格・特典・連絡先）", type: "textarea", required: true },
+      { key: "使い方", label: "使い方", type: "multi", required: true, options: ["近隣企業へ手配り", "FAX", "メール添付（PDF）", "店頭"] },
+      q.files("ロゴ・写真"),
     ] },
 
   // ── 運営 ──
@@ -239,7 +303,7 @@ const catalog: CatalogItem[] = [
       { key: "事実", label: "実際にあったこと・店側の事情", type: "textarea", required: true },
       { key: "対応", label: "対応方針", type: "select", required: true, options: ["謝罪して改善を約束", "事実と違う点をやんわり訂正", "返金・再来店の提案", "相談したい"] },
     ] },
-  { name: "アルバイト向けマニュアル", points: 15, group: "運営", size: "接客・調理手順 A4 10ページ", days: "1週間〜",
+  { name: "アルバイト向けマニュアル", points: 15, group: "採用", size: "接客・調理手順 A4 10ページ", days: "1週間〜",
     questions: [
       { key: "範囲", label: "載せたい範囲", type: "multi", required: true, options: ["接客の流れ", "レジ・会計", "調理・盛り付け", "開店・閉店作業", "衛生・清掃", "クレーム初動"] },
       { key: "資料", label: "いまある資料・メモ", type: "file" },
@@ -275,10 +339,12 @@ export const food: Brand = {
   catalog,
   orderStyle: "simple",
   groups: [
-    { name: "集客", sub: "新しいお客さんを呼びたい", examples: ["Googleマップ対策", "ホームページ", "チラシ"] },
-    { name: "店内・売上", sub: "客単価と利益を上げたい", examples: ["メニュー開発", "原価の見直し", "POP"] },
-    { name: "動画・SNS", sub: "TikTok・Instagramで知ってもらいたい", examples: ["ショート動画", "運用おまかせ", "投稿文"] },
-    { name: "運営", sub: "日々の面倒を減らしたい", examples: ["口コミ返信", "マニュアル", "補助金"] },
+    { name: "集客", sub: "新しいお客さんを呼びたい", examples: ["Googleマップ対策", "食べログ等の運用", "ホームページ", "チラシ"] },
+    { name: "メニュー・売上", sub: "客単価と利益を上げたい", examples: ["メニュー開発", "原価の見直し", "POP"] },
+    { name: "SNS・動画", sub: "TikTok・Instagramで知ってもらいたい", examples: ["ショート動画", "運用おまかせ", "投稿文"] },
+    { name: "営業", sub: "宴会・法人のお客さんをとりたい", examples: ["テレアポ営業", "宴会プラン", "案内資料"] },
+    { name: "採用", sub: "スタッフを採用したい", examples: ["求人原稿", "採用動画", "マニュアル"] },
+    { name: "運営", sub: "日々の面倒を減らしたい", examples: ["口コミ返信", "クレーム対応", "補助金"] },
   ],
   orderable: ["ショート動画編集", "台本作成（ショート）", "POP作成", "投稿文＋画像", "口コミ返信文（10件）", "メニュー開発"],
   agent: {

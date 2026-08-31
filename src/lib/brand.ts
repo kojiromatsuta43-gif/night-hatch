@@ -29,6 +29,14 @@ export function catalogGroups(): { heading: string; items: CatalogItem[] }[] {
     }
     g.items.push(c);
   }
+  // 看板側で groups の並びが決めてあれば、その順に（発注トップのタイルと一致させる）
+  const order = BRAND.groups.map((g) => g.name);
+  if (order.length > 0) {
+    out.sort((a, b) => {
+      const ia = order.indexOf(a.heading), ib = order.indexOf(b.heading);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
+  }
   return out;
 }
 
