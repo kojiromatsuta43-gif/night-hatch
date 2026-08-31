@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getDb } from "./db";
+import { generateJson, activeProvider } from "./llm";
 
 /**
  * TikTok の参考動画を外部データサービス（Apify の TikTok Scraper）から取り込む。
@@ -288,9 +289,17 @@ export async function runTikTokSync(queryIds?: string[]): Promise<SyncResult> {
       for (const q of qs) stamp.run(new Date().toISOString(), err ? `失敗: ${err.slice(0, 120)}` : `${items.length}本`, q.id);
     }
     const pruned = pruneImported();
+    // AIでお手本になるアカウントだけ残す（鍵が無いときは飛ばす）
+    let judged = { checked: 0, removed: 0 };
+    try {
+      judged = await classifyImported();
+    } catch (e) {
+      notes.push(`AI審査: ${e instanceof Error ? e.message : String(e)}`);
+    }
     const message =
       (notes.length ? notes.join(" / ") : `動画${videos}本を取り込み（新規アカウント${accounts}）`) +
-      (pruned.accounts > 0 ? `／お手本にならない${pruned.accounts}アカウントを整理` : "");
+      (pruned.accounts > 0 ? `／海外・大手${pruned.accounts}件を整理` : "") +
+      (judged.checked > 0 ? `／AI審査${judged.checked}件（除外${judged.removed}）` : "");
     db.prepare("UPDATE tiktok_sync_runs SET finished_at = ?, status = ?, videos = ?, accounts = ?, message = ? WHERE id = ?").run(
       new Date().toISOString(), notes.length && videos === 0 ? "failed" : "done", videos, accounts, message, runId
     );
@@ -366,4 +375,102 @@ export function pruneImported(): { accounts: number; videos: number } {
   });
   tx();
   return { accounts, videos };
+}
+
+let classifying = false;
+export function isClassifying() {
+  return classifying;
+}
+
+/**
+ * 自動取り込みで入ったアカウントを AI で審査し、
+ * 「その業種の事業者・店舗・専門家の公式/個人アカウント」だけを残す。
+ * 一般ユーザーの体験投稿、まとめ・切り抜き、ニュース、業種違い、芸能人は外す。
+ * 残したものには persona（例: 福岡のネイルサロン公式）を付けて一覧に出す。
+ */
+export async function classifyImported(maxAccounts = 600): Promise<{ checked: number; removed: number }> {
+  if (!activeProvider()) return { checked: 0, removed: 0 };
+  if (classifying) throw new Error("AI審査を実行中です");
+  classifying = true;
+  const db = getDb();
+  try {
+    const rows = db
+      .prepare(
+        `SELECT a.id, a.handle, a.name, a.bio, a.industry, a.followers,
+                (SELECT GROUP_CONCAT(substr(caption, 1, 80), ' ／ ') FROM (
+                   SELECT caption FROM ref_videos v WHERE v.account_id = a.id ORDER BY views DESC LIMIT 3)) AS captions
+           FROM ref_accounts a
+          WHERE a.source = 'apify' AND a.classified_at = ''
+          ORDER BY a.created_at LIMIT ?`
+      )
+      .all(maxAccounts) as { id: string; handle: string; name: string; bio: string; industry: string; followers: number; captions: string | null }[];
+    if (rows.length === 0) return { checked: 0, removed: 0 };
+
+    const system = `あなたは中小企業向けSNS支援サービスの審査係。TikTokアカウントが、指定された業種の「事業者・店舗・またはその業界で働く専門家（美容師、ネイリスト、トレーナー、営業担当、職人など）」の公式または個人アカウントで、中小企業がお手本にできるものかを判定する。
+残す(keep=true): 店舗・会社・院の公式、オーナーやスタッフ、その業界のプロが自分の仕事や店を発信しているもの。
+外す(keep=false): 一般ユーザーの体験談・レビュー、まとめ・切り抜き・転載、ニュース・メディア、業種と関係ない、芸能人・インフルエンサーのタイアップだけ、海外の投稿者、内容が判断できない。
+keep=true のときは persona に「福岡のネイルサロン公式」「大阪の焼肉店の店主」のように、地域（分かれば）＋業態＋立場を20字以内で書く。`;
+    const schema = {
+      type: "object",
+      properties: {
+        results: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: { handle: { type: "string" }, keep: { type: "boolean" }, persona: { type: "string" } },
+            required: ["handle", "keep", "persona"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["results"],
+      additionalProperties: false,
+    };
+    const mark = db.prepare("UPDATE ref_accounts SET persona = ?, classified_at = ? WHERE id = ?");
+    const delVideos = db.prepare("DELETE FROM ref_videos WHERE account_id = ?");
+    const delStats = db.prepare("DELETE FROM ref_video_stats WHERE video_id IN (SELECT id FROM ref_videos WHERE account_id = ?)");
+    const delAccount = db.prepare("DELETE FROM ref_accounts WHERE id = ?");
+
+    let checked = 0;
+    let removed = 0;
+    const CHUNK = 15;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const chunk = rows.slice(i, i + CHUNK);
+      const prompt = chunk
+        .map(
+          (r, n) =>
+            `${n + 1}. handle=${r.handle}\n業種=${r.industry}\n名前=${r.name}\nフォロワー=${r.followers}\n紹介文=${(r.bio ?? "").replace(/\s+/g, " ").slice(0, 120)}\n投稿=${(r.captions ?? "").replace(/\s+/g, " ").slice(0, 240)}`
+        )
+        .join("\n\n");
+      let out: { results: { handle: string; keep: boolean; persona: string }[] };
+      try {
+        out = await generateJson(system, `次の${chunk.length}件を判定してください。\n\n${prompt}`, schema);
+      } catch (e) {
+        // 1回失敗したら残りは次回に回す（判定済みにはしない）
+        if (checked === 0) throw e;
+        break;
+      }
+      const byHandle = new Map(out.results.map((x) => [x.handle.trim().toLowerCase(), x]));
+      const now = new Date().toISOString();
+      const tx = db.transaction(() => {
+        for (const r of chunk) {
+          const j = byHandle.get(r.handle.toLowerCase());
+          if (!j) continue; // 返ってこなかったものは次回
+          checked++;
+          if (j.keep) {
+            mark.run(j.persona.slice(0, 40), now, r.id);
+          } else {
+            delStats.run(r.id);
+            delVideos.run(r.id);
+            delAccount.run(r.id);
+            removed++;
+          }
+        }
+      });
+      tx();
+    }
+    return { checked, removed };
+  } finally {
+    classifying = false;
+  }
 }

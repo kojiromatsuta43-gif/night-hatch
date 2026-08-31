@@ -10,7 +10,7 @@ import { api } from "@/lib/client";
 
 type Query = { id: string; kind: "profile" | "search" | "hashtag"; value: string; industry: string; active: number; last_run_at: string | null; last_result: string };
 type Run = { id: string; started_at: string; finished_at: string | null; status: string; queries: number; videos: number; accounts: number; message: string };
-type Status = { configured: boolean; syncing: boolean; queries: Query[]; runs: Run[]; lastSync: string | null; totals: { videos: number; synced: number } };
+type Status = { configured: boolean; syncing: boolean; classifying: boolean; unclassified: number; queries: Query[]; runs: Run[]; lastSync: string | null; totals: { videos: number; synced: number } };
 
 const KIND_LABEL: Record<Query["kind"], string> = { profile: "アカウント", search: "検索ワード", hashtag: "ハッシュタグ" };
 const fmt = (iso: string | null) => (iso ? iso.replace("T", " ").slice(0, 16) : "-");
@@ -29,10 +29,10 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
   useEffect(load, [load]);
   // 実行中は10秒ごとに様子を見る
   useEffect(() => {
-    if (!st?.syncing) return;
+    if (!st?.syncing && !st?.classifying) return;
     const t = setInterval(load, 10_000);
     return () => clearInterval(t);
-  }, [st?.syncing, load]);
+  }, [st?.syncing, st?.classifying, load]);
 
   const add = async () => {
     setError("");
@@ -116,6 +116,22 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
             title="日本語の動画が無い投稿者や、フォロワーが多すぎるテレビ局・芸能人などを取り込み分から外します"
           >
             取り込み分を整理
+          </button>
+          <button
+            onClick={async () => {
+              setError("");
+              try {
+                await api("/api/admin/tiktok", { method: "POST", body: JSON.stringify({ action: "classify" }) });
+                setTimeout(load, 1500);
+              } catch (e) {
+                setError(e instanceof Error ? e.message : "開始に失敗");
+              }
+            }}
+            disabled={st?.classifying || (st?.unclassified ?? 0) === 0}
+            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-honey-400 disabled:opacity-40"
+            title="その業種の事業者・店舗・専門家のアカウントだけを残し、一般ユーザーの体験投稿やまとめ・ニュースを外します"
+          >
+            {st?.classifying ? "AI審査中…" : `AIでお手本を審査（未審査 ${st?.unclassified ?? 0} 件）`}
           </button>
           <button
             onClick={() => sync()}

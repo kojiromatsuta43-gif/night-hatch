@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
-import { isSyncing, isTikTokSyncConfigured, pruneImported } from "@/lib/server/tiktok";
+import { isSyncing, isTikTokSyncConfigured, pruneImported, classifyImported, isClassifying } from "@/lib/server/tiktok";
 
 /** 取り込み設定の一覧と状態（管理者のみ） */
 export async function GET() {
@@ -13,7 +13,8 @@ export async function GET() {
   const runs = db.prepare("SELECT * FROM tiktok_sync_runs ORDER BY started_at DESC LIMIT 10").all();
   const lastSync = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_last_sync_at'").get() as { value: string } | undefined)?.value ?? null;
   const totals = db.prepare("SELECT COUNT(*) AS videos, SUM(CASE WHEN source_id <> '' THEN 1 ELSE 0 END) AS synced FROM ref_videos").get();
-  return NextResponse.json({ configured: isTikTokSyncConfigured(), syncing: isSyncing(), queries, runs, lastSync, totals });
+  const unclassified = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE source = 'apify' AND classified_at = ''").get() as { c: number }).c;
+  return NextResponse.json({ configured: isTikTokSyncConfigured(), syncing: isSyncing(), classifying: isClassifying(), unclassified, queries, runs, lastSync, totals });
 }
 
 /** 取り込み設定を追加。kind: profile | search | hashtag */
@@ -23,6 +24,12 @@ export async function POST(req: Request) {
   const b = await req.json();
   if (b.action === "prune") {
     return NextResponse.json(pruneImported());
+  }
+  if (b.action === "classify") {
+    if (isClassifying()) return NextResponse.json({ error: "AI審査を実行中です" }, { status: 409 });
+    // 数分かかるので裏で走らせる
+    classifyImported().catch((e) => console.error("[tiktok classify]", e instanceof Error ? e.message : e));
+    return NextResponse.json({ started: true });
   }
   const kind = String(b.kind ?? "");
   const value = String(b.value ?? "").trim();

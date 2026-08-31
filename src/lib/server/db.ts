@@ -357,6 +357,8 @@ function init(db: Database.Database) {
     // TikTok自動取り込みの記録
     ["last_synced_at", "TEXT NOT NULL DEFAULT ''"],
     ["source", "TEXT NOT NULL DEFAULT ''"], // 'apify' なら自動取り込みで作られた
+    ["persona", "TEXT NOT NULL DEFAULT ''"], // AI審査で付けた一言（例: 福岡のネイルサロン公式）
+    ["classified_at", "TEXT NOT NULL DEFAULT ''"], // AI審査済みの日時
   ] as const) {
     if (!accCols.includes(col)) db.exec(`ALTER TABLE ref_accounts ADD COLUMN ${col} ${def}`);
   }

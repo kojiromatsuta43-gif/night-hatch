@@ -41,6 +41,7 @@ type RefAccount = {
   id: string; name: string; handle: string; industry: string; followers: number; bio: string;
   icon_url: string; profile_url: string; video_count: number; loaded_videos: number;
   best_views?: number;
+  persona?: string;
   videos?: RefVideo[];
 };
 
@@ -328,6 +329,7 @@ export default function OrderPage() {
                   <PlatformIcon platform="tiktok" className="h-3.5 w-3.5" />
                   {a.industry}
                 </span>
+                {a.persona && <div className="mt-1.5 text-xs font-medium text-hive-900/70">{a.persona}</div>}
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <div className="rounded-lg bg-slate-50 py-2">
                     <div className="text-lg font-bold">{fmtFollowers(a.followers)}</div>
