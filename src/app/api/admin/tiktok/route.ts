@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
-import { isSyncing, isTikTokSyncConfigured } from "@/lib/server/tiktok";
+import { isSyncing, isTikTokSyncConfigured, pruneImported } from "@/lib/server/tiktok";
 
 /** 取り込み設定の一覧と状態（管理者のみ） */
 export async function GET() {
@@ -21,6 +21,9 @@ export async function POST(req: Request) {
   const user = await requireUser();
   if (user.role !== "admin") return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const b = await req.json();
+  if (b.action === "prune") {
+    return NextResponse.json(pruneImported());
+  }
   const kind = String(b.kind ?? "");
   const value = String(b.value ?? "").trim();
   const industry = String(b.industry ?? "").trim();

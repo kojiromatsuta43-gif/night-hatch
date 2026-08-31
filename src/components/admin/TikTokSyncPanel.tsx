@@ -102,6 +102,22 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
           <span className="text-sm font-semibold">取り込み設定 {st?.queries.length ?? 0} 件</span>
           <button
+            onClick={async () => {
+              setError("");
+              try {
+                const r = await api<{ accounts: number; videos: number }>("/api/admin/tiktok", { method: "POST", body: JSON.stringify({ action: "prune" }) });
+                alert(`お手本にならないアカウント ${r.accounts} 件（動画 ${r.videos} 本）を整理しました`);
+                load();
+              } catch (e) {
+                setError(e instanceof Error ? e.message : "整理に失敗");
+              }
+            }}
+            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-honey-400"
+            title="日本語の動画が無い投稿者や、フォロワーが多すぎるテレビ局・芸能人などを取り込み分から外します"
+          >
+            取り込み分を整理
+          </button>
+          <button
             onClick={() => sync()}
             disabled={busy || !st?.configured || st?.syncing || (st?.queries.length ?? 0) === 0}
             className="rounded-lg bg-hive-900 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"

@@ -40,6 +40,7 @@ type Industry = { id: string; name: string; account_count: number; requested: nu
 type RefAccount = {
   id: string; name: string; handle: string; industry: string; followers: number; bio: string;
   icon_url: string; profile_url: string; video_count: number; loaded_videos: number;
+  best_views?: number;
   videos?: RefVideo[];
 };
 
@@ -93,6 +94,9 @@ export default function OrderPage() {
   const [videoSort, setVideoSort] = useState<VideoSort>("views");
   const [trending, setTrending] = useState<Trending[]>([]);
   const [trendSort, setTrendSort] = useState<VideoSort>("growth");
+  // アカウントは一度に24件ずつ（自動取り込みで数百件になるため）
+  const PAGE = 24;
+  const [visible, setVisible] = useState(PAGE);
 
   useEffect(() => {
     api<RefAccount[]>("/api/ref-accounts")
@@ -151,6 +155,7 @@ export default function OrderPage() {
   }, [industries, countByIndustry]);
 
   const shown = industry === "すべて" ? accounts : accounts.filter((a) => a.industry === industry);
+  const pageShown = shown.slice(0, visible);
 
   const requestIndustry = async (name: string) => {
     if (requesting) return;
@@ -196,7 +201,7 @@ export default function OrderPage() {
           <div className="mb-6">
             <div className="flex flex-wrap gap-2 text-sm">
               <button
-                onClick={() => setIndustry("すべて")}
+                onClick={() => { setIndustry("すべて"); setVisible(PAGE); }}
                 className={`rounded-full px-4 py-1.5 transition-colors ${
                   industry === "すべて"
                     ? "bg-honey-400 font-semibold text-hive-900"
@@ -212,7 +217,7 @@ export default function OrderPage() {
                 return (
                   <button
                     key={t.id}
-                    onClick={() => setIndustry(t.name)}
+                    onClick={() => { setIndustry(t.name); setVisible(PAGE); }}
                     className={`rounded-full px-4 py-1.5 transition-colors ${
                       active
                         ? "bg-honey-400 font-semibold text-hive-900"
@@ -304,7 +309,7 @@ export default function OrderPage() {
           )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {shown.map((a) => (
+            {pageShown.map((a) => (
               <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-5 text-center">
                 {a.icon_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -329,8 +334,17 @@ export default function OrderPage() {
                     <div className="text-xs text-slate-500">フォロワー</div>
                   </div>
                   <div className="rounded-lg bg-slate-50 py-2">
-                    <div className="text-lg font-bold">{a.loaded_videos || a.video_count}</div>
-                    <div className="text-xs text-slate-500">登録動画数</div>
+                    {a.best_views ? (
+                      <>
+                        <div className="text-lg font-bold">{fmtCount(a.best_views)}</div>
+                        <div className="text-xs text-slate-500">最高再生数</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-lg font-bold">{a.loaded_videos || a.video_count}</div>
+                        <div className="text-xs text-slate-500">登録動画数</div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-left text-xs text-slate-500">{a.bio}</p>
@@ -340,6 +354,13 @@ export default function OrderPage() {
               </div>
             ))}
           </div>
+          {shown.length > visible && (
+            <div className="mt-6 text-center">
+              <button onClick={() => setVisible((v) => v + PAGE)} className="rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 hover:border-honey-400">
+                もっと見る（残り {shown.length - visible} 件）
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <>

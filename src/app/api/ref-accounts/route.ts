@@ -9,8 +9,9 @@ export async function GET() {
   // 一覧では動画本体を返さず件数のみ（ペイロード削減）
   const accounts = db
     .prepare(
-      `SELECT a.*, (SELECT COUNT(*) FROM ref_videos v WHERE v.account_id = a.id) AS loaded_videos
-       FROM ref_accounts a ORDER BY a.followers DESC`
+      `SELECT a.*, (SELECT COUNT(*) FROM ref_videos v WHERE v.account_id = a.id) AS loaded_videos,
+              (SELECT COALESCE(MAX(v.views), 0) FROM ref_videos v WHERE v.account_id = a.id) AS best_views
+       FROM ref_accounts a ORDER BY best_views DESC, a.followers DESC`
     )
     .all();
   return NextResponse.json(accounts);

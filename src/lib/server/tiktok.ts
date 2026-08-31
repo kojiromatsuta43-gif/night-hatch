@@ -15,6 +15,14 @@ import { getDb } from "./db";
 const APIFY_BASE = "https://api.apify.com/v2";
 const ACTOR = process.env.APIFY_TIKTOK_ACTOR ?? "clockworks~tiktok-scraper";
 const PER_QUERY = Number(process.env.TIKTOK_RESULTS_PER_QUERY ?? 30);
+// 検索・タグで見つかった投稿のうち、お手本にならないものを除く条件
+//  - 日本語が入っていないキャプション（海外の投稿）
+//  - フォロワーが多すぎるアカウント（テレビ局・芸能人など、中小企業のお手本にならない）
+const MAX_FOLLOWERS = Number(process.env.TIKTOK_MAX_FOLLOWERS ?? 2_000_000);
+const JP = /[\u3040-\u30ff\u4e00-\u9fff]/;
+export function looksJapanese(text: string): boolean {
+  return JP.test(text ?? "");
+}
 
 export class NoApifyTokenError extends Error {
   constructor() {
@@ -117,7 +125,7 @@ function normHandle(name: string): string {
 }
 
 /** 返ってきた動画を DB に反映する。戻り値は 追加/更新した動画数と 新規アカウント数 */
-function upsertItems(items: ApifyItem[], industry: string): { videos: number; accounts: number } {
+function upsertItems(items: ApifyItem[], industry: string, strict: boolean): { videos: number; accounts: number } {
   const db = getDb();
   const now = new Date().toISOString();
   const today = now.slice(0, 10);
@@ -158,6 +166,11 @@ function upsertItems(items: ApifyItem[], industry: string): { videos: number; ac
       const a = it.authorMeta ?? {};
       if (!a.name) continue;
       const handle = normHandle(a.name);
+      // 検索・タグ由来は、日本語の投稿で、フォロワーが多すぎない投稿者だけ
+      if (strict) {
+        if (!looksJapanese(`${it.text ?? ""} ${a.nickName ?? ""} ${a.signature ?? ""}`)) continue;
+        if ((a.fans ?? 0) > MAX_FOLLOWERS) continue;
+      }
 
       // アカウント（無ければ作る。業種は取り込み設定のもの）
       let acc = findAccount.get(handle) as { id: string; industry: string } | undefined;
@@ -258,7 +271,13 @@ export async function runTikTokSync(queryIds?: string[]): Promise<SyncResult> {
       let err = "";
       try {
         items = await runActor(input);
-        const r = upsertItems(items, industry);
+        // @ハンドル指定の投稿者は無条件、検索・タグ由来は日本語＆フォロワー上限で絞る
+        const wanted = new Set(profiles.map((h) => `@${h}`.toLowerCase()));
+        const fromProfiles = items.filter((it) => wanted.has(normHandle(it.authorMeta?.name ?? "").toLowerCase()));
+        const fromSearch = items.filter((it) => !wanted.has(normHandle(it.authorMeta?.name ?? "").toLowerCase()));
+        const r1 = upsertItems(fromProfiles, industry, false);
+        const r2 = upsertItems(fromSearch, industry, true);
+        const r = { videos: r1.videos + r2.videos, accounts: r1.accounts + r2.accounts };
         videos += r.videos;
         accounts += r.accounts;
       } catch (e) {
@@ -268,7 +287,10 @@ export async function runTikTokSync(queryIds?: string[]): Promise<SyncResult> {
       const stamp = db.prepare("UPDATE tiktok_queries SET last_run_at = ?, last_result = ? WHERE id = ?");
       for (const q of qs) stamp.run(new Date().toISOString(), err ? `失敗: ${err.slice(0, 120)}` : `${items.length}本`, q.id);
     }
-    const message = notes.length ? notes.join(" / ") : `動画${videos}本を取り込み（新規アカウント${accounts}）`;
+    const pruned = pruneImported();
+    const message =
+      (notes.length ? notes.join(" / ") : `動画${videos}本を取り込み（新規アカウント${accounts}）`) +
+      (pruned.accounts > 0 ? `／お手本にならない${pruned.accounts}アカウントを整理` : "");
     db.prepare("UPDATE tiktok_sync_runs SET finished_at = ?, status = ?, videos = ?, accounts = ?, message = ? WHERE id = ?").run(
       new Date().toISOString(), notes.length && videos === 0 ? "failed" : "done", videos, accounts, message, runId
     );
@@ -304,4 +326,44 @@ export function viewGrowth7d(videoIds: string[]): Map<string, number> {
     out.set(id, row ? Math.max(0, row.growth) : 0);
   }
   return out;
+}
+
+/**
+ * 自動取り込みで入ったアカウントのうち、お手本にならないものを消す。
+ *  - 日本語の動画が1本も無い（海外の投稿者）
+ *  - フォロワーが多すぎる（テレビ局・芸能人など）
+ * 手動で登録したアカウント（source が空）と、@ハンドルで指定したものは消さない。
+ */
+export function pruneImported(): { accounts: number; videos: number } {
+  const db = getDb();
+  const profiles = new Set(
+    (db.prepare("SELECT value FROM tiktok_queries WHERE kind = 'profile'").all() as { value: string }[]).map((q) => normHandle(q.value).toLowerCase())
+  );
+  const rows = db
+    .prepare(
+      `SELECT a.id, a.handle, a.name, a.bio, a.followers,
+              (SELECT GROUP_CONCAT(caption, ' ') FROM ref_videos v WHERE v.account_id = a.id) AS captions
+         FROM ref_accounts a WHERE a.source = 'apify'`
+    )
+    .all() as { id: string; handle: string; name: string; bio: string; followers: number; captions: string | null }[];
+  const delVideos = db.prepare("DELETE FROM ref_videos WHERE account_id = ?");
+  const delStats = db.prepare("DELETE FROM ref_video_stats WHERE video_id IN (SELECT id FROM ref_videos WHERE account_id = ?)");
+  const delAccount = db.prepare("DELETE FROM ref_accounts WHERE id = ?");
+  let accounts = 0;
+  let videos = 0;
+  const tx = db.transaction(() => {
+    for (const r of rows) {
+      if (profiles.has(r.handle.toLowerCase())) continue;
+      const jp = looksJapanese(`${r.captions ?? ""} ${r.name} ${r.bio}`);
+      if (jp && r.followers <= MAX_FOLLOWERS) continue;
+      const n = (db.prepare("SELECT COUNT(*) AS c FROM ref_videos WHERE account_id = ?").get(r.id) as { c: number }).c;
+      delStats.run(r.id);
+      delVideos.run(r.id);
+      delAccount.run(r.id);
+      accounts++;
+      videos += n;
+    }
+  });
+  tx();
+  return { accounts, videos };
 }

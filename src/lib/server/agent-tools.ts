@@ -51,8 +51,9 @@ export function searchRefVideos(keyword: string, limit = 9): VideoHit[] {
 }
 
 /** 発言が「動画を探して」の依頼かどうか。まず正規表現で気配を見て、該当時だけAIに確定させる */
+// 「動画」「アカウント」だけでも候補に入れ、最終判断はAI（extractSearchKeyword）に任せる
 const SEARCH_HINT =
-  /(見せて|みせて|探して|さがして|検索|伸びて|のびて|流行|はやっ|バズ|トレンド|人気|参考動画|事例|再生され)/;
+  /(見せて|みせて|見たい|みたい|探して|さがして|検索|伸びて|のびて|流行|はやっ|バズ|トレンド|人気|参考動画|事例|再生され|動画|アカウント|TikTok|ティックトック)/i;
 
 export function mightBeSearch(message: string): boolean {
   return SEARCH_HINT.test(message);
