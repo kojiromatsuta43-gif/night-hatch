@@ -1,8 +1,13 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { BRAND } from "../brand";
+import { bridge } from "../brands/bridge";
+import { food } from "../brands/food";
 import crypto from "crypto";
 import refSeed from "./ref-seed.json";
+
+/** 全看板の業種初期値。看板を切り替えたときに、前の看板の初期値を見分けるために使う */
+const ALL_BRAND_INDUSTRIES = Array.from(new Set([...bridge.industries, ...food.industries]));
 
 const CATEGORY_JA: Record<string, string> = {
   kaitori: "買取・リユース",
@@ -37,8 +42,30 @@ function syncRefAccounts(db: Database.Database) {
   const update = db.prepare(
     "UPDATE ref_accounts SET name=?, industry=?, followers=?, icon_url=?, profile_url=?, video_count=? WHERE id=?"
   );
+  const contents = (refSeed as { contents: RefSeedAccount[] }).contents;
+  // 飲食店版（FOOD HATCH）には飲食の参考アカウントだけ入れる。
+  // 美容・不動産などの初期データが入っていたら（看板切替前に起動した場合）取り除く。
+  const wanted = (c: RefSeedAccount) => BRAND.id !== "food" || c.category?.[0] === "food_service";
   const tx = db.transaction(() => {
-    for (const c of (refSeed as { contents: RefSeedAccount[] }).contents) {
+    if (BRAND.id === "food") {
+      const drop = [
+        ...contents.filter((c) => !wanted(c)).map((c) => "@" + c.userId),
+        "@dr.norimoto",
+        "@dragonamasora",
+        // 開発用のミニ初期データのうち飲食以外
+        "@rire_omotesando",
+        "@force_gym",
+        "@sakura_fudosan",
+      ];
+      const delVideos = db.prepare("DELETE FROM ref_videos WHERE account_id IN (SELECT id FROM ref_accounts WHERE handle = ?)");
+      const delAccount = db.prepare("DELETE FROM ref_accounts WHERE handle = ?");
+      for (const h of drop) {
+        delVideos.run(h);
+        delAccount.run(h);
+      }
+    }
+    for (const c of contents) {
+      if (!wanted(c)) continue;
       const handle = "@" + c.userId;
       const industry = CATEGORY_JA[c.category?.[0] ?? ""] ?? "その他";
       const icon = c.userIcon?.url ?? "";
@@ -360,22 +387,6 @@ function init(db: Database.Database) {
   }
 
   // チャットのオンライン表示用
-  // 業種マスタの初期値。以降は管理画面から追加・並べ替えできる。
-  // 参考アカウントがまだ0件の業種（ネイル・マツエク・美容室）も「準備中」として最初から並べる。
-  const industryCount = (db.prepare("SELECT COUNT(*) AS c FROM industries").get() as { c: number }).c;
-  if (industryCount === 0) {
-    const insIndustry = db.prepare("INSERT INTO industries (id, name, sort_order) VALUES (?, ?, ?)");
-    BRAND.industries.forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
-  }
-  // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
-  db.prepare(
-    `INSERT OR IGNORE INTO industries (id, name, sort_order)
-     SELECT lower(hex(randomblob(16))), a.industry,
-            (SELECT COALESCE(MAX(sort_order), 0) + 10 FROM industries)
-       FROM (SELECT DISTINCT industry FROM ref_accounts WHERE industry <> '') a
-      WHERE a.industry NOT IN (SELECT name FROM industries)`
-  ).run();
-
   const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
   if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
 
@@ -413,14 +424,16 @@ function init(db: Database.Database) {
     db.exec("ALTER TABLE ref_videos ADD COLUMN thumbnail TEXT NOT NULL DEFAULT ''");
   }
 
-  const licensed = db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE handle = '@dr.norimoto'").get() as { c: number };
+  const licensed = db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE handle = '@higakiyakitori'").get() as { c: number };
   if (licensed.c === 0) {
     const insertLicensed = db.prepare(
       "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    insertLicensed.run(crypto.randomUUID(), "クマ取り名人・則本翔", "@dr.norimoto", "美容クリニック", 421700, "CHINOWA CLINIC院長 / 表参道・原宿 ひたすらクマを消す人！症例一覧・ご予約はInstagramから");
     insertLicensed.run(crypto.randomUUID(), "焼鳥どん 日垣兄弟", "@higakiyakitori", "飲食", 318400, "全席禁煙の全部大歓迎焼鳥屋 / お子様・お一人様歓迎 店舗一覧・ご予約・FC・通販は下記リンク");
-    insertLicensed.run(crypto.randomUUID(), "ドラゴン細井 / 美容外科医", "@dragonamasora", "美容クリニック", 238100, "渋谷アマソラクリニック院長 / 医学部受験塾MEDUCATE塾長 形成外科・美容外科医");
+    if (BRAND.id !== "food") {
+      insertLicensed.run(crypto.randomUUID(), "クマ取り名人・則本翔", "@dr.norimoto", "美容クリニック", 421700, "CHINOWA CLINIC院長 / 表参道・原宿 ひたすらクマを消す人！症例一覧・ご予約はInstagramから");
+      insertLicensed.run(crypto.randomUUID(), "ドラゴン細井 / 美容外科医", "@dragonamasora", "美容クリニック", 238100, "渋谷アマソラクリニック院長 / 医学部受験塾MEDUCATE塾長 形成外科・美容外科医");
+    }
   }
 
   const refCount = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts").get() as { c: number }).c;
@@ -463,6 +476,39 @@ function init(db: Database.Database) {
   }
 }
 
+/**
+ * 業種タブの初期値。以降は管理画面から追加・並べ替えできる。
+ * 参考アカウントがまだ0件の業種も「準備中」として最初から並べる。
+ * 参考アカウントの整理（syncRefAccounts）のあとに呼ぶこと。
+ */
+function seedIndustries(db: Database.Database) {
+  // どの看板の初期値を入れたかを覚えておく。看板を切り替えて起動し直したとき、
+  // 前の看板の初期値のうち使われていないものは消し、今の看板の初期値を足す。
+  db.exec("CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+  const seededFor = (db.prepare("SELECT value FROM app_meta WHERE key = 'industries_seeded_for'").get() as { value: string } | undefined)?.value;
+  if (seededFor !== BRAND.id) {
+    const others = ALL_BRAND_INDUSTRIES.filter((n) => !BRAND.industries.includes(n));
+    const delUnused = db.prepare(
+      `DELETE FROM industries WHERE name = ?
+         AND name NOT IN (SELECT DISTINCT industry FROM ref_accounts)
+         AND name NOT IN (SELECT industry_name FROM industry_requests)`
+    );
+    others.forEach((n) => delUnused.run(n));
+    const insIndustry = db.prepare("INSERT OR IGNORE INTO industries (id, name, sort_order) VALUES (?, ?, ?)");
+    BRAND.industries.forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('industries_seeded_for', ?)").run(BRAND.id);
+  }
+  // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
+  db.prepare(
+    `INSERT OR IGNORE INTO industries (id, name, sort_order)
+     SELECT lower(hex(randomblob(16))), a.industry,
+            (SELECT COALESCE(MAX(sort_order), 0) + 10 FROM industries)
+       FROM (SELECT DISTINCT industry FROM ref_accounts WHERE industry <> '') a
+      WHERE a.industry NOT IN (SELECT name FROM industries)`
+  ).run();
+
+}
+
 export function getDb(): Database.Database {
   if (!global.__db) {
     const fs = require("fs") as typeof import("fs");
@@ -470,6 +516,7 @@ export function getDb(): Database.Database {
     global.__db = new Database(DB_PATH);
     init(global.__db);
     syncRefAccounts(global.__db);
+    seedIndustries(global.__db);
   }
   return global.__db;
 }
