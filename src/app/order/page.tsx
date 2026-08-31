@@ -252,7 +252,7 @@ function FullOrderTop() {
                     <span className="ml-auto rounded-full bg-honey-100 px-3 py-1 text-xs font-bold text-hive-900">{info.examples[0]}</span>
                   )}
                 </div>
-                <div className={`grid gap-3 ${steps ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                <div className={`grid gap-3 ${steps ? "mt-3 sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
                   {g.items.map((it, i) => (
                     <Link
                       key={it.category}
