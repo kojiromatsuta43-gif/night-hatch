@@ -335,10 +335,9 @@ function init(db: Database.Database) {
     const insertProject = db.prepare(
       "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    insertProject.run(crypto.randomUUID(), clientId, "秋の新商品ショート動画", "ショート動画編集", "秋の新商品を紹介する30秒動画", 7, "2026-08-30", "募集中");
-    insertProject.run(crypto.randomUUID(), clientId, "採用ショート動画 台本", "台本作成（ショート）", "エンジニア採用向けTikTok台本", 4, "2026-09-05", "制作待ち");
-    insertProject.run(crypto.randomUUID(), clientId, "新商品LPファーストビュー修正", "LPファーストビュー", "CVR改善のためのFV差し替え", 20, "2026-09-10", "フィードバック");
-    insertProject.run(crypto.randomUUID(), clientId, "会社紹介動画編集", "動画編集（3分）", "展示会用90秒動画の編集", 14, "2026-08-25", "完了");
+    for (const pj of BRAND.demoProjects) {
+      insertProject.run(crypto.randomUUID(), clientId, pj.title, pj.category, pj.description, pj.points, pj.deadline, pj.status);
+    }
 
     const insertNg = db.prepare("INSERT INTO ng_words (id, word) VALUES (?, ?)");
     for (const w of ["絶対に儲かる", "必ず痩せる", "日本一", "完治"]) {
@@ -482,6 +481,27 @@ function init(db: Database.Database) {
  * 参考アカウントの整理（syncRefAccounts）のあとに呼ぶこと。
  */
 function seedIndustries(db: Database.Database) {
+  // 看板切替前に入った、別の看板のデモ案件を消す（提出物などが無いものだけ）
+  if (BRAND.id === "food") {
+    const delDemo = db.prepare(
+      `DELETE FROM projects WHERE title = ? AND category = ?
+         AND id NOT IN (SELECT project_id FROM deliverables)`
+    );
+    for (const pj of bridge.demoProjects) delDemo.run(pj.title, pj.category);
+    // 飲食版のデモ案件が無ければ、デモクライアントに入れる
+    const client = db.prepare("SELECT id FROM users WHERE email = 'client@example.com'").get() as { id: string } | undefined;
+    if (client) {
+      const exists = db.prepare("SELECT COUNT(*) AS c FROM projects WHERE title = ? AND category = ?");
+      const ins = db.prepare(
+        "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, requested_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, date('now'))"
+      );
+      for (const pj of BRAND.demoProjects) {
+        if ((exists.get(pj.title, pj.category) as { c: number }).c === 0) {
+          ins.run(crypto.randomUUID(), client.id, pj.title, pj.category, pj.description, pj.points, pj.deadline, pj.status);
+        }
+      }
+    }
+  }
   // どの看板の初期値を入れたかを覚えておく。看板を切り替えて起動し直したとき、
   // 前の看板の初期値のうち使われていないものは消し、今の看板の初期値を足す。
   db.exec("CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");

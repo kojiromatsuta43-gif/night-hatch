@@ -56,6 +56,10 @@ export type Brand = {
   orderStyle: "full" | "simple";
   /** グループの説明（simple の発注トップに出す） */
   groups: { name: string; sub: string; examples: string[] }[];
+  /** メニューに agreements が無いときの同意事項（動画・台本は data.ts の専用文を使う） */
+  defaultAgreements: string[];
+  /** デモ用の案件（DBが空のときだけ入る） */
+  demoProjects: { title: string; category: string; description: string; points: number; deadline: string; status: string }[];
   /** AIエージェント経由で発注できるカテゴリ */
   orderable: string[];
   agent: {

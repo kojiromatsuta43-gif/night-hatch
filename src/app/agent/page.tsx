@@ -316,7 +316,7 @@ function AgentPageInner() {
                 }
               }}
               rows={2}
-              placeholder={`${mascot.talkTo} — 例: 美容室で伸びてる動画を見せて`}
+              placeholder={`${mascot.talkTo} — 例: ${BRAND.agent.promptLibrary[0]}`}
               className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
             />
             <MicButton

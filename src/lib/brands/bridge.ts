@@ -52,6 +52,13 @@ export const bridge: Brand = {
   catalog,
   orderStyle: "full",
   groups: [],
+  defaultAgreements: [],
+  demoProjects: [
+    { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 7, deadline: "2026-08-30", status: "募集中" },
+    { title: "採用ショート動画 台本", category: "台本作成（ショート）", description: "エンジニア採用向けTikTok台本", points: 4, deadline: "2026-09-05", status: "制作待ち" },
+    { title: "新商品LPファーストビュー修正", category: "LPファーストビュー", description: "CVR改善のためのFV差し替え", points: 20, deadline: "2026-09-10", status: "フィードバック" },
+    { title: "会社紹介動画編集", category: "動画編集（3分）", description: "展示会用90秒動画の編集", points: 14, deadline: "2026-08-25", status: "完了" },
+  ],
   orderable: ["ショート動画編集", "台本作成（ショート）"],
   agent: {
     system: `あなたは「BRIDGE HATCHエージェント」。中小企業のSNS運用・制作発注を支援するアシスタントです。

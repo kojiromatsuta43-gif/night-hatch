@@ -338,6 +338,18 @@ export const food: Brand = {
   ],
   catalog,
   orderStyle: "simple",
+  defaultAgreements: [
+    "修正は原則2回まで無料、それ以降は別途お見積りになります",
+    "提案内容（メニュー・価格・文言）の最終判断はお店側でお願いします。売上や集客の結果は保証できません",
+    "写真・ロゴ・メニュー表などの素材は、お店が使用権を持つものをご提供ください",
+    "ご提供いただいた情報は制作の目的にだけ使い、案件終了後は外部に出しません",
+  ],
+  demoProjects: [
+    { title: "テスト食堂の季節・限定メニュー企画", category: "季節・限定メニュー企画", description: "秋の限定定食5品の企画", points: 12, deadline: "2026-09-20", status: "募集中" },
+    { title: "テスト食堂のショート動画編集", category: "ショート動画編集", description: "看板メニューの仕込み動画", points: 7, deadline: "2026-09-05", status: "制作待ち" },
+    { title: "テスト食堂のPOP作成", category: "POP作成", description: "本日のおすすめ卓上POP", points: 4, deadline: "2026-09-10", status: "フィードバック" },
+    { title: "テスト食堂のMEO対策（初期整備）", category: "MEO対策（初期整備）", description: "Googleマップの写真・営業時間・メニュー登録", points: 15, deadline: "2026-08-25", status: "完了" },
+  ],
   groups: [
     { name: "集客", sub: "新しいお客さんを呼びたい", examples: ["Googleマップ対策", "食べログ等の運用", "ホームページ", "チラシ"] },
     { name: "メニュー・売上", sub: "客単価と利益を上げたい", examples: ["メニュー開発", "原価の見直し", "POP"] },

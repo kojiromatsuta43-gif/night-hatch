@@ -64,7 +64,9 @@ export const VIDEO_AGREEMENTS = [
 
 /** カテゴリごとの同意事項 */
 export function agreementsFor(category: string): string[] {
-  return isVideoCategory(category) ? VIDEO_AGREEMENTS : AGREEMENTS;
+  if (isVideoCategory(category)) return VIDEO_AGREEMENTS;
+  if (isScriptCategory(category)) return AGREEMENTS;
+  return BRAND.defaultAgreements.length > 0 ? BRAND.defaultAgreements : AGREEMENTS;
 }
 
 export const STATUSES = ["未公開", "募集中", "制作待ち", "フィードバック", "完了"] as const;
