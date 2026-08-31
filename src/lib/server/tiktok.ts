@@ -434,11 +434,15 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
     let checked = 0;
     let removed = 0;
     const CHUNK = 10; // AIの1回の応答が長くなりすぎない量
-    const CONCURRENCY = 3; // AIの応答待ちが長いので複数同時に投げる（多すぎると混雑エラーになる）
+    // Gemini の無料枠は1分あたりの回数が少ない（429になる）ので、1本ずつ間を空けて投げる。
+    // 有料化したら TIKTOK_CLASSIFY_CONCURRENCY=3 などに上げられる。
+    const CONCURRENCY = Math.max(1, Number(process.env.TIKTOK_CLASSIFY_CONCURRENCY ?? 1));
+    const GAP_MS = Number(process.env.TIKTOK_CLASSIFY_GAP_MS ?? 7000);
     const chunks: typeof rows[] = [];
     for (let i = 0; i < rows.length; i += CHUNK) chunks.push(rows.slice(i, i + CHUNK));
     let cursor = 0;
     let failures = 0;
+    let rateLimited = 0;
 
     const judgeChunk = async (chunk: typeof rows) => {
       const prompt = chunk
@@ -451,14 +455,21 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
       try {
         out = await generateJson(system, `次の${chunk.length}件を判定してください。\n\n${prompt}`, schema);
       } catch (e) {
-        failures++;
         const msg = e instanceof Error ? e.message : String(e);
         console.error("[tiktok classify]", msg.slice(0, 300));
         db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_classify_error', ?)").run(
           `${new Date().toISOString()} ${msg.slice(0, 300)}`
         );
-        // AIの混雑（429など）なら少し待ってから続ける
-        await sleep(15_000);
+        if (/\b429\b/.test(msg)) {
+          // 回数制限。1分待ってから同じかたまりをやり直す（数回まで）
+          rateLimited++;
+          if (rateLimited <= 20) {
+            await sleep(60_000);
+            chunks.push(chunk);
+            return;
+          }
+        }
+        failures++;
         return; // 失敗ぶんは判定済みにせず次回に回す
       }
       const byHandle = new Map(out.results.map((x) => [x.handle.trim().toLowerCase(), x]));
@@ -483,6 +494,7 @@ keep=true のときは persona に「福岡のネイルサロン公式」「大�
       while (cursor < chunks.length && failures < 8) {
         const c = chunks[cursor++];
         await judgeChunk(c);
+        if (GAP_MS > 0) await sleep(GAP_MS);
       }
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, chunks.length) }, worker));
