@@ -1,6 +1,6 @@
 import { getDb } from "./db";
 import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
-import { warmMissingImages, pendingCount } from "./thumbs";
+import { warmMissingImages, pendingCount, shrinkOversizedCache } from "./thumbs";
 
 /**
  * TikTok の参考動画を定期的に自動で取り込む。
@@ -46,6 +46,8 @@ async function tick() {
 /** まだ無いサムネイル・アイコンを少しずつ裏で取りに行く（起動直後と5分ごと） */
 function warm() {
   try {
+    // 以前に原寸で保存した画像があれば縮小し直す（数百枚ずつ）
+    void shrinkOversizedCache(300).catch(() => {});
     if (pendingCount() > 50) return; // 前の分がまだ残っていれば待つ
     warmMissingImages(600);
   } catch (e) {

@@ -214,3 +214,31 @@ export function warmMissingImages(limit = 300): { thumbs: number; icons: number 
   }
   return { thumbs, icons };
 }
+
+/**
+ * 以前に原寸のまま保存された画像を縮小し直す（1回の呼び出しで最大 limit 枚）。
+ * 縮小の仕組みを入れる前に取った画像が数百KB〜数MBのまま残っているため。
+ */
+let shrinkCursor: string[] | null = null;
+export async function shrinkOversizedCache(limit = 200): Promise<number> {
+  ensureThumbDir();
+  if (!shrinkCursor) {
+    shrinkCursor = fs.readdirSync(THUMB_DIR).filter((f) => f.endsWith(".jpg"));
+  }
+  let done = 0;
+  while (shrinkCursor.length > 0 && done < limit) {
+    const f = shrinkCursor.shift()!;
+    const full = path.join(THUMB_DIR, f);
+    try {
+      const st = fs.statSync(full);
+      if (st.size <= 120 * 1024) continue;
+      const buf = fs.readFileSync(full);
+      const small = await shrink(buf, f.startsWith("icon-") ? 96 : 480);
+      if (small.length < buf.length) fs.writeFileSync(full, small);
+      done++;
+    } catch {
+      // 1枚失敗しても続ける
+    }
+  }
+  return done;
+}
