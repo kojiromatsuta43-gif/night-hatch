@@ -13,10 +13,10 @@ const catalog: CatalogItem[] = [
   { name: "軽微な修正", points: 2, group: "SNS・Webまわり", size: "テロップ差し替えなど", days: "1日〜" },
   // ── 営業まわり（テレアポは「台本」「リスト」「架電」の3つに分けて、それぞれ別料金） ──
   {
-    name: "テレアポ用トークスクリプト作成",
+    name: "テレアポ台本作成",
     points: 5,
     group: "営業まわり",
-    size: "受付突破→用件→切り返し3パターン→アポ打診",
+    size: "受付突破〜切り返しまでのトークスクリプト",
     days: "2日〜",
     questions: [
       { key: "商材", label: "案内する商材・サービス", type: "textarea", required: true, placeholder: "何を、誰に、いくらで。強みも一言" },
@@ -31,10 +31,10 @@ const catalog: CatalogItem[] = [
     ],
   },
   {
-    name: "営業リスト作成（200件）",
+    name: "営業リスト作成",
     points: 20,
     group: "営業まわり",
-    size: "会社名・電話・住所・URLをCSVで",
+    size: "200件・会社名/電話/住所/URLをCSVで",
     days: "5日〜",
     questions: [
       { key: "ターゲット", label: "集めたい会社の条件（業種・地域・規模）", type: "textarea", required: true, placeholder: "例: 福岡県内の美容室、スタッフ3名以上、HPあり" },
@@ -48,13 +48,13 @@ const catalog: CatalogItem[] = [
     ],
   },
   {
-    name: "テレアポ架電（200コール）",
+    name: "テレアポ架電",
     points: 40,
     group: "営業まわり",
-    size: "法人向けに200件架電・アポ取得",
+    size: "200コール・法人向けにアポ取得",
     days: "1週間〜",
     questions: [
-      { key: "トークスクリプト", label: "トークスクリプト", type: "select", required: true, options: ["手元にある（下に貼り付け）", "別途「テレアポ用トークスクリプト作成」を発注する", "担当者におまかせ（簡易版で架電）"] },
+      { key: "トークスクリプト", label: "トークスクリプト", type: "select", required: true, options: ["手元にある（下に貼り付け）", "別途「テレアポ台本作成」を発注する", "担当者におまかせ（簡易版で架電）"] },
       { key: "スクリプト本文", label: "スクリプト本文（あれば貼り付け）", type: "textarea" },
       { key: "架電リスト", label: "架電リスト", type: "select", required: true, options: ["手元にある（CSV・スプレッドシートを添付）", "別途「営業リスト作成」を発注する"] },
       { key: "リストファイル", label: "架電リストのファイル", type: "file", hint: "会社名・電話番号・担当者名が入ったCSVかExcel" },
@@ -88,7 +88,7 @@ export const bridge: Brand = {
   catalog,
   orderStyle: "full",
   // 発注トップの見出しに添える説明（順番の並べ替えには使わない）
-  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の順。必要なものだけ頼めます（3つ合わせて65pt）", examples: [] }],
+  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 65pt"] }],
   defaultAgreements: [],
   demoProjects: [
     { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 7, deadline: "2026-08-30", status: "募集中" },

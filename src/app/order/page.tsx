@@ -234,40 +234,60 @@ function FullOrderTop() {
       </section>
 
       {/* その他の制作物 */}
-      <section className="mt-8">
-        <div className="mb-3 flex items-baseline gap-3">
-          <h2 className="text-lg font-bold text-hive-900">その他の制作物</h2>
-          <span className="text-xs text-slate-400">押すと発注フォームに進みます</span>
+      <section className="mt-10">
+        <div className="mb-4 flex items-baseline gap-3">
+          <h2 className="text-xl font-bold text-hive-900">その他の制作物</h2>
+          <span className="text-xs text-slate-400">押すと発注フォームに進みます。🍯は目安ポイント（1🍯＝1,000円・税別）</span>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {OTHER_GROUPS.map((g) => (
-            <div key={g.heading} className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-hive-900">
-                {g.heading}
-                {BRAND.groups.find((x) => x.name === g.heading)?.sub && (
-                  <span className="ml-2 text-xs font-normal text-slate-500">{BRAND.groups.find((x) => x.name === g.heading)?.sub}</span>
-                )}
-              </h3>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {g.items.map((it) => (
-                  <Link
-                    key={it.category}
-                    href={`/order/create?category=${encodeURIComponent(it.category)}`}
-                    className="group flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 transition-colors hover:border-honey-400 hover:bg-honey-50"
-                  >
-                    <FormatIcon category={it.category} />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold leading-snug text-slate-700 group-hover:text-hive-900">{it.label}</span>
-                      <span className="block text-[11px] text-slate-400">{it.size}</span>
-                      <span className="block text-[11px] font-medium text-honey-700">
-                        {POINTS_BY_CATEGORY[it.category]}<PointInline />{it.quantity ? "〜" : ""}{it.monthly ? "／月" : ""} ／ {it.days}
-                      </span>
-                    </span>
-                  </Link>
-                ))}
+        <div className="space-y-6">
+          {OTHER_GROUPS.map((g) => {
+            const info = BRAND.groups.find((x) => x.name === g.heading);
+            const steps = g.heading === "営業まわり"; // 台本→リスト→架電の順番がある
+            return (
+              <div key={g.heading} className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
+                <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <h3 className="text-base font-bold text-hive-900">{g.heading}</h3>
+                  {info?.sub && <span className="text-sm text-slate-500">{info.sub}</span>}
+                  {info?.examples[0] && (
+                    <span className="ml-auto rounded-full bg-honey-100 px-3 py-1 text-xs font-bold text-hive-900">{info.examples[0]}</span>
+                  )}
+                </div>
+                <div className={`grid gap-3 ${steps ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+                  {g.items.map((it, i) => (
+                    <Link
+                      key={it.category}
+                      href={`/order/create?category=${encodeURIComponent(it.category)}`}
+                      className="group relative flex flex-col rounded-2xl border-2 border-slate-100 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-honey-400 hover:shadow-md"
+                    >
+                      {steps && (
+                        <span className="absolute -top-3 left-4 rounded-full bg-hive-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                          STEP {i + 1}
+                        </span>
+                      )}
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 shrink-0 scale-125 origin-top-left">
+                          <FormatIcon category={it.category} />
+                        </span>
+                        <span className="min-w-0 pl-2">
+                          <span className="block text-base font-bold leading-snug text-hive-900 group-hover:text-honey-700">{it.label}</span>
+                          <span className="mt-1 block text-xs leading-relaxed text-slate-500">{it.size}</span>
+                        </span>
+                      </div>
+                      <div className="mt-auto flex items-end justify-between pt-3">
+                        <span className="rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500">目安 {it.days}</span>
+                        <span className="text-xl font-bold text-honey-700">
+                          {POINTS_BY_CATEGORY[it.category]}
+                          {it.quantity ? "〜" : ""}
+                          <PointInline />
+                          {it.monthly && <span className="text-xs font-medium text-slate-500">／月</span>}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

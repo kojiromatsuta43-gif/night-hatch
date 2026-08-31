@@ -98,7 +98,7 @@ export default function FormatIcon({ category }: { category: string }) {
           <path d="M47 15l4 4" stroke={HIVE} strokeWidth="1.4" />
         </Frame>
       );
-    case "テレアポ用トークスクリプト作成": // 台本 + 吹き出し
+    case "テレアポ台本作成": // 台本 + 吹き出し
       return (
         <Frame>
           <rect x="14" y="5" width="26" height="38" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
@@ -108,7 +108,7 @@ export default function FormatIcon({ category }: { category: string }) {
           <path d="M40 24h16a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-9l-5 4v-4h-2a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3z" fill={HONEY} />
         </Frame>
       );
-    case "営業リスト作成（200件）": // 表（リスト）
+    case "営業リスト作成": // 表（リスト）
       return (
         <Frame>
           <rect x="8" y="8" width="48" height="32" rx="2.5" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
@@ -121,7 +121,7 @@ export default function FormatIcon({ category }: { category: string }) {
           <rect x="28" y="34" width="24" height="2.5" rx="1" fill={LINE} />
         </Frame>
       );
-    case "テレアポ架電（200コール）": // 受話器
+    case "テレアポ架電": // 受話器
     case "テレアポ営業":
     case "宴会・法人向けテレアポ営業":
       return (

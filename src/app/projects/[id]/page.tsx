@@ -79,6 +79,7 @@ function CallResultSummary({ p }: { p: Detail }) {
   if (!target) {
     const m = /(\d+)コール/.exec(p.category);
     if (m) target = Number(m[1]);
+    else if (p.category === "テレアポ架電") target = 200; // 200コール固定のメニュー
   }
   const pct = target > 0 ? Math.min(100, Math.round((t.calls / target) * 100)) : 0;
   const rate = t.connected > 0 ? `${Math.round((t.appts / t.connected) * 1000) / 10}%` : "-";
