@@ -103,8 +103,13 @@ export async function POST(req: Request) {
     let ex: Awaited<ReturnType<typeof extractFilter>> = null;
     try {
       ex = await extractFilter(message);
-    } catch {
-      ex = null;
+    } catch (e) {
+      console.error("[sales-agent] 条件抽出に失敗:", e instanceof Error ? e.message : e);
+      const msg: Msg = {
+        role: "assistant",
+        content: `条件の読み取りでAIがエラーになりました（${e instanceof Error ? e.message.slice(0, 120) : "不明"}）。少し待ってからもう一度送ってください。`,
+      };
+      return reply(sessionId, [...history, userMsg], msg);
     }
     if (ex) {
       if (!companyDbReady()) {

@@ -113,6 +113,13 @@ function toGeminiSchema(schema: Record<string, unknown>): Record<string, unknown
       const out: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
         if (k === "additionalProperties") continue;
+        // JSON Schema の type: ["integer", "null"] は Gemini では nullable: true で表す
+        if (k === "type" && Array.isArray(v)) {
+          const types = v.filter((t) => t !== "null");
+          out.type = types[0] ?? "string";
+          if (types.length !== v.length) out.nullable = true;
+          continue;
+        }
         out[k] = walk(v);
       }
       return out;
