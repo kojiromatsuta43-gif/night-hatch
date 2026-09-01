@@ -2,6 +2,14 @@ import Anthropic from "@anthropic-ai/sdk";
 import { resolveModel, type AiTask } from "./ai-settings";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+/**
+ * 文字列の途中で切れた絵文字（サロゲートペアの片割れ）を落とす。
+ * キャプションを文字数で切ったときに残り、そのまま送ると API が「JSONではない」と 400 を返す。
+ */
+export function cleanText(s: string): string {
+  return s.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, "").replace(/(^|[^\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "$1");
+}
 export type LlmOptions = { task?: AiTask };
 
 export class NoProviderError extends Error {
@@ -43,6 +51,8 @@ async function geminiCall(model: string, body: unknown): Promise<string> {
 export async function generateText(system: string, messages: ChatMessage[], opts: LlmOptions = {}): Promise<string> {
   const target = resolveModel(opts.task ?? "chat");
   if (!target) throw new NoProviderError();
+  system = cleanText(system);
+  messages = messages.map((m) => ({ role: m.role, content: cleanText(m.content) }));
 
   if (target.provider === "anthropic") {
     const client = new Anthropic();
@@ -79,6 +89,8 @@ export async function generateJson<T>(
 ): Promise<T> {
   const target = resolveModel(opts.task ?? "backstage");
   if (!target) throw new NoProviderError();
+  system = cleanText(system);
+  prompt = cleanText(prompt);
 
   if (target.provider === "anthropic") {
     const client = new Anthropic();
