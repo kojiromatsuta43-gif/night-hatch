@@ -52,7 +52,7 @@ function PointsInner() {
   };
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-3xl">
       <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold">
         {mascot.pointName}
         <PointMark className="h-7 w-7 text-2xl" />
@@ -84,7 +84,7 @@ function PointsInner() {
         定価は 1{mascot.pointEmoji}＝{yen(POINT_UNIT_PRICE)}（税別）。月額プランは定価換算に増量分が付き、上のプランほど1{mascot.pointEmoji}が安くなります。
         ショート動画は編集10{mascot.pointEmoji}・台本10{mascot.pointEmoji}・サムネ5{mascot.pointEmoji}です。
       </p>
-      <div className="mb-8 max-w-4xl overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="mb-8 max-w-2xl overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
@@ -93,7 +93,6 @@ function PointsInner() {
               <th className="whitespace-nowrap px-4 py-2 text-right">毎月の{mascot.pointName}</th>
               <th className="whitespace-nowrap px-4 py-2 text-right">実質単価</th>
               <th className="whitespace-nowrap px-4 py-2 text-right">繰越</th>
-              <th className="px-4 py-2">目安</th>
             </tr>
           </thead>
           <tbody>
@@ -114,7 +113,6 @@ function PointsInner() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">{yen(Math.round(pl.monthly / pl.points))}</td>
                   <td className="whitespace-nowrap px-4 py-2 text-right">{pl.carryMonths}ヶ月</td>
-                  <td className="px-4 py-2 text-xs text-slate-500">{pl.note}</td>
                 </tr>
               );
             })}
