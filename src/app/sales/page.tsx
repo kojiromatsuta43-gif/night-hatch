@@ -6,6 +6,7 @@ import Link from "next/link";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { parseCsv, guessMapping, LEAD_FIELD_LABELS, type LeadField } from "@/lib/csv";
+import CompanySearch from "@/components/sales/CompanySearch";
 
 type Lead = {
   id: string;
@@ -86,6 +87,7 @@ function SalesInner() {
   const [msg, setMsg] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [bulkProject, setBulkProject] = useState("");
+  const [mode, setMode] = useState<"list" | "db">(sp.get("mode") === "db" ? "db" : "list");
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -157,16 +159,29 @@ function SalesInner() {
           </p>
         </div>
         <div className="flex gap-2">
-          {!isFreelancer && (
+          {!isFreelancer && mode === "list" && (
             <button onClick={() => setImportOpen((v) => !v)} className={btnY}>
               {importOpen ? "取り込みを閉じる" : "＋ CSVを取り込む"}
             </button>
           )}
-          <a href={`/api/sales/leads/export?${query}`} className={btnW}>
-            CSVで書き出す
-          </a>
+          {mode === "list" && (
+            <a href={`/api/sales/leads/export?${query}`} className={btnW}>
+              CSVで書き出す
+            </a>
+          )}
         </div>
       </div>
+
+      {!isFreelancer && (
+        <div className="mb-4 flex gap-1 text-sm">
+          <button onClick={() => setMode("list")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>自分のリスト</button>
+          <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（775万社）</button>
+        </div>
+      )}
+
+      {mode === "db" && !isFreelancer && <CompanySearch isAdmin={me?.role === "admin"} onAdded={load} />}
+      {mode === "db" && !isFreelancer ? null : (
+      <>
 
       {importOpen && !isFreelancer && <ImportPanel onDone={() => { setImportOpen(false); load(); }} />}
 
@@ -303,6 +318,8 @@ function SalesInner() {
           <span>{page} / {pages}</span>
           <button onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page >= pages} className={`${btnW} disabled:opacity-40`}>次へ</button>
         </div>
+      )}
+      </>
       )}
     </div>
   );

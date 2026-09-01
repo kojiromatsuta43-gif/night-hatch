@@ -134,3 +134,20 @@ BRIDGE HATCH と FOOD HATCH は同じコードで、`NEXT_PUBLIC_APP_BRAND` の�
 | Fly.io | 無料枠あり | ボリューム対応。設定はやや複雑 |
 | Render | 月$7〜 | 永続ディスクは有料プランのみ |
 | Vercel | 無料 | **SQLiteでは不可**。Turso等の外部DBへの移行が必要 |
+
+
+## 企業データベース（775万社）の取り込み
+
+営業リスト画面の「企業DBから探す」は、サーバー側の DuckDB（`DATA_DIR/companydb/companies.duckdb`）を検索する。
+データは Mac の `~/zerotel-export/ブリッジハッチ営業リスト.duckdb` から Parquet を書き出して、管理画面「企業DB」からアップロードする。
+
+1. **Railway のボリューム容量を確認**（Parquet 数百MB ＋ DuckDB 数百MB〜1GB が必要。トライアルの 0.5GB では足りないので Hobby 以上に）
+2. Mac のターミナルで Parquet を書き出す:
+   ```
+   cd ~/zerotel-export && duckdb ブリッジハッチ営業リスト.duckdb -c "COPY (SELECT * FROM 全企業 ORDER BY 都道府県, 大業界) TO '全企業.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)"
+   ```
+3. 管理画面 → 企業DB → ファイルを選んでアップロード（8MB ずつ分割送信。画面を閉じない）
+4. 「取り込みを開始」→ 数分待つ（法人番号で重複をまとめ、都道府県順に並べ替え。終わると Parquet は自動削除）
+5. 営業リスト → 「企業DBから探す」で条件検索 → 先頭N社 or 選んだ会社を営業リストに追加
+
+環境変数（任意）: `COMPANYDB_MEMORY`（既定 1GB）、`COMPANYDB_THREADS`（既定 2）。

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
+    "@duckdb/node-api": "^1.5.5-r.4",
     "better-sqlite3": "^13.0.3",
     "marked": "^18.0.10",
     "next": "16.3.1",
