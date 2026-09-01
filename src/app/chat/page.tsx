@@ -44,29 +44,58 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // 5秒ごとの取得で内容が変わっていないときは state を触らない（一覧の再描画と自動スクロールが走らないように）
+  const lastRef = useRef<{ users: string; projects: string; messages: string }>({ users: "", projects: "", messages: "" });
   const load = useCallback(() => {
     api<{ users: ChatUser[]; projects: ChatProject[]; messages: Message[]; me: string }>("/api/chat")
       .then((res) => {
-        setUsers(res.users);
-        setProjects(res.projects);
-        setMessages(res.messages);
-        setMe(res.me);
+        const uKey = JSON.stringify(res.users);
+        const pKey = JSON.stringify(res.projects);
+        const mKey = res.messages.length + ":" + (res.messages[res.messages.length - 1]?.id ?? "");
+        if (uKey !== lastRef.current.users) {
+          lastRef.current.users = uKey;
+          setUsers(res.users);
+        }
+        if (pKey !== lastRef.current.projects) {
+          lastRef.current.projects = pKey;
+          setProjects(res.projects);
+        }
+        if (mKey !== lastRef.current.messages) {
+          lastRef.current.messages = mKey;
+          setMessages(res.messages);
+        }
+        setMe((cur) => (cur === res.me ? cur : res.me));
       })
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     const first = setTimeout(load, 0);
-    const timer = setInterval(load, 5000);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 5000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       clearTimeout(first);
       clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [load]);
 
+  // 新しいメッセージが増えたとき・相手を切り替えたときだけ一番下へ
+  const countRef = useRef(0);
+  useEffect(() => {
+    if (messages.length !== countRef.current) {
+      countRef.current = messages.length;
+      bottomRef.current?.scrollIntoView();
+    }
+  }, [messages]);
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
-  }, [messages, peer, thread]);
+  }, [peer, thread]);
 
   /** 相手とのやりとり全部 */
   const withPeer = useMemo(

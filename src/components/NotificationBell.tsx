@@ -46,9 +46,14 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // 前回と同じ内容なら state を触らない（30秒ごとの再描画で画面が重くならないように）
+  const lastRef = useRef("");
   const load = useCallback(async () => {
     try {
       const data = await api<{ items: Notification[]; unread: number }>("/api/notifications");
+      const key = data.unread + ":" + data.items.map((n) => n.id + (n.read_at ? "r" : "u")).join(",");
+      if (key === lastRef.current) return;
+      lastRef.current = key;
       setItems(data.items);
       setUnread(data.unread);
     } catch {
@@ -58,10 +63,18 @@ export default function NotificationBell() {
 
   useEffect(() => {
     const first = setTimeout(() => void load(), 0);
-    const timer = setInterval(() => void load(), 30000);
+    // 画面が見えているときだけ取りに行く（裏タブ・スマホのバックグラウンドでは動かさない）
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void load();
+    }, 45000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       clearTimeout(first);
       clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [load]);
 
