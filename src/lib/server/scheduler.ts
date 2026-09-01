@@ -1,6 +1,7 @@
 import { getDb } from "./db";
 import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
 import { warmMissingImages, pendingCount, shrinkOversizedCache } from "./thumbs";
+import { purgeOldChatVideos } from "./uploads";
 
 /**
  * TikTok の参考動画を定期的に自動で取り込む。
@@ -13,6 +14,21 @@ let started = false;
 
 function jstNow() {
   return new Date(Date.now() + 9 * 3600 * 1000);
+}
+
+/** 期限切れのチャット動画を1日1回消す */
+function purge() {
+  try {
+    const db = getDb();
+    const today = jstNow().toISOString().slice(0, 10);
+    const last = (db.prepare("SELECT value FROM app_meta WHERE key = 'chat_video_purge_day'").get() as { value: string } | undefined)?.value;
+    if (last === today) return;
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('chat_video_purge_day', ?)").run(today);
+    const r = purgeOldChatVideos();
+    if (r.removed > 0) console.log(`[chat video purge] ${r.removed} files, ${Math.round(r.bytes / 1024 / 1024)}MB`);
+  } catch (e) {
+    console.error("[chat video purge]", e instanceof Error ? e.message : e);
+  }
 }
 
 async function tick() {
@@ -61,6 +77,8 @@ export function start() {
   // 起動直後は少し待ってから（DB初期化と重ならないように）
   setTimeout(() => void tick(), 60_000);
   setInterval(() => void tick(), 30 * 60_000);
+  setTimeout(purge, 90_000);
+  setInterval(purge, 60 * 60_000);
   setTimeout(warm, 20_000);
   setInterval(warm, 5 * 60_000);
 }

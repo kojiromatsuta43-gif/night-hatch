@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { DATA_DIR } from "./db";
+import { DATA_DIR, getDb } from "./db";
 
 /** アップロードされたファイルの実体を置く場所（本番では永続ボリューム配下） */
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
@@ -85,4 +85,40 @@ export function cleanupStaleParts() {
   } catch {
     /* 無視 */
   }
+}
+
+/** チャットに添付した動画を残しておく日数（環境変数 CHAT_VIDEO_KEEP_DAYS、既定30） */
+export const CHAT_VIDEO_KEEP_DAYS = Math.max(1, Number(process.env.CHAT_VIDEO_KEEP_DAYS) || 30);
+
+/**
+ * チャットに添付された動画のうち、送信から CHAT_VIDEO_KEEP_DAYS 日を過ぎたものを消す。
+ * 保存容量を食うのは動画だけなので対象は video/* のみ。メッセージ本文は残し、
+ * 画面では「30日を過ぎたため削除されました」と出る（uploads の行は消す）。
+ * 案件の納品ファイルは対象外。
+ */
+export function purgeOldChatVideos(): { removed: number; bytes: number } {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT u.id, u.size FROM uploads u
+        WHERE u.mime LIKE 'video/%'
+          AND u.created_at < datetime('now', ?)
+          AND EXISTS (SELECT 1 FROM chat_messages c WHERE c.upload_id = u.id)
+          AND NOT EXISTS (SELECT 1 FROM deliverables d WHERE d.upload_id = u.id)
+        LIMIT 200`
+    )
+    .all(`-${CHAT_VIDEO_KEEP_DAYS} days`) as { id: string; size: number }[];
+  let removed = 0;
+  let bytes = 0;
+  for (const r of rows) {
+    try {
+      fs.unlinkSync(uploadPath(r.id));
+    } catch {
+      /* 実体が無くても台帳は消す */
+    }
+    db.prepare("DELETE FROM uploads WHERE id = ?").run(r.id);
+    removed++;
+    bytes += r.size;
+  }
+  return { removed, bytes };
 }

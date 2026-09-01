@@ -45,6 +45,7 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 | `HOSTNAME` | `0.0.0.0` | **必須**（外部からの接続を受けるため） |
 | `GEMINI_API_KEY` | ご自身のキー | AI機能を使う場合 |
 | `ANTHROPIC_API_KEY` | ご自身のキー | Claudeを使う場合（任意）。両方あるときの使い分けは管理画面「AI設定」で用途ごとに選べる（既定: お客様向けは Claude Sonnet 5、裏方は Gemini 3.1 Flash-Lite） |
+| `CHAT_VIDEO_KEEP_DAYS` | 任意（既定 30） | チャットに添付した動画を残す日数。過ぎたものは1日1回自動削除（納品ファイルは対象外） |
 | `MAX_UPLOAD_MB` | 任意（既定 2048） | 素材・納品ファイルの1ファイル上限。8MBずつ分割して受け取るのでメモリは食わない。ボリュームの空きが300MBを切ると受け付けない |
 | `ANTHROPIC_MODEL` / `GEMINI_MODEL` | 任意 | 用途に関係なく一括でモデル名を上書きしたいとき（裏方は除く）。通常は管理画面から設定する |
 | `NEXT_PUBLIC_APP_BRAND` | `bridge` または `food` | 看板の切替（未設定なら BRIDGE HATCH） |

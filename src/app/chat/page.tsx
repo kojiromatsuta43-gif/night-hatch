@@ -279,7 +279,12 @@ export default function ChatPage() {
                       }`}
                     >
                       {m.body}
-                      {m.upload_id && (
+                      {m.upload_id && !m.upload_name && (
+                        <span className={`mt-1 block text-xs ${mine ? "text-hive-700" : "text-slate-400"}`}>
+                          （添付の動画は30日を過ぎたため削除されました）
+                        </span>
+                      )}
+                      {m.upload_id && m.upload_name && (
                         <a
                           href={`/api/uploads/${m.upload_id}`}
                           target="_blank"
@@ -320,7 +325,10 @@ export default function ChatPage() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 border-t border-slate-200 p-3">
+            <div className="border-t border-slate-200 px-4 pt-2 text-[11px] text-slate-400">
+              ⚠ チャットに添付した動画は、送信から30日を過ぎると自動で削除されます。必要な動画は期限内にダウンロードして保存してください（案件の納品ファイルは対象外）。
+            </div>
+            <div className="flex items-center gap-2 p-3">
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
