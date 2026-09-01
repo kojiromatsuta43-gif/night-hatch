@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/lib/client";
+import AiUsage from "@/components/AiUsage";
 import PlatformIcon from "@/components/PlatformIcon";
 
 type Analysis = {
@@ -28,6 +29,7 @@ export default function VideoAnalysisPage() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
+  const [usageKey, setUsageKey] = useState(0);
 
   const analyze = async () => {
     setBusy(true);
@@ -40,6 +42,7 @@ export default function VideoAnalysisPage() {
       setError(e instanceof Error ? e.message : "分析に失敗しました");
     } finally {
       setBusy(false);
+      setUsageKey((k) => k + 1);
     }
   };
 
@@ -49,6 +52,7 @@ export default function VideoAnalysisPage() {
       <p className="mb-4 text-sm text-slate-500">
         参考にしたい動画のURLを入れると、シーン分解・フック分析・自社への応用ポイントをAIが提案します。
       </p>
+      <div className="mb-4"><AiUsage refreshKey={usageKey} /></div>
       <div className="mb-5 flex flex-wrap items-center gap-2 text-xs">
         <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 font-medium">
           <PlatformIcon platform="tiktok" className="h-3.5 w-3.5" /> TikTok

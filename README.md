@@ -25,7 +25,7 @@ http://localhost:3000 → デモアカウントでログイン
 | 変数 | 用途 | 取得先 |
 |---|---|---|
 | `GEMINI_API_KEY` | AIエージェント・ブランドプロファイル抽出・動画分析 | https://aistudio.google.com/apikey （無料枠あり） |
-| `ANTHROPIC_API_KEY` | 同上（設定時はエージェントと抽出がClaudeを優先） | https://platform.claude.com/ |
+| `ANTHROPIC_API_KEY` | 同上（設定時は会話・台本・抽出が Claude Sonnet 5 に。用途別の割り当ては管理画面「AI設定」） | https://platform.claude.com/ |
 
 プロバイダの切り替えは `src/lib/server/llm.ts` の `activeProvider()` に集約されています。
 

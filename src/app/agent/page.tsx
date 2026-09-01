@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
+import AiUsage from "@/components/AiUsage";
 import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import MicButton from "@/components/MicButton";
 import ClientOnly from "@/components/ClientOnly";
@@ -71,6 +72,7 @@ function AgentPageInner() {
   const [ngFlags, setNgFlags] = useState<string[]>([]);
   const [promptOpen, setPromptOpen] = useState(false);
   const [promptQuery, setPromptQuery] = useState("");
+  const [usageKey, setUsageKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { mascot } = useMascot();
 
@@ -102,6 +104,7 @@ function AgentPageInner() {
       if (optimistic) setMessages((m) => m.slice(0, -1));
     } finally {
       setBusy(false);
+      setUsageKey((k) => k + 1);
     }
   };
 
@@ -159,6 +162,7 @@ function AgentPageInner() {
         <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-2">
           <Mascot className="h-7 w-7 shrink-0" />
           <span className="text-sm font-semibold text-hive-900">{mascot.agentTitle}</span>
+          <div className="hidden sm:block"><AiUsage refreshKey={usageKey} compact /></div>
           <select
             value={profileId}
             onChange={(e) => setProfileId(e.target.value)}

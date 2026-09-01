@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
 import { generateText, activeProvider, NoProviderError } from "@/lib/server/llm";
+import { consumeAi, limitResponse } from "@/lib/server/ai-usage";
 import { searchRefVideos, mightBeSearch, extractSearchKeyword, VideoHit } from "@/lib/server/agent-tools";
 import { notifyNewJob } from "@/lib/server/notifications";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
@@ -188,14 +189,21 @@ export async function POST(req: Request) {
     }
   }
 
-  // 通常の会話
+  // 通常の会話（プランの回数上限を1回消費）
+  try {
+    consumeAi(user.id, "chat", "agent_chat");
+  } catch (e) {
+    const lr = limitResponse(e);
+    if (lr) return NextResponse.json(lr.body, { status: lr.status });
+    throw e;
+  }
   const { system, ngWords } = buildSystem(user.id, b.brandProfileId);
   let text: string;
   try {
     text = await generateText(system, [
       ...history.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: message },
-    ]);
+    ], { task: "chat" });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "生成に失敗しました" }, { status: 502 });
   }
@@ -225,6 +233,13 @@ async function makeScript(
   if (!activeProvider()) {
     return NextResponse.json({ error: new NoProviderError().message }, { status: 503 });
   }
+  try {
+    consumeAi(user.id, "gen", "agent_script");
+  } catch (e) {
+    const lr = limitResponse(e);
+    if (lr) return NextResponse.json(lr.body, { status: lr.status });
+    throw e;
+  }
   const { system } = buildSystem(user.id, brandProfileId);
   const prompt = `次の参考動画をお手本に、同じ切り口・同じ熱量で、依頼主の商品/サービスに応用できるショート動画の台本を1本作ってください。
 参考動画の情報:
@@ -235,7 +250,7 @@ async function makeScript(
 
   let text: string;
   try {
-    text = await generateText(system, [{ role: "user", content: prompt }]);
+    text = await generateText(system, [{ role: "user", content: prompt }], { task: "chat" });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "生成に失敗しました" }, { status: 502 });
   }

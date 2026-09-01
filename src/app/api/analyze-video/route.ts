@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/server/auth";
+import { consumeAi, limitResponse } from "@/lib/server/ai-usage";
+import { resolveModel } from "@/lib/server/ai-settings";
 
 const MOCK = {
   title: "参考動画の分析（デモ結果）",
@@ -19,8 +21,14 @@ const MOCK = {
   ],
 };
 
+/** 動画分析は Gemini 固定（動画を読めるのが Gemini だけ）。モデル名だけ設定に従う */
+function geminiModelFor(task: "extract") {
+  const r = resolveModel(task);
+  return r?.provider === "gemini" ? r.model : process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
+}
+
 export async function POST(req: Request) {
-  await requireUser();
+  const user = await requireUser();
   const { url } = (await req.json()) as { url?: string };
   const target = (url ?? "").trim();
 
@@ -36,6 +44,14 @@ export async function POST(req: Request) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     return NextResponse.json({ ...MOCK, mock: true, source: isTikTok ? "tiktok" : "youtube", inferred: isTikTok });
+  }
+
+  try {
+    consumeAi(user.id, "gen", "analyze_video");
+  } catch (e) {
+    const lr = limitResponse(e);
+    if (lr) return NextResponse.json(lr.body, { status: lr.status });
+    throw e;
   }
 
   // Geminiが動画そのものを読めるのはYouTubeのみ。
@@ -77,7 +93,7 @@ export async function POST(req: Request) {
     generationConfig: { responseMimeType: "application/json" },
   };
     const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL ?? "gemini-3.6-flash"}:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${geminiModelFor("extract")}:generateContent?key=${key}`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
   );
   if (!res.ok) {

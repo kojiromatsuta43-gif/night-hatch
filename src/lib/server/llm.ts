@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { resolveModel, type AiTask } from "./ai-settings";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
+export type LlmOptions = { task?: AiTask };
 
 export class NoProviderError extends Error {
   constructor() {
@@ -10,17 +12,16 @@ export class NoProviderError extends Error {
   }
 }
 
+/** 何かしらのAIが使える状態か（後方互換。用途別の実際の振り分けは resolveModel） */
 export function activeProvider(): "anthropic" | "gemini" | null {
   if (process.env.ANTHROPIC_API_KEY) return "anthropic";
   if (process.env.GEMINI_API_KEY) return "gemini";
   return null;
 }
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
-
-async function geminiCall(body: unknown): Promise<string> {
+async function geminiCall(model: string, body: unknown): Promise<string> {
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,16 +39,16 @@ async function geminiCall(body: unknown): Promise<string> {
   return text;
 }
 
-/** 会話形式のテキスト生成 */
-export async function generateText(system: string, messages: ChatMessage[]): Promise<string> {
-  const provider = activeProvider();
-  if (!provider) throw new NoProviderError();
+/** 会話形式のテキスト生成。opts.task で用途を指定すると管理画面の設定どおりのモデルに振り分ける */
+export async function generateText(system: string, messages: ChatMessage[], opts: LlmOptions = {}): Promise<string> {
+  const target = resolveModel(opts.task ?? "chat");
+  if (!target) throw new NoProviderError();
 
-  if (provider === "anthropic") {
+  if (target.provider === "anthropic") {
     const client = new Anthropic();
     const response = await client.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 16000,
+      model: target.model,
+      max_tokens: 8000,
       system,
       messages,
     });
@@ -60,7 +61,7 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
       .join("");
   }
 
-  return geminiCall({
+  return geminiCall(target.model, {
     systemInstruction: { parts: [{ text: system }] },
     contents: messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
@@ -73,15 +74,16 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
 export async function generateJson<T>(
   system: string,
   prompt: string,
-  schema: Record<string, unknown>
+  schema: Record<string, unknown>,
+  opts: LlmOptions = {}
 ): Promise<T> {
-  const provider = activeProvider();
-  if (!provider) throw new NoProviderError();
+  const target = resolveModel(opts.task ?? "backstage");
+  if (!target) throw new NoProviderError();
 
-  if (provider === "anthropic") {
+  if (target.provider === "anthropic") {
     const client = new Anthropic();
     const response = await client.messages.create({
-      model: "claude-opus-5",
+      model: target.model,
       max_tokens: 8000,
       system,
       messages: [{ role: "user", content: prompt }],
@@ -92,7 +94,7 @@ export async function generateJson<T>(
     return JSON.parse(block?.text ?? "{}") as T;
   }
 
-  const text = await geminiCall({
+  const text = await geminiCall(target.model, {
     systemInstruction: { parts: [{ text: system }] },
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig: {

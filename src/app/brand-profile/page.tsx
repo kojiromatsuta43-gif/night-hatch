@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
+import AiUsage from "@/components/AiUsage";
 
 type Fact = { label: string; value: string };
 type Profile = {
@@ -34,7 +35,8 @@ export default function BrandProfilePage() {
         <h1 className="text-2xl font-bold">ブランドプロファイル</h1>
         <button onClick={create} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300">＋ 新規作成</button>
       </div>
-      <p className="mb-6 text-sm text-slate-500">台本生成時に参照される「情報の単一情報源」。確定情報はAIが改変しません。用途ごとに複数作れます。</p>
+      <p className="mb-3 text-sm text-slate-500">台本生成時に参照される「情報の単一情報源」。確定情報はAIが改変しません。用途ごとに複数作れます。</p>
+      <div className="mb-6"><AiUsage /></div>
       <div className="space-y-2">
         {profiles.map((p) => (
           <button key={p.id} onClick={() => setEditingId(p.id)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:border-honey-400">

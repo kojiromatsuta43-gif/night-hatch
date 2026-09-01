@@ -397,6 +397,22 @@ function init(db: Database.Database) {
   // チャットのオンライン表示用
   const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
   if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
+  // AI利用上限（プラン）と追加購入分
+  if (!userCols.includes("plan")) db.exec("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'light'");
+  if (!userCols.includes("ai_extra")) db.exec("ALTER TABLE users ADD COLUMN ai_extra INTEGER NOT NULL DEFAULT 0");
+  db.exec(`
+  CREATE TABLE IF NOT EXISTS ai_usage (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    task TEXT NOT NULL,
+    day TEXT NOT NULL,
+    month TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_ai_usage_user_day ON ai_usage (user_id, kind, day);
+  CREATE INDEX IF NOT EXISTS idx_ai_usage_user_month ON ai_usage (user_id, kind, month);
+  `);
 
   // 案件詳細ページ用に追加した列（担当者・依頼日）
   const projCols = (db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]).map((c) => c.name);

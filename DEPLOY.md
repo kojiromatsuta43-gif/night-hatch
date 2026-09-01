@@ -44,7 +44,8 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 | `DATA_DIR` | `/data` | **必須**（手順3のボリュームを使うため） |
 | `HOSTNAME` | `0.0.0.0` | **必須**（外部からの接続を受けるため） |
 | `GEMINI_API_KEY` | ご自身のキー | AI機能を使う場合 |
-| `ANTHROPIC_API_KEY` | ご自身のキー | Claudeを使う場合（任意） |
+| `ANTHROPIC_API_KEY` | ご自身のキー | Claudeを使う場合（任意）。両方あるときの使い分けは管理画面「AI設定」で用途ごとに選べる（既定: お客様向けは Claude Sonnet 5、裏方は Gemini 3.1 Flash-Lite） |
+| `ANTHROPIC_MODEL` / `GEMINI_MODEL` | 任意 | 用途に関係なく一括でモデル名を上書きしたいとき（裏方は除く）。通常は管理画面から設定する |
 | `NEXT_PUBLIC_APP_BRAND` | `bridge` または `food` | 看板の切替（未設定なら BRIDGE HATCH） |
 | `APIFY_TOKEN` | Apify の API トークン | TikTok 参考動画の自動取り込みを使う場合 |
 | `TIKTOK_AUTO_SYNC` | `on`（既定）/ `off` | 毎日の自動取り込みを止めたいとき |

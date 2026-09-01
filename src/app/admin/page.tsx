@@ -5,8 +5,10 @@ import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { PointInline, useMascot } from "@/components/MascotProvider";
 import TikTokSyncPanel from "@/components/admin/TikTokSyncPanel";
+import AiSettingsPanel from "@/components/admin/AiSettingsPanel";
 
-type User = { id: string; email: string; name: string; role: string; points: number; created_at: string };
+type User = { id: string; email: string; name: string; role: string; points: number; plan: string; ai_extra: number; created_at: string };
+const PLAN_OPTIONS = [["light", "ライト"], ["standard", "スタンダード"], ["premium", "プレミアム"], ["unlimited", "無制限"]] as const;
 type NgWord = { id: string; word: string };
 type MonitorMessage = { id: string; body: string; from_name: string; to_name: string; created_at: string };
 type RefAccount = { id: string; name: string; handle: string; industry: string; followers: number; loaded_videos: number };
@@ -16,7 +18,7 @@ type IndustryRequest = { industry_name: string; count: number; last_at: string; 
 export default function AdminPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
-  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs" | "industries" | "tiktok">("users");
+  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs" | "industries" | "tiktok" | "ai">("users");
   const [users, setUsers] = useState<User[]>([]);
   const [ngWords, setNgWords] = useState<NgWord[]>([]);
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
@@ -60,10 +62,12 @@ export default function AdminPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex gap-2 text-sm">
-        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"]] as const).map(([k, label]) => (
+        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
+
+      {tab === "ai" && <AiSettingsPanel />}
 
       {tab === "tiktok" && <TikTokSyncPanel industries={industries.filter((i) => i.active).map((i) => i.name)} />}
 
@@ -173,6 +177,7 @@ export default function AdminPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">ロール</th>
+                <th className="px-4 py-3 font-medium">AIプラン</th>
                 <th className="px-4 py-3 font-medium text-right">{mascot.pointName}</th>
                 <th className="px-4 py-3 font-medium">登録日</th>
               </tr>
@@ -183,6 +188,23 @@ export default function AdminPage() {
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs">{u.role}</span></td>
+                  <td className="px-4 py-3">
+                    {u.role === "admin" ? (
+                      <span className="text-xs text-slate-500">無制限</span>
+                    ) : (
+                      <select
+                        value={u.plan ?? "light"}
+                        onChange={async (e) => {
+                          await api(`/api/admin/users/${u.id}`, { method: "PATCH", body: JSON.stringify({ plan: e.target.value }) });
+                          load();
+                        }}
+                        className="rounded border border-slate-300 px-2 py-1 text-xs"
+                      >
+                        {PLAN_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </select>
+                    )}
+                    {u.ai_extra > 0 && <span className="ml-1 text-xs text-slate-500">＋{u.ai_extra}回</span>}
+                  </td>
                   <td className="px-4 py-3 text-right">{u.points}<PointInline /></td>
                   <td className="px-4 py-3">{u.created_at.slice(0, 10)}</td>
                 </tr>
