@@ -35,7 +35,7 @@ export default function ProjectsPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [view, setView] = useState<"list" | "board">("list");
+  const [view, setView] = useState<"list" | "board">("board");
   const isFreelancer = me?.role === "freelancer";
 
   const load = useCallback(() => {
@@ -72,8 +72,8 @@ export default function ProjectsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-black text-hive-900">{isFreelancer ? "担当案件" : "案件一覧"}</h1>
         <div className="flex border-2 border-hive-900 text-sm font-bold">
-          <button onClick={() => setView("list")} className={`px-4 py-1.5 ${view === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-hive-500"}`}>一覧</button>
           <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-honey-400 text-hive-900" : "bg-white text-hive-500"}`}>ボード</button>
+          <button onClick={() => setView("list")} className={`px-4 py-1.5 ${view === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-hive-500"}`}>一覧</button>
         </div>
       </div>
 
@@ -167,6 +167,7 @@ export default function ProjectsPage() {
                   {items.map((p) => (
                     <div key={p.id} className="border-2 border-hive-200 bg-white p-3 transition-colors hover:border-hive-900">
                       <Link href={`/projects/${p.id}`} className="block">
+                        <HoneyCells status={p.status} size={18} className="mb-2" />
                         <div className="text-sm font-bold leading-snug text-hive-900 hover:text-honey-700">{p.title}</div>
                         <div className="mt-1 text-xs text-hive-500">{p.category}</div>
                         <div className="mt-2 flex items-center justify-between text-xs text-hive-500">
