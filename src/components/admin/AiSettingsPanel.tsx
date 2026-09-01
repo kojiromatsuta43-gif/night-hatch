@@ -119,7 +119,7 @@ export default function AiSettingsPanel() {
 
       <section>
         <h2 className="mb-1 text-base font-bold">プラン別の回数上限</h2>
-        <p className="mb-3 text-xs text-slate-500">会話＝AIチャットの自由入力（1日あたり）。生成＝台本づくり・動画分析・資料の読み取り（1ヶ月あたり）。管理者と「無制限」プランは数えません。</p>
+        <p className="mb-3 text-xs text-slate-500">会話＝AIチャットの自由入力（1日あたり）。生成＝台本づくり・動画分析・資料の読み取り（1ヶ月あたり）。管理者と「無制限」プランは数えません。補助金の480万円契約（24ヶ月前払い）のお客様は「プレミアム」にしてください。</p>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">

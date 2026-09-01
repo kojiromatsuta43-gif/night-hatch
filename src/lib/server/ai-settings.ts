@@ -48,7 +48,7 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   limits: {
     light: { chatPerDay: 20, genPerMonth: 15 },
     standard: { chatPerDay: 60, genPerMonth: 50 },
-    premium: { chatPerDay: 100, genPerMonth: 100 },
+    premium: { chatPerDay: 200, genPerMonth: 200 },
   },
   extraUses: 10,
   extraPoints: 1,
