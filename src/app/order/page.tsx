@@ -1,6 +1,5 @@
 "use client";
 
-import FormatIcon from "@/components/FormatIcon";
 import { PlatformRow } from "@/components/PlatformIcons";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -99,14 +98,13 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
       style={{ width: HEX_W, height: HEX_H, ...style }}
     >
       <span
-        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-0.5 px-4 text-center ${
+        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1 px-4 text-center ${
           hot ? "bg-honey-400 group-hover:bg-honey-300" : "bg-white group-hover:bg-honey-50"
         }`}
       >
-        <span className="[&_svg]:h-8 [&_svg]:w-10"><FormatIcon category={item.name} /></span>
         <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
         <span className={`text-[10px] leading-tight ${hot ? "text-hive-900/70" : "text-hive-500"}`}>{item.size}</span>
-        <span className="text-hive-900"><PlatformRow category={item.name} className="h-3.5 w-3.5" /></span>
+        <span className="text-hive-900"><PlatformRow category={item.name} className="h-4 w-4" /></span>
         <span className={`text-lg font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
