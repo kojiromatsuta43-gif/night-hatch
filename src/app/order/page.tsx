@@ -98,17 +98,17 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
       style={{ width: HEX_W, height: HEX_H, ...style }}
     >
       <span
-        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1 px-4 text-center ${
+        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1.5 px-4 text-center ${
           hot ? "bg-honey-400 group-hover:bg-honey-300" : "bg-white group-hover:bg-honey-50"
         }`}
       >
         <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
         <span className={`text-[10px] leading-tight ${hot ? "text-hive-900/70" : "text-hive-500"}`}>{item.size}</span>
-        <span className="text-hive-900"><PlatformRow category={item.name} className="h-4 w-4" /></span>
-        <span className={`text-lg font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
+        <span className="mt-0.5 text-hive-900 [&_span]:gap-2.5"><PlatformRow category={item.name} className="h-6 w-6" /></span>
+        <span className={`text-xl font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
-          <span className="ml-0.5 text-sm">🍯</span>
+          <span className="ml-1 text-lg">🍯</span>
           {item.monthly && <span className="text-[10px] font-bold">/月</span>}
         </span>
       </span>
