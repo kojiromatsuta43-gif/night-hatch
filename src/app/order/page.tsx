@@ -153,7 +153,7 @@ function FullOrderTop() {
 
   return (
     <div className="space-y-8">
-      {/* ハチのひとこと ＋ いちばん人気の入口 */}
+      {/* ハッチのひとこと ＋ いちばん人気の入口 */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex items-center gap-4 border-[3px] border-hive-900 bg-white px-6 py-5">
           <Mascot className="h-14 w-14 shrink-0 animate-bee-float" />
@@ -202,7 +202,7 @@ function FullOrderTop() {
       {/* 迷子の受け皿：黒帯 */}
       <Link href="/agent" className="flex flex-wrap items-center gap-4 bg-hive-900 px-6 py-4 text-white transition-colors hover:bg-hive-800">
         <span className="text-base font-black">どれを選べばいいか分からない？</span>
-        <span className="text-sm text-hive-200">ハチに「居酒屋の動画を作りたい」と話しかければ、お手本さがしから発注まで案内します。</span>
+        <span className="text-sm text-hive-200">ハッチに「居酒屋の動画を作りたい」と話しかければ、お手本さがしから発注まで案内します。</span>
         <span className="ml-auto flex h-9 items-center bg-honey-400 px-4 text-sm font-black text-hive-900">{mascot.consult} →</span>
       </Link>
     </div>

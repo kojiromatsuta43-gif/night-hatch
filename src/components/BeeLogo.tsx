@@ -8,7 +8,7 @@ export default function BeeLogo({ className = "h-8 w-8" }: { className?: string 
   const bodyClip = `bee-body-${uid}`;
 
   return (
-    <svg viewBox="0 0 48 48" className={className} role="img" aria-label="ハチのマーク">
+    <svg viewBox="0 0 48 48" className={className} role="img" aria-label="ハッチのマーク">
       <defs>
         <clipPath id={bodyClip}>
           <rect x="13" y="13" width="22" height="29" rx="11" />

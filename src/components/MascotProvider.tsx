@@ -3,7 +3,7 @@
 import BeeLogo from "./BeeLogo";
 import { MASCOT, MascotTheme } from "@/lib/mascot";
 
-/** 呼び名・ポイント名などの文言を取り出す（ハチ固定） */
+/** 呼び名・ポイント名などの文言を取り出す（ハッチ固定） */
 export const useMascot = (): { mascot: MascotTheme } => ({ mascot: MASCOT });
 
 /** マスコットの絵。BeeLogo と同じ使い方。 */

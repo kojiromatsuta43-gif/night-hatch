@@ -1,5 +1,5 @@
 // ============================================================
-//  マスコットは「ハチ」一本。
+//  マスコットは「ハッチ」一本（2026-09-01 命名）。
 //  （以前あったキャラクター切替は 2026-08-28 に撤去した）
 // ============================================================
 export type MascotTheme = {
@@ -14,12 +14,12 @@ export type MascotTheme = {
 };
 
 export const MASCOT: MascotTheme = {
-  name: "ハチ",
+  name: "ハッチ",
   pointName: "はちみつP",
   pointEmoji: "🍯",
-  greeting: "こんにちは、ハチです！",
-  thinking: "ハチが考えています",
-  agentTitle: "ハチのAIエージェント",
-  talkTo: "ハチに話しかける",
-  consult: "ハチに相談",
+  greeting: "こんにちは、ハッチです！",
+  thinking: "ハッチが考えています",
+  agentTitle: "ハッチのAIエージェント",
+  talkTo: "ハッチに話しかける",
+  consult: "ハッチに相談",
 };

@@ -180,7 +180,7 @@ export async function acquireList(user: { id: string; role: string }, filter: Co
 }
 
 // ─── テレアポスクリプト ───
-const SCRIPT_SYSTEM = `あなたは${BRAND.name}の営業支援AI。日本のBtoBテレアポに精通したセールストレーナーとして、テレアポ用トークスクリプトを作る。
+const SCRIPT_SYSTEM = `あなたは${BRAND.name}のマスコット、ハチの「ハッチ」（営業支援AI）。日本のBtoBテレアポに精通したセールストレーナーとして、テレアポ用トークスクリプトを作る。
 出力は必ず次の見出し構成（Markdown）:
 # タイトル（商材 × ターゲット）
 ## 目的とゴール（何を取るか: アポ／資料送付／担当者名）
