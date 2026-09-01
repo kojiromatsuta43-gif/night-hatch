@@ -397,6 +397,10 @@ function init(db: Database.Database) {
   // チャットのオンライン表示用
   const userCols = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
   if (!userCols.includes("last_seen_at")) db.exec("ALTER TABLE users ADD COLUMN last_seen_at TEXT");
+  // 営業AIの会話を発注エージェントの会話と分ける
+  const agentCols = (db.prepare("PRAGMA table_info(agent_sessions)").all() as { name: string }[]).map((c) => c.name);
+  if (!agentCols.includes("kind")) db.exec("ALTER TABLE agent_sessions ADD COLUMN kind TEXT NOT NULL DEFAULT 'agent'");
+
   // AI利用上限（プラン）と追加購入分
   if (!userCols.includes("plan")) db.exec("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'light'");
   if (!userCols.includes("ai_extra")) db.exec("ALTER TABLE users ADD COLUMN ai_extra INTEGER NOT NULL DEFAULT 0");

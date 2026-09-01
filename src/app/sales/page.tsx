@@ -7,6 +7,7 @@ import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { parseCsv, guessMapping, LEAD_FIELD_LABELS, type LeadField } from "@/lib/csv";
 import CompanySearch from "@/components/sales/CompanySearch";
+import SalesAgent from "@/components/sales/SalesAgent";
 
 type Lead = {
   id: string;
@@ -88,7 +89,7 @@ function SalesInner() {
   const [msg, setMsg] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [bulkProject, setBulkProject] = useState("");
-  const [mode, setMode] = useState<"list" | "db">(sp.get("mode") === "db" ? "db" : "list");
+  const [mode, setMode] = useState<"list" | "db" | "agent">(sp.get("mode") === "db" ? "db" : sp.get("mode") === "agent" ? "agent" : "list");
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -173,15 +174,19 @@ function SalesInner() {
         </div>
       </div>
 
-      {isAdmin && (
-        <div className="mb-4 flex gap-1 text-sm">
+      {!isFreelancer && (
+        <div className="mb-4 flex flex-wrap gap-1 text-sm">
           <button onClick={() => setMode("list")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>自分のリスト</button>
-          <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（社内専用）</button>
+          <button onClick={() => setMode("agent")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "agent" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>営業AI（台本・リスト取得）</button>
+          {isAdmin && (
+            <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（社内専用）</button>
+          )}
         </div>
       )}
 
       {mode === "db" && isAdmin && <CompanySearch isAdmin onAdded={load} />}
-      {mode === "db" && isAdmin ? null : (
+      {mode === "agent" && !isFreelancer && <SalesAgent isAdmin={isAdmin} onListChanged={load} />}
+      {(mode === "db" && isAdmin) || (mode === "agent" && !isFreelancer) ? null : (
       <>
 
       {importOpen && !isFreelancer && <ImportPanel onDone={() => { setImportOpen(false); load(); }} />}

@@ -102,13 +102,16 @@ export function uploadChunk(uploadId: string, index: number, total: number, file
   fs.mkdirSync(COMPANYDB_DIR, { recursive: true });
   const st = getStatus();
   if (st.phase === "ingesting") throw new Error("取り込み中です。終わるまでお待ちください");
+  let uploadedBytes: number;
   if (index === 0) {
     fs.writeFileSync(UPLOAD_PART, chunk);
-    return setStatus({ phase: "uploading", message: uploadId, uploadedBytes: chunk.length, fileSize, total: st.phase === "ready" ? st.total : 0 });
+    uploadedBytes = chunk.length;
+    setStatus({ phase: "uploading", message: uploadId, uploadedBytes, fileSize, total: st.phase === "ready" ? st.total : 0 });
+  } else {
+    if (st.phase !== "uploading" || st.message !== uploadId) throw new Error("アップロードの続きが一致しません。最初からやり直してください");
+    fs.appendFileSync(UPLOAD_PART, chunk);
+    uploadedBytes = st.uploadedBytes + chunk.length;
   }
-  if (st.phase !== "uploading" || st.message !== uploadId) throw new Error("アップロードの続きが一致しません。最初からやり直してください");
-  fs.appendFileSync(UPLOAD_PART, chunk);
-  const uploadedBytes = st.uploadedBytes + chunk.length;
   if (index === total - 1) {
     fs.renameSync(UPLOAD_PART, PARQUET);
     return setStatus({ phase: "uploaded", message: "", uploadedBytes, fileSize });

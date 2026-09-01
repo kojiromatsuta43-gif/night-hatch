@@ -300,7 +300,7 @@ function normalizeDraft(raw: unknown): OrderDraft {
 export async function GET() {
   const user = await requireUser();
   const rows = getDb()
-    .prepare("SELECT id, title, messages, created_at FROM agent_sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 30")
+    .prepare("SELECT id, title, messages, created_at FROM agent_sessions WHERE user_id = ? AND kind = 'agent' ORDER BY created_at DESC LIMIT 30")
     .all(user.id) as { id: string; title: string; messages: string; created_at: string }[];
   return NextResponse.json(
     rows.map((r) => ({ id: r.id, title: r.title, createdAt: r.created_at, messages: JSON.parse(r.messages) }))
