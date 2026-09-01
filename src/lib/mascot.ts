@@ -15,7 +15,7 @@ export type MascotTheme = {
 
 export const MASCOT: MascotTheme = {
   name: "ハッチ",
-  pointName: "はちみつP",
+  pointName: "ハニーP",
   pointEmoji: "🍯",
   greeting: "こんにちは、ハッチです！",
   thinking: "ハッチが考えています",

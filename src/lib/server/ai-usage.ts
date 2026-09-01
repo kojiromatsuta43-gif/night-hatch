@@ -114,7 +114,7 @@ export function consumeAi(userId: string, kind: UsageKind, task: string): UsageS
   return run();
 }
 
-/** 追加パックをはちみつPで購入（Stripe は通さない。残高から引くだけ） */
+/** 追加パックをハニーPで購入（Stripe は通さない。残高から引くだけ） */
 export function buyExtraPack(userId: string): UsageSummary {
   const db = getDb();
   const settings = getAiSettings();
@@ -122,7 +122,7 @@ export function buyExtraPack(userId: string): UsageSummary {
     const u = loadUser(userId);
     if (!u) throw new Error("ユーザーが見つかりません");
     if (u.points < settings.extraPoints) {
-      throw new Error(`残高が足りません（${settings.extraPoints}🍯 必要）。「はちみつP」からチャージしてください。`);
+      throw new Error(`残高が足りません（${settings.extraPoints}🍯 必要）。「ハニーP」からチャージしてください。`);
     }
     db.prepare("UPDATE users SET points = points - ?, ai_extra = ai_extra + ? WHERE id = ?").run(
       settings.extraPoints,

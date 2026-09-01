@@ -10,7 +10,7 @@ export default function HoneyJar({ points, className = "h-9 w-8" }: { points: nu
   const bottom = 42; // 瓶の中の下端
   const y = bottom - (bottom - top) * level;
   return (
-    <svg viewBox="0 0 40 48" className={className} role="img" aria-label={`はちみつP 残高 ${points}`}>
+    <svg viewBox="0 0 40 48" className={className} role="img" aria-label={`ハニーP 残高 ${points}`}>
       <rect x="11" y="3" width="18" height="6" rx="2" fill="#FFC62E" />
       <path d="M8 12h24v26a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6V12z" fill="#FFFFFF" stroke="#FFC62E" strokeWidth="2.5" />
       <clipPath id="jar-inner">

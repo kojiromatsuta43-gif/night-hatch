@@ -469,7 +469,7 @@ function PayloadView({
         </dl>
         {short ? (
           <Link href="/points" className="mt-3 block rounded-lg bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800 hover:bg-amber-100">
-            はちみつPが足りません — 追加購入へ →
+            ハニーPが足りません — 追加購入へ →
           </Link>
         ) : (
           <button

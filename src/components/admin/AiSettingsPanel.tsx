@@ -147,7 +147,7 @@ export default function AiSettingsPanel() {
             追加パックの価格（🍯）
             <input type="number" min={1} className={input} value={draft.extraPoints} onChange={(e) => setDraft({ ...draft, extraPoints: Math.max(1, Number(e.target.value) || 1) })} />
           </label>
-          <span className="pb-1 text-xs text-slate-500">＝ 上限に達したお客様は {draft.extraPoints}🍯 で {draft.extraUses} 回追加できます（はちみつP残高から引きます）</span>
+          <span className="pb-1 text-xs text-slate-500">＝ 上限に達したお客様は {draft.extraPoints}🍯 で {draft.extraUses} 回追加できます（ハニーP残高から引きます）</span>
         </div>
       </section>
 

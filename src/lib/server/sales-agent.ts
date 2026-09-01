@@ -155,14 +155,14 @@ export function costFor(user: { role: string }, count: number): number {
   return Math.ceil(Math.min(LIST_MAX, Math.max(1, count)) / LIST_BLOCK) * LIST_POINTS;
 }
 
-/** 営業リストへ取得（お客様ははちみつPを消費） */
+/** 営業リストへ取得（お客様はハニーPを消費） */
 export async function acquireList(user: { id: string; role: string }, filter: CompanyFilter, count: number) {
   const n = Math.min(LIST_MAX, Math.max(1, count));
   const cost = costFor(user, n);
   const db = getDb();
   if (cost > 0) {
     const u = db.prepare("SELECT points FROM users WHERE id = ?").get(user.id) as { points: number } | undefined;
-    if (!u || u.points < cost) throw new Error(`はちみつPが足りません（必要 ${cost}🍯 / 残高 ${u?.points ?? 0}🍯）。「はちみつP」からチャージしてください。`);
+    if (!u || u.points < cost) throw new Error(`ハニーPが足りません（必要 ${cost}🍯 / 残高 ${u?.points ?? 0}🍯）。「ハニーP」からチャージしてください。`);
   }
   const result = await addByFilter(user.id, filter, n);
   if (cost > 0 && result.added > 0) {

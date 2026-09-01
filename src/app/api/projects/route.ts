@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   // 消費ptは画面から送られた数字ではなく、メニュー表（件数メニューは件数×単価）から計算し直す
   const points = pointsFor(String(body.category), detail);
   if (user.points < points) {
-    return NextResponse.json({ error: `はちみつPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
+    return NextResponse.json({ error: `ハニーPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
   }
   const id = crypto.randomUUID();
   const tx = db.transaction(() => {

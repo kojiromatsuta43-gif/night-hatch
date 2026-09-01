@@ -8,7 +8,7 @@ export async function GET() {
   return NextResponse.json(usageSummary(user.id));
 }
 
-/** 追加パックをはちみつPで購入 */
+/** 追加パックをハニーPで購入 */
 export async function POST(req: Request) {
   const user = await requireUser();
   const b = await req.json().catch(() => ({}));

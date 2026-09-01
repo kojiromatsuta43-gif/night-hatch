@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       role: "assistant",
       content:
         points > user.points
-          ? `内容を確認してください。※はちみつPが足りません（必要 ${points} / 残高 ${user.points}）。「はちみつP」画面から追加購入できます。`
+          ? `内容を確認してください。※ハニーPが足りません（必要 ${points} / 残高 ${user.points}）。「ハニーP」画面から追加購入できます。`
           : "内容を確認してください。よければ「この内容で発注する」を押してください。",
       payload: { type: "order_confirm", draft: d, points, balance: user.points },
     };
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
     }
     const points = POINTS_BY_CATEGORY[d.category] ?? 10;
     if (user.points < points) {
-      return NextResponse.json({ error: `はちみつPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
+      return NextResponse.json({ error: `ハニーPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
     }
     const projectId = crypto.randomUUID();
     const description = d.scriptText

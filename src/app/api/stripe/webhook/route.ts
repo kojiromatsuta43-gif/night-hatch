@@ -67,7 +67,7 @@ function markPaid(invoiceId: string, sessionId: string | null) {
 }
 
 /**
- * はちみつPを付与する。
+ * ハニーPを付与する。
  * session_id を主キーにした表へ先に入れることで、同じ通知が二度届いても
  * 二重に付与されない（2回目は INSERT が弾かれて何もしない）。
  */
@@ -99,12 +99,12 @@ function grantPoints(sessionId: string, meta: Record<string, string>) {
       crypto.randomUUID(),
       userId,
       points,
-      `はちみつP購入 ${points}pt（¥${priceInclTax(points).toLocaleString()} 税込）`
+      `ハニーP購入 ${points}pt（¥${priceInclTax(points).toLocaleString()} 税込）`
     );
     notify(userId, {
       id: `points:${sessionId}`,
       kind: "points",
-      title: `はちみつPを${points}pt追加しました`,
+      title: `ハニーPを${points}pt追加しました`,
       body: `お支払いを確認しました。残高に反映されています。`,
       link: "/points",
     });

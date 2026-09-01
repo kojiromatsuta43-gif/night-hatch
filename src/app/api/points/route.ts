@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const user = await requireUser();
   if (user.role !== "admin") {
     return NextResponse.json(
-      { error: "ポイントの購入は「はちみつP」画面からお願いします" },
+      { error: "ポイントの購入は「ハニーP」画面からお願いします" },
       { status: 403 }
     );
   }
