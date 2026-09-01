@@ -108,7 +108,8 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
         <span className={`text-lg font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
-          <span className="ml-0.5 text-[10px] font-bold">P{item.monthly ? "/月" : ""}</span>
+          <span className="ml-0.5 text-sm">🍯</span>
+          {item.monthly && <span className="text-[10px] font-bold">/月</span>}
         </span>
       </span>
     </Link>
@@ -185,7 +186,7 @@ function FullOrderTop() {
       <section>
         <div className="mb-3 flex flex-wrap items-baseline gap-3">
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
-          <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。定価 1P＝1,200円（税別）</span>
+          <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
         </div>
         <HexHive items={groups.flatMap((g) => g.items)} />
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
