@@ -93,15 +93,15 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
     <Link
       href={`/order/create?category=${encodeURIComponent(item.name)}`}
       title={`${item.size}／目安 ${item.days}`}
-      className="hex group absolute block bg-hive-900 transition-transform hover:-translate-y-1"
+      className="hex-p group absolute block bg-hive-900 transition-transform hover:-translate-y-1"
       style={{ width: HEX_W, height: HEX_H, ...style }}
     >
       <span
-        className={`hex absolute inset-[3px] flex flex-col items-center justify-center gap-1 px-5 text-center ${
+        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1 px-4 text-center ${
           hot ? "bg-honey-400 group-hover:bg-honey-300" : "bg-white group-hover:bg-honey-50"
         }`}
       >
-        <span className="text-[13px] font-bold leading-tight text-hive-900 sm:text-sm">{item.name}</span>
+        <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
         <span className={`text-[10px] leading-tight ${hot ? "text-hive-900/70" : "text-hive-500"}`}>{item.size}</span>
         <span className={`text-lg font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
           {item.points}
@@ -113,23 +113,24 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
   );
 }
 
-// 六角形の巣。横に4枚、次の列は半枚ずらして半分重ねる（本物の巣と同じ並び）
-const HEX_W = 196;
-const HEX_H = 172;
-const PER_ROW = 4;
+// 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
+const HEX_W = 176;
+const HEX_H = Math.round(HEX_W * 1.155);
+const PER_ROW = 6;
+const GAP = 4;
 
 function HexHive({ items }: { items: CatalogItem[] }) {
   const rows = Math.ceil(items.length / PER_ROW);
-  const height = HEX_H + (rows - 1) * (HEX_H * 0.5);
-  const width = PER_ROW * HEX_W * 1.5 - HEX_W * 0.5 + (rows > 1 ? HEX_W * 0.75 : 0);
+  const height = HEX_H + (rows - 1) * HEX_H * 0.75 + 8;
+  const width = PER_ROW * (HEX_W + GAP) + (rows > 1 ? (HEX_W + GAP) / 2 : 0);
   return (
     <div className="overflow-x-auto pb-2">
       <div className="relative" style={{ width, height }}>
         {items.map((it, i) => {
           const r = Math.floor(i / PER_ROW);
           const c = i % PER_ROW;
-          const x = (r % 2) * HEX_W * 0.75 + c * HEX_W * 1.5;
-          const y = r * HEX_H * 0.5;
+          const x = (r % 2) * ((HEX_W + GAP) / 2) + c * (HEX_W + GAP);
+          const y = r * HEX_H * 0.75;
           return <HexTile key={it.name} item={it} hot={isVideoCategory(it.name) || isScriptCategory(it.name)} style={{ left: x, top: y }} />;
         })}
       </div>
@@ -184,19 +185,18 @@ function FullOrderTop() {
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
           <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。1P＝1,000円（税別）</span>
         </div>
-        {groups.map((g) => {
-          const info = BRAND.groups.find((x) => x.name === g.heading);
-          return (
-            <div key={g.heading} className="mb-6">
-              <div className="mb-2 flex flex-wrap items-center gap-3">
-                <span className="text-sm font-black text-hive-900">{g.heading}</span>
-                {info?.sub && <span className="text-xs text-hive-500">{info.sub}</span>}
-                {info?.examples[0] && <span className="bg-honey-100 px-2.5 py-0.5 text-[11px] font-bold text-hive-900">{info.examples[0]}</span>}
-              </div>
-              <HexHive items={g.items} />
-            </div>
-          );
-        })}
+        <HexHive items={groups.flatMap((g) => g.items)} />
+        <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
+          {groups.map((g) => {
+            const info = BRAND.groups.find((x) => x.name === g.heading);
+            return (
+              <span key={g.heading}>
+                <b className="text-hive-900">{g.heading}</b>: {g.items.map((i) => i.name).join("・")}
+                {info?.sub ? `（${info.sub}）` : ""}
+              </span>
+            );
+          })}
+        </div>
       </section>
 
       {/* 迷子の受け皿：黒帯 */}
