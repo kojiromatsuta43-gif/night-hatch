@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
+import { projectCallStats } from "@/lib/server/sales";
 import { notifyStatusChange } from "@/lib/server/notifications";
 
 type ProjectRow = {
@@ -50,7 +51,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     .prepare("SELECT id, name FROM users WHERE role = 'freelancer' ORDER BY name")
     .all();
 
-  return NextResponse.json({ ...project, deliverables, assignees });
+  // 架電案件なら、紐付いた営業リストの集計も一緒に返す
+  const leadStats = /架電|テレアポ/.test(String(project.category)) ? projectCallStats(id) : null;
+
+  return NextResponse.json({ ...project, deliverables, assignees, leadStats });
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -26,6 +26,7 @@ type Deliverable = {
 };
 
 type Detail = {
+  leadStats?: { leads: number; calls: number; appts: number; connected: number } | null;
   id: string;
   title: string;
   category: string;
@@ -101,6 +102,18 @@ function CallResultSummary({ p }: { p: Detail }) {
           <div className="mt-1 text-xs text-slate-500">{pct}% 完了・報告{t.reports}回</div>
         </div>
       )}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border-2 border-hive-900 bg-honey-50 px-3 py-2 text-sm">
+        {p.leadStats && p.leadStats.leads > 0 ? (
+          <span>
+            営業リスト <b>{p.leadStats.leads}社</b> を紐付け済み — 記録された架電 {p.leadStats.calls}回・つながった {p.leadStats.connected}社・アポ {p.leadStats.appts}社
+          </span>
+        ) : (
+          <span className="text-slate-600">営業リストはまだ紐付いていません。「営業リスト」で会社を選んで、この案件に紐付けると担当者が架電結果を記録できます。</span>
+        )}
+        <Link href={`/sales?project=${p.id}`} className="rounded border-2 border-hive-900 bg-honey-400 px-3 py-1 text-xs font-bold text-hive-900">
+          営業リストを開く
+        </Link>
+      </div>
     </section>
   );
 }
