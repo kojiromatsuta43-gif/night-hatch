@@ -168,13 +168,13 @@ function FullOrderTop() {
             </p>
           </div>
           {/* 右の余白: ブリッジちゃん（ここだけ） */}
-          <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex" title="ブリッジちゃん">
+          <div className="ml-auto mr-6 hidden shrink-0 items-center gap-3 lg:flex xl:mr-16" title="ブリッジちゃん">
+            <span className="flex flex-col items-center">
+              <BeeGirl className="h-14 w-14 animate-bee-float [animation-delay:0.6s]" />
+              <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ブリッジちゃん</span>
+            </span>
             <span className="hidden rounded-full border-2 border-hive-900 bg-honey-50 px-3 py-1 text-xs font-bold text-hive-900 xl:inline">
               ブリッジちゃんも応援してるよ〜
-            </span>
-            <span className="flex flex-col items-center">
-              <BeeGirl className="h-24 w-24 animate-bee-float [animation-delay:0.6s]" />
-              <span className="-mt-1 text-[10px] font-bold tracking-wider text-hive-500">ブリッジちゃん</span>
             </span>
           </div>
         </div>
