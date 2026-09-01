@@ -88,7 +88,7 @@ export const bridge: Brand = {
   catalog,
   orderStyle: "full",
   // 発注トップの見出しに添える説明（順番の並べ替えには使わない）
-  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 75pt"] }],
+  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 75🍯"] }],
   defaultAgreements: [],
   demoProjects: [
     { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 10, deadline: "2026-08-30", status: "募集中" },

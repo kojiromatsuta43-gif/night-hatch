@@ -531,7 +531,7 @@ function OrderForm({
           <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${input} mt-0.5`} disabled={disabled}>
             {BRAND.orderable.map((c) => (
               <option key={c} value={c}>
-                {c}（{POINTS_BY_CATEGORY[c]}pt）
+                {c}（{POINTS_BY_CATEGORY[c]}🍯）
               </option>
             ))}
           </select>

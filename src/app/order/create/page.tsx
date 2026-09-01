@@ -260,8 +260,10 @@ function OrderForm() {
                         }`}
                       >
                         {c.name}
-                        <span className="ml-1.5 text-xs opacity-70">
-                          {c.quantity ? `${c.points}pt〜` : `${c.points}pt`}
+                        <span className="ml-1.5 text-xs opacity-80">
+                          {c.points}
+                          {c.quantity ? "〜" : ""}
+                          <span className="ml-0.5">🍯</span>
                           {c.monthly ? "/月" : ""}
                         </span>
                       </button>

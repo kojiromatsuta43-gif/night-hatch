@@ -252,7 +252,7 @@ const catalog: CatalogItem[] = [
     group: "営業",
     size: "近隣企業に宴会・仕出しを案内",
     days: "1週間〜",
-    quantity: { key: "架電件数", unit: "件", pointsPer: 0.25, min: 100, max: 2000, step: 50, hint: "1件0.25pt。200件=50pt、400件=100pt" },
+    quantity: { key: "架電件数", unit: "件", pointsPer: 0.25, min: 100, max: 2000, step: 50, hint: "1件0.25🍯。200件=50🍯、400件=100🍯" },
     questions: [
       { key: "案内したいこと", label: "案内したいこと", type: "multi", required: true, options: ["忘年会・歓送迎会の宴会", "貸切", "仕出し・ケータリング", "法人の定期利用（接待・ランチ）", "その他"] },
       { key: "ターゲット", label: "架電先（エリア・業種・規模）", type: "textarea", required: true, placeholder: "例: 店から徒歩10分圏内の従業員20名以上の会社" },
