@@ -1,6 +1,7 @@
 "use client";
 
 import { PlatformRow } from "@/components/PlatformIcons";
+import BeeGirl from "@/components/BeeGirl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
@@ -158,13 +159,20 @@ function FullOrderTop() {
     <div className="space-y-8">
       {/* ハッチのひとこと ＋ いちばん人気の入口 */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="flex items-center gap-4 border-[3px] border-hive-900 bg-white px-6 py-5">
+        <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-6 py-5">
           <Mascot className="h-14 w-14 shrink-0 animate-bee-float" />
-          <div>
+          <div className="min-w-0">
             <p className="text-xl font-black text-hive-900 sm:text-2xl">こんにちは、{me?.name ?? "ゲスト"}さん。今日は何をつくる？</p>
             <p className="mt-1 text-sm text-hive-500">
               下の巣から選ぶか、右の「お手本」から始めてください。迷ったら{mascot.consult}でもOK。
             </p>
+          </div>
+          {/* 右の余白: リボンをつけた女の子のハチ（ここだけ） */}
+          <div className="ml-auto hidden shrink-0 items-end gap-3 self-stretch lg:flex">
+            <span className="mb-2 hidden self-center rounded-full border-2 border-hive-900 bg-honey-50 px-3 py-1 text-xs font-bold text-hive-900 xl:inline">
+              今日もいっしょにがんばろ〜
+            </span>
+            <BeeGirl className="h-24 w-24 animate-bee-float [animation-delay:0.6s]" />
           </div>
         </div>
         <Link href="/order/reference" className="group flex flex-col justify-center gap-1.5 border-[3px] border-hive-900 bg-honey-400 px-5 py-4 transition-colors hover:bg-honey-300">
