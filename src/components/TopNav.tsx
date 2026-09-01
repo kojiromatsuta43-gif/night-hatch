@@ -10,11 +10,15 @@ import { Mascot, useMascot } from "./MascotProvider";
 import NotificationBell from "./NotificationBell";
 import HoneyJar from "./HoneyJar";
 import { api } from "@/lib/client";
+import { planOf } from "@/lib/points";
 
-export default function TopNav({ role, name, points }: { role?: string; name: string; points: number }) {
+export default function TopNav({ role, name, points, plan }: { role?: string; name: string; points: number; plan?: string }) {
   const { mascot } = useMascot();
   const showPoints = role !== "freelancer";
   const videos = Math.floor(points / 10);
+  // 瓶の満タン = 自分のプランの1ヶ月分（プラン未設定・無制限はプレミアムの200）
+  const capacity = planOf(plan)?.points ?? 200;
+  const overflow = points > capacity;
 
   return (
     <div className="sticky top-0 z-40 bg-hive-900 text-white">
@@ -29,14 +33,14 @@ export default function TopNav({ role, name, points }: { role?: string; name: st
           </span>
           {showPoints && (
             <Link href="/points" title={`${mascot.pointName}の残高（クリックで詳細）`} className="flex items-center gap-2">
-              <HoneyJar points={points} />
+              <HoneyJar points={points} capacity={capacity} />
               <span className="flex flex-col leading-none">
                 <span className="text-lg font-black text-honey-400">
                   {points}
                   <span className="ml-0.5 text-[11px] font-bold">{mascot.pointName}</span>
                 </span>
                 <span className="mt-0.5 hidden text-[10px] text-hive-200 sm:block">
-                  {videos > 0 ? `あと約${videos}本つくれます` : "追加購入できます"}
+                  {overflow ? `1ヶ月分（${capacity}）を超えて溢れています` : videos > 0 ? `あと約${videos}本つくれます` : "追加購入できます"}
                 </span>
               </span>
             </Link>

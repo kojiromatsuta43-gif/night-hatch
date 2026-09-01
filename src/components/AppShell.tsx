@@ -38,7 +38,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <MascotProvider>
     <MeContext.Provider value={{ me, refresh }}>
       <div className="min-h-screen">
-        <TopNav role={me.role} name={me.name} points={me.points} />
+        <TopNav role={me.role} name={me.name} points={me.points} plan={me.plan} />
         <div className="flex min-h-[calc(100vh-56px)]">
           <Sidebar role={me.role} />
           <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 md:px-10">{children}</main>

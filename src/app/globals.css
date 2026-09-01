@@ -105,3 +105,12 @@ body {
     display: table-header-group;
   }
 }
+
+/* ハニーの瓶が溢れているときのしずく */
+@keyframes honey-drop {
+  0% { transform: translateY(-6px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(8px); opacity: 0; }
+}
+.honey-drop { animation: honey-drop 1.8s ease-in infinite; }
+@media (prefers-reduced-motion: reduce) { .honey-drop { animation: none; opacity: 1; } }
