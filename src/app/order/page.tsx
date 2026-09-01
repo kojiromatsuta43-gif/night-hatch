@@ -170,10 +170,10 @@ function FullOrderTop() {
               下の巣から選ぶか、右の「お手本」から始めてください。迷ったら{mascot.consult}でもOK。
             </p>
           </div>
-          {/* 右の余白: ブリッジちゃん（ここだけ） */}
-          <span className="ml-6 hidden shrink-0 flex-col items-center lg:flex" title="ブリッジちゃん">
+          {/* 右の余白: ブリッジ姫（ここだけ） */}
+          <span className="ml-6 hidden shrink-0 flex-col items-center lg:flex" title="ブリッジ姫">
             <BeeGirl className="h-14 w-14 animate-bee-float [animation-delay:0.6s]" />
-            <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ブリッジちゃん</span>
+            <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ブリッジ姫</span>
           </span>
         </div>
         <Link href="/order/reference" className="group flex flex-col justify-center gap-1.5 border-[3px] border-hive-900 bg-honey-400 px-5 py-4 transition-colors hover:bg-honey-300">
