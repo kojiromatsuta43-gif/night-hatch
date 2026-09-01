@@ -41,9 +41,9 @@ export default function Dashboard() {
               { label: `残り${mascot.pointName}`, value: <>{me?.points ?? 0}<PointInline /></> },
             ]
         ).map((s) => (
-          <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
+          <div key={s.label} className="border-[3px] border-hive-900 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
-            <div className="mt-1 text-3xl font-bold text-honey-700">{s.value}</div>
+            <div className="mt-1 text-3xl font-black text-hive-900">{s.value}</div>
           </div>
         ))}
       </div>
@@ -57,7 +57,7 @@ export default function Dashboard() {
           {isFreelancer ? "お仕事をさがす →" : "＋ 新規案件を登録"}
         </Link>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto border-2 border-hive-900 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">

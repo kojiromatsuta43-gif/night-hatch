@@ -136,8 +136,8 @@ export default function ProjectsPage() {
                       {p.category} ・ {p.points}<PointInline />
                     </span>
                   </span>
-                  <span className={`text-sm ${!done && days <= 3 ? "font-bold text-honey-700" : done ? "text-hive-500" : "text-hive-900"}`}>
-                    {!done && days === 0 ? "今日 " : !done && days === 1 ? "明日 " : ""}
+                  <span className={`text-sm ${!done && days < 0 ? "font-bold text-rose-600" : !done && days <= 3 ? "font-bold text-honey-700" : done ? "text-hive-500" : "text-hive-900"}`}>
+                    {!done && days < 0 ? `${-days}日超過 ` : !done && days === 0 ? "今日 " : !done && days === 1 ? "明日 " : ""}
                     {md(p.deadline)}
                   </span>
                   <span className={`inline-flex h-7 w-fit items-center border-2 px-2.5 text-xs font-bold ${STATE_STYLE[p.status]}`}>
