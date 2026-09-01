@@ -27,7 +27,7 @@ export default function SignInPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-honey-50">
-      <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <form onSubmit={submit} className="w-full max-w-sm border-[3px] border-hive-900 bg-white p-8">
         <div className="mb-6 flex flex-col items-center gap-2">
           <BeeLogo className="h-14 w-14" />
           <span className="text-2xl font-bold tracking-tight text-hive-900">{BRAND.name}</span>

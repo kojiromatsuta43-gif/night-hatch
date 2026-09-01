@@ -13,7 +13,7 @@ function MenuCard({ item }: { item: CatalogItem }) {
   return (
     <Link
       href={`/order/create?category=${encodeURIComponent(item.name)}`}
-      className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-colors hover:border-honey-400 hover:bg-honey-50"
+      className="group flex items-center gap-4 border-2 border-hive-900 bg-white px-4 py-4 transition-colors hover:bg-honey-50"
     >
       <span className="min-w-0 flex-1">
         <span className="block text-base font-bold text-hive-900">{item.name}</span>
@@ -27,7 +27,7 @@ function MenuCard({ item }: { item: CatalogItem }) {
           <PointInline />
           {item.monthly && <span className="text-xs font-medium text-slate-500">／月</span>}
         </span>
-        <span className="mt-1 inline-block rounded-full bg-honey-400 px-3 py-1 text-xs font-bold text-hive-900 group-hover:bg-honey-300">
+        <span className="mt-1 inline-block bg-hive-900 px-3 py-1 text-xs font-bold text-honey-400">
           これを頼む
         </span>
       </span>
@@ -50,8 +50,8 @@ export default function MenuPicker({ initialGroup }: { initialGroup?: string }) 
             key={n}
             type="button"
             onClick={() => setActive(n)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-              active === n ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+            className={`border-2 px-4 py-2 text-sm font-bold transition-colors ${
+              active === n ? "hex-tab border-honey-400 bg-honey-400 text-hive-900" : "border-hive-900 bg-white text-hive-900 hover:bg-honey-50"
             }`}
           >
             {n}

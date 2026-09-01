@@ -25,7 +25,21 @@
 body {
   background: var(--app-bg, #FDFAF2);
   color: #1C1710;
+  font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
 }
+
+/* ── 巣箱の世界観: 角丸と影をやめ、線で形を作る ──
+   個別の画面を全部書き換えなくても統一されるように、ここでまとめて上書きする。
+   丸いもの（アバター・バッジ）はそのまま。 */
+@layer utilities {
+  [class*="rounded-"]:not([class*="rounded-full"]) { border-radius: 2px !important; }
+  [class*="shadow-"] { box-shadow: none !important; }
+}
+
+/* ── ハニカム（巣箱）のモチーフ ─────────────────────
+   六角形は要所だけ: 上部ナビの選択中タブ、メニューの巣、案件の進捗セル。 */
+.hex { clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); }
+.hex-tab { clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%); }
 
 /* ハチのマスコット用アニメーション */
 @keyframes bee-float {

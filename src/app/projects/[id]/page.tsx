@@ -9,6 +9,7 @@ import { PointInline } from "@/components/MascotProvider";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
 import MicButton from "@/components/MicButton";
 import { STATUSES } from "@/lib/data";
+import HoneyCells from "@/components/HoneyCells";
 
 type Deliverable = {
   id: string;
@@ -42,13 +43,6 @@ type Detail = {
   assignees: { id: string; name: string }[];
 };
 
-const STATUS_COLOR: Record<string, string> = {
-  未公開: "bg-slate-200 text-slate-700",
-  募集中: "bg-honey-100 text-honey-700",
-  制作待ち: "bg-sky-100 text-sky-700",
-  フィードバック: "bg-violet-100 text-violet-700",
-  完了: "bg-emerald-100 text-emerald-700",
-};
 
 function daysBetween(from: string, to: string) {
   const a = new Date(from + "T00:00:00").getTime();
@@ -241,78 +235,65 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     <div className="max-w-4xl">
       <Link href="/projects" className="text-sm text-slate-500 hover:text-slate-700">← 案件一覧</Link>
 
-      {/* 見出し */}
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">{p.title}</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {p.category} ／ 発注者 {p.owner_name}
+      {/* 見出し：大きなはちみつセルで進み具合 */}
+      <div className="mt-3 flex flex-wrap items-center gap-6 border-[3px] border-hive-900 bg-white px-6 py-5">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold text-hive-500">
+            {p.category} ・ {p.points}<PointInline /> ・ 納期 {p.deadline}
+            <span className={`ml-2 ${left < 0 ? "text-rose-600" : left <= 5 ? "text-honey-700" : ""}`}>
+              （{left < 0 ? `${-left}日超過` : left === 0 ? "本日まで" : `あと${left}日`}）
+            </span>
+          </p>
+          <h1 className="mt-1 text-2xl font-black leading-snug text-hive-900">{p.title}</h1>
+          <p className="mt-1 text-sm text-hive-500">
+            発注者 {p.owner_name} ・ 担当 {p.assignee_name ?? "未定"} ・ 依頼日 {p.requested_on || "—"}
+            {elapsed !== null && `（${elapsed}日経過）`}
           </p>
         </div>
-        <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${STATUS_COLOR[p.status] ?? "bg-slate-200 text-slate-700"}`}>
-          {p.status}
-        </span>
+        <HoneyCells status={p.status} size={56} labels />
       </div>
 
-      {/* 要点 */}
-      <div className="mt-5 grid gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs text-slate-500">依頼日</div>
-          <div className="mt-0.5 font-bold">{p.requested_on || "—"}</div>
-          {elapsed !== null && <div className="text-xs text-slate-400">{elapsed}日経過</div>}
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs text-slate-500">納期</div>
-          <div className="mt-0.5 font-bold">{p.deadline}</div>
-          <div className={`text-xs ${left < 0 ? "font-semibold text-rose-600" : left <= 5 ? "font-semibold text-amber-600" : "text-slate-400"}`}>
-            {left < 0 ? `${-left}日超過` : left === 0 ? "本日まで" : `あと${left}日`}
-          </div>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs text-slate-500">消費ポイント</div>
-          <div className="mt-0.5 font-bold">{p.points}<PointInline /></div>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs text-slate-500">担当者</div>
-          {canEdit ? (
-            <select
-              value={p.assignee_id ?? ""}
-              onChange={(e) => patch({ assignee_id: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm"
-            >
-              <option value="">未割当</option>
-              {p.assignees.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
-          ) : (
-            <div className="mt-0.5 font-bold">{p.assignee_name ?? "未割当"}</div>
-          )}
-        </div>
-      </div>
-
-      {/* ステータス操作 */}
-      <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-4">
-        <span className="mr-1 text-sm font-semibold">進行状況</span>
+      {/* 進行の操作（発注者・管理者）と担当 */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-2 border-hive-900 bg-white px-4 py-3">
+        <span className="mr-1 text-sm font-black text-hive-900">状態</span>
         {STATUSES.map((s) => (
           <button
             key={s}
             onClick={() => patch({ status: s })}
-            className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-              p.status === s
-                ? "border-honey-500 bg-honey-400 text-hive-900"
-                : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+            className={`border-2 px-3 py-1 text-sm font-bold transition-colors ${
+              p.status === s ? "border-hive-900 bg-honey-400 text-hive-900" : "border-hive-200 bg-white text-hive-500 hover:border-hive-900 hover:text-hive-900"
             }`}
           >
             {s}
           </button>
         ))}
-        <Link href="/chat" className="ml-auto text-sm font-medium text-honey-600 hover:underline">
+        {canEdit && (
+          <label className="ml-2 flex items-center gap-2 text-sm">
+            <span className="font-bold text-hive-900">担当</span>
+            <select
+              value={p.assignee_id ?? ""}
+              onChange={(e) => patch({ assignee_id: e.target.value })}
+              className="border-2 border-hive-900 px-2 py-1 text-sm"
+            >
+              <option value="">未割当</option>
+              {p.assignees.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </label>
+        )}
+        <Link href="/chat" className="ml-auto text-sm font-bold text-honey-700 hover:underline">
           この案件のチャットを開く →
         </Link>
       </div>
+      {p.status === "フィードバック" && (
+        <div className="mt-3 flex items-center gap-3 border-2 border-dashed border-hive-500 px-4 py-3 text-sm text-hive-500">
+          <svg viewBox="0 0 24 28" width="20" height="24" aria-hidden="true"><path d="M12 2C12 2 3 12 3 18a9 9 0 0 0 18 0C21 12 12 2 12 2z" fill="#FFC62E" stroke="#1C1710" strokeWidth="2" /></svg>
+          修正版が届いて「完了」にすると、最後のセルにはちみつが落ちて納品になります。
+        </div>
+      )}
 
       {/* 発注内容 */}
-      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-3 font-bold text-hive-900">発注内容</h2>
+      <section className="mt-6 border-2 border-hive-900 bg-white p-5">
+        <h2 className="mb-3 font-black text-hive-900">発注内容</h2>
         <p className="mb-4 whitespace-pre-wrap text-sm">{p.description}</p>
         <div className="border-t border-slate-100 pt-4">
           <DetailList raw={p.detail} />
@@ -338,9 +319,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         <div className="space-y-3">
           {p.deliverables.map((d) => (
-            <div key={d.id} className={`rounded-xl border p-4 ${d.kind === "提出" ? "border-sky-200 bg-sky-50/40" : "border-honey-200 bg-honey-50/40"}`}>
+            <div key={d.id} className={`border-2 border-hive-900 p-4 ${d.kind === "提出" ? "bg-white" : "bg-honey-100"}`}>
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className={`rounded-full px-2.5 py-0.5 font-bold ${d.kind === "提出" ? "bg-sky-200 text-sky-800" : "bg-honey-200 text-hive-900"}`}>
+                <span className={`hex-tab px-3 py-0.5 font-black ${d.kind === "提出" ? "bg-hive-900 text-honey-400" : "bg-honey-400 text-hive-900"}`}>
                   {d.kind}
                 </span>
                 <span className="font-medium text-slate-600">{d.author_name}</span>
@@ -398,7 +379,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             まだ担当者が決まっていません。決まりしだい、ここで提出物のやり取りができます。
           </div>
         ) : (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mt-4 border-[3px] border-hive-900 bg-white p-5">
           <div className="mb-3 flex items-center gap-2">
             <MicButton onText={(t) => setBody((v) => (v ? v + t : t))} className="order-last ml-auto" />
             {allowedKinds.length > 1 ? (
@@ -459,7 +440,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <button
             onClick={submit}
             disabled={busy}
-            className="mt-3 rounded-lg bg-honey-400 px-6 py-2 text-sm font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+            className="mt-3 bg-hive-900 px-6 py-2.5 text-sm font-black text-honey-400 hover:bg-hive-800 disabled:opacity-40"
           >
             {busy ? "送信中..." : `${kind}を送る`}
           </button>
