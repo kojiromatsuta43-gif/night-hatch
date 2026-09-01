@@ -5,14 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { PointInline, PointMark, useMascot } from "@/components/MascotProvider";
-import { POINT_PACKS, POINT_UNIT_PRICE, priceExclTax, priceInclTax, yen } from "@/lib/points";
+import { POINT_PACKS, POINT_UNIT_PRICE, PLANS, priceExclTax, priceInclTax, yen } from "@/lib/points";
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
 
 const PACK_NOTE: Record<number, string> = {
-  10: "ショート動画 約1本ぶん",
-  50: "ショート動画 約7本ぶん",
-  100: "ショート動画 約14本ぶん",
+  10: "ショート動画 1本ぶん",
+  50: "ショート動画 5本ぶん",
+  100: "ショート動画 10本ぶん",
 };
 
 function PointsInner() {
@@ -79,10 +79,51 @@ function PointsInner() {
         </div>
       )}
 
+      <h2 className="mb-1 text-lg font-semibold">月額プランと{mascot.pointName}</h2>
+      <p className="mb-3 text-xs text-slate-500">
+        定価は 1{mascot.pointEmoji}＝{yen(POINT_UNIT_PRICE)}（税別）。月額プランは定価換算に増量分が付き、上のプランほど1{mascot.pointEmoji}が安くなります。
+        ショート動画は編集10{mascot.pointEmoji}・台本10{mascot.pointEmoji}・サムネ5{mascot.pointEmoji}です。
+      </p>
+      <div className="mb-8 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+              <th className="px-4 py-2">プラン</th>
+              <th className="px-4 py-2 text-right">月額（税別）</th>
+              <th className="px-4 py-2 text-right">毎月の{mascot.pointName}</th>
+              <th className="px-4 py-2 text-right">実質単価</th>
+              <th className="px-4 py-2 text-right">繰越</th>
+              <th className="px-4 py-2">目安</th>
+            </tr>
+          </thead>
+          <tbody>
+            {PLANS.map((pl) => {
+              const mine = me?.plan === pl.id;
+              return (
+                <tr key={pl.id} className={`border-b border-slate-100 last:border-0 ${mine ? "bg-honey-50" : ""}`}>
+                  <td className="px-4 py-2 font-bold">
+                    {pl.name}
+                    {mine && <span className="ml-2 rounded bg-honey-400 px-1.5 py-0.5 text-[10px] text-hive-900">ご利用中</span>}
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums">{yen(pl.monthly)}</td>
+                  <td className="px-4 py-2 text-right tabular-nums">
+                    {pl.points}<PointInline />
+                    {pl.bonus > 0 && <span className="ml-1 text-[11px] text-honey-700">+{pl.bonus}%増量</span>}
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums">{yen(Math.round(pl.monthly / pl.points))}</td>
+                  <td className="px-4 py-2 text-right">{pl.carryMonths}ヶ月</td>
+                  <td className="px-4 py-2 text-xs text-slate-500">{pl.note}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
       <h2 className="mb-1 text-lg font-semibold">{mascot.pointName}を追加で買う</h2>
       <p className="mb-4 text-xs text-slate-500">
         月額プランのポイントが足りなくなったときに、必要な分だけ買い足せます。
-        単価は1{mascot.pointEmoji}あたり {yen(POINT_UNIT_PRICE)}（税別）です。
+        追加購入は定価（1{mascot.pointEmoji}あたり {yen(POINT_UNIT_PRICE)}・税別）です。
       </p>
 
       <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-3">

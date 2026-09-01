@@ -4,8 +4,22 @@
 //  値上げ・値下げはこのファイルだけ直せばよい。
 // ============================================================
 
-/** 追加購入の単価（税抜・1ポイントあたり） */
-export const POINT_UNIT_PRICE = 1000;
+/** 定価（追加購入の単価。税抜・1ハニーあたり）。プランは定価換算にボーナスを乗せる */
+export const POINT_UNIT_PRICE = 1200;
+
+/**
+ * 月額プラン。付与 = 月額÷定価 にボーナスを乗せた数（プレミアム 200 = MAX ショート20本）。
+ * 実質単価: ライト1,200円 / スタンダード1,091円 / プレミアム1,000円。
+ */
+export const PLANS = [
+  { id: "light", name: "ライト", monthly: 60000, points: 50, bonus: 0, carryMonths: 3, initial: 100000, note: "台本＋編集で月2本、編集のみなら5本" },
+  { id: "standard", name: "スタンダード", monthly: 120000, points: 110, bonus: 10, carryMonths: 6, initial: 100000, note: "台本＋編集で月5本、編集のみなら11本" },
+  { id: "premium", name: "プレミアム", monthly: 200000, points: 200, bonus: 20, carryMonths: 12, initial: 700000, note: "台本＋編集＋サムネで月8本（MAX 編集20本）。補助金で実質1/3" },
+] as const;
+export type PlanId = (typeof PLANS)[number]["id"];
+export function planOf(id: string | undefined) {
+  return PLANS.find((p) => p.id === id);
+}
 
 /** 消費税率（%） */
 export const POINT_TAX_RATE = 10;

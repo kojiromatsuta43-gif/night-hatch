@@ -2,14 +2,14 @@ import type { Brand, CatalogItem } from "../brand-types";
 
 /** 制作系メニュー。SODATSUの作業ポイント表に合わせている。営業資料の数字と必ず一致させること。 */
 const catalog: CatalogItem[] = [
-  { name: "ショート動画編集", points: 7, group: "動画まわり", size: "TikTok・リール・ショート", days: "3日〜" },
-  { name: "台本作成（ショート）", points: 4, group: "動画まわり", size: "フック→本編→CTA", days: "2日〜" },
-  { name: "動画編集（3分）", points: 14, group: "動画まわり", size: "会社紹介・商品説明", days: "5日〜" },
-  { name: "台本作成（長尺）", points: 10, group: "動画まわり", size: "3分以上の構成台本", days: "3日〜" },
-  { name: "サムネイル作成", points: 7, group: "動画まわり", size: "16:9", days: "2日〜" },
-  { name: "カルーセル投稿", points: 14, group: "SNS・Webまわり", size: "Instagram複数枚", days: "4日〜" },
-  { name: "投稿文＋画像", points: 10, group: "SNS・Webまわり", size: "SNS投稿1本ぶん", days: "3日〜" },
-  { name: "LPファーストビュー", points: 20, group: "SNS・Webまわり", size: "訴求・デザイン込み", days: "1週間〜" },
+  { name: "ショート動画編集", points: 10, group: "動画まわり", size: "TikTok・リール・ショート", days: "3日〜" },
+  { name: "台本作成（ショート）", points: 10, group: "動画まわり", size: "フック→本編→CTA", days: "2日〜" },
+  { name: "動画編集（3分）", points: 20, group: "動画まわり", size: "会社紹介・商品説明", days: "5日〜" },
+  { name: "台本作成（長尺）", points: 15, group: "動画まわり", size: "3分以上の構成台本", days: "3日〜" },
+  { name: "サムネイル作成", points: 5, group: "動画まわり", size: "16:9", days: "2日〜" },
+  { name: "カルーセル投稿", points: 15, group: "SNS・Webまわり", size: "Instagram複数枚", days: "4日〜" },
+  { name: "投稿文＋画像", points: 7, group: "SNS・Webまわり", size: "SNS投稿1本ぶん", days: "3日〜" },
+  { name: "LPファーストビュー", points: 30, group: "SNS・Webまわり", size: "訴求・デザイン込み", days: "1週間〜" },
   { name: "軽微な修正", points: 2, group: "SNS・Webまわり", size: "テロップ差し替えなど", days: "1日〜" },
   // ── 営業まわり（テレアポは「台本」「リスト」「架電」の3つに分けて、それぞれ別料金） ──
   {
@@ -49,7 +49,7 @@ const catalog: CatalogItem[] = [
   },
   {
     name: "テレアポ架電",
-    points: 40,
+    points: 50,
     group: "営業まわり",
     size: "200コール・法人向けにアポ取得",
     days: "1週間〜",
@@ -88,13 +88,13 @@ export const bridge: Brand = {
   catalog,
   orderStyle: "full",
   // 発注トップの見出しに添える説明（順番の並べ替えには使わない）
-  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 65pt"] }],
+  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 75pt"] }],
   defaultAgreements: [],
   demoProjects: [
-    { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 7, deadline: "2026-08-30", status: "募集中" },
-    { title: "採用ショート動画 台本", category: "台本作成（ショート）", description: "エンジニア採用向けTikTok台本", points: 4, deadline: "2026-09-05", status: "制作待ち" },
-    { title: "新商品LPファーストビュー修正", category: "LPファーストビュー", description: "CVR改善のためのFV差し替え", points: 20, deadline: "2026-09-10", status: "フィードバック" },
-    { title: "会社紹介動画編集", category: "動画編集（3分）", description: "展示会用90秒動画の編集", points: 14, deadline: "2026-08-25", status: "完了" },
+    { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 10, deadline: "2026-08-30", status: "募集中" },
+    { title: "採用ショート動画 台本", category: "台本作成（ショート）", description: "エンジニア採用向けTikTok台本", points: 10, deadline: "2026-09-05", status: "制作待ち" },
+    { title: "新商品LPファーストビュー修正", category: "LPファーストビュー", description: "CVR改善のためのFV差し替え", points: 30, deadline: "2026-09-10", status: "フィードバック" },
+    { title: "会社紹介動画編集", category: "動画編集（3分）", description: "展示会用90秒動画の編集", points: 20, deadline: "2026-08-25", status: "完了" },
   ],
   orderable: ["ショート動画編集", "台本作成（ショート）"],
   agent: {

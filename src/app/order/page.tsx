@@ -43,7 +43,7 @@ function SimpleOrderTop() {
           <p className="text-sm font-medium text-hive-900">こんにちは、{me?.name ?? "ゲスト"}さん！今日はお店の何を良くしますか？</p>
           <p className="mt-1 text-xs text-slate-500">
             いまの残高は <Link href="/points" className="font-semibold text-honey-600 hover:underline">{me?.points ?? 0}<PointInline /></Link>。
-            1<PointInline />＝1,000円（税別）です。
+            定価は 1<PointInline />＝1,200円（税別）、プレミアムなら実質1,000円です。
           </p>
         </div>
       </div>
@@ -183,7 +183,7 @@ function FullOrderTop() {
       <section>
         <div className="mb-3 flex flex-wrap items-baseline gap-3">
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
-          <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。1P＝1,000円（税別）</span>
+          <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。定価 1P＝1,200円（税別）</span>
         </div>
         <HexHive items={groups.flatMap((g) => g.items)} />
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">

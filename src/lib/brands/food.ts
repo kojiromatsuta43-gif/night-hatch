@@ -30,8 +30,8 @@ const SNS_MONTHLY_QUESTIONS: Question[] = [
 
 const catalog: CatalogItem[] = [
   // ── 動画・SNS ──
-  { name: "ショート動画編集", points: 7, group: "SNS・動画", size: "TikTok・リール・ショート", days: "3日〜", questions: VIDEO_QUESTIONS },
-  { name: "台本作成（ショート）", points: 4, group: "SNS・動画", size: "フック→本編→CTA", days: "2日〜",
+  { name: "ショート動画編集", points: 10, group: "SNS・動画", size: "TikTok・リール・ショート", days: "3日〜", questions: VIDEO_QUESTIONS },
+  { name: "台本作成（ショート）", points: 10, group: "SNS・動画", size: "フック→本編→CTA", days: "2日〜",
     questions: [
       { key: "媒体", label: "使う媒体", type: "multi", required: true, options: ["TikTok", "Instagramリール", "YouTubeショート", "その他"] },
       q.purpose(["新規のお客さんを増やす", "リピーターを増やす", "新メニューを知らせる", "採用", "認知・話題づくり"]),
@@ -40,7 +40,7 @@ const catalog: CatalogItem[] = [
       q.ref("参考にしたい動画（URL）"),
       q.ng(),
     ] },
-  { name: "投稿文＋画像", points: 10, group: "SNS・動画", size: "SNS投稿1本ぶん", days: "3日〜",
+  { name: "投稿文＋画像", points: 7, group: "SNS・動画", size: "SNS投稿1本ぶん", days: "3日〜",
     questions: [
       { key: "媒体", label: "投稿する媒体", type: "multi", required: true, options: ["Instagram", "X", "Facebook", "LINE VOOM", "Googleビジネスプロフィール"] },
       { key: "内容", label: "知らせたい内容", type: "textarea", required: true, placeholder: "例: 9月の限定パフェ、金曜のハッピーアワー" },
@@ -60,7 +60,7 @@ const catalog: CatalogItem[] = [
       { key: "お礼", label: "お礼の内容", type: "select", required: true, options: ["飲食無料", "飲食無料＋謝礼", "相談したい"] },
       { key: "推し", label: "食べてほしいメニュー", type: "textarea", required: true },
     ] },
-  { name: "TikTok運用おまかせ（月額）", points: 40, group: "SNS・動画", size: "企画4本＋編集4本＋投稿代行", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
+  { name: "TikTok運用おまかせ（月額）", points: 60, group: "SNS・動画", size: "企画4本＋編集4本＋投稿代行", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
   { name: "Instagram運用（月額）", points: 30, group: "SNS・動画", size: "月8投稿＋ストーリーズ案", days: "月単位", monthly: true, questions: SNS_MONTHLY_QUESTIONS },
 
   // ── 集客 ──
@@ -230,7 +230,7 @@ const catalog: CatalogItem[] = [
     ] },
 
   // ── 採用 ──
-  { name: "採用向けショート動画", points: 7, group: "採用", size: "働く様子・先輩の声を30秒に", days: "3日〜",
+  { name: "採用向けショート動画", points: 10, group: "採用", size: "働く様子・先輩の声を30秒に", days: "3日〜",
     questions: [
       { key: "職種", label: "募集する職種", type: "text", required: true },
       { key: "見せたいこと", label: "見せたいこと", type: "multi", required: true, options: ["店の雰囲気", "先輩スタッフの声", "まかない", "1日の流れ", "店主の人柄"] },
@@ -252,7 +252,7 @@ const catalog: CatalogItem[] = [
     group: "営業",
     size: "近隣企業に宴会・仕出しを案内",
     days: "1週間〜",
-    quantity: { key: "架電件数", unit: "件", pointsPer: 0.2, min: 100, max: 2000, step: 50, hint: "1件0.2pt。100件=20pt、300件=60pt" },
+    quantity: { key: "架電件数", unit: "件", pointsPer: 0.25, min: 100, max: 2000, step: 50, hint: "1件0.25pt。200件=50pt、400件=100pt" },
     questions: [
       { key: "案内したいこと", label: "案内したいこと", type: "multi", required: true, options: ["忘年会・歓送迎会の宴会", "貸切", "仕出し・ケータリング", "法人の定期利用（接待・ランチ）", "その他"] },
       { key: "ターゲット", label: "架電先（エリア・業種・規模）", type: "textarea", required: true, placeholder: "例: 店から徒歩10分圏内の従業員20名以上の会社" },
@@ -346,7 +346,7 @@ export const food: Brand = {
   ],
   demoProjects: [
     { title: "テスト食堂の季節・限定メニュー企画", category: "季節・限定メニュー企画", description: "秋の限定定食5品の企画", points: 12, deadline: "2026-09-20", status: "募集中" },
-    { title: "テスト食堂のショート動画編集", category: "ショート動画編集", description: "看板メニューの仕込み動画", points: 7, deadline: "2026-09-05", status: "制作待ち" },
+    { title: "テスト食堂のショート動画編集", category: "ショート動画編集", description: "看板メニューの仕込み動画", points: 10, deadline: "2026-09-05", status: "制作待ち" },
     { title: "テスト食堂のPOP作成", category: "POP作成", description: "本日のおすすめ卓上POP", points: 4, deadline: "2026-09-10", status: "フィードバック" },
     { title: "テスト食堂のMEO対策（初期整備）", category: "MEO対策（初期整備）", description: "Googleマップの写真・営業時間・メニュー登録", points: 15, deadline: "2026-08-25", status: "完了" },
   ],

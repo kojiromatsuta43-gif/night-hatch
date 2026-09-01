@@ -14,7 +14,7 @@ import { api } from "@/lib/client";
 export default function TopNav({ role, name, points }: { role?: string; name: string; points: number }) {
   const { mascot } = useMascot();
   const showPoints = role !== "freelancer";
-  const videos = Math.floor(points / 7);
+  const videos = Math.floor(points / 10);
 
   return (
     <div className="sticky top-0 z-40 bg-hive-900 text-white">

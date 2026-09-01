@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/server/auth";
 import { activeProvider, NoProviderError } from "@/lib/server/llm";
 import { consumeAi, limitResponse } from "@/lib/server/ai-usage";
 import {
-  mightBeListRequest, extractFilter, previewList, acquireList, costFor, filterToQuery, describeFilter, companyDbReady,
+  mightBeListRequest, extractFilter, previewList, acquireList, costFor, filterToQuery, describeFilter, companyDbReady, canAcquire,
   scriptSystem, generateSalesReply, LIST_BLOCK, LIST_POINTS, LIST_MAX,
 } from "@/lib/server/sales-agent";
 import { filterFrom } from "@/lib/server/company-filter";
@@ -67,6 +67,7 @@ export async function POST(req: Request) {
     const query = String(b.action.query ?? "");
     const count = Math.min(LIST_MAX, Math.max(1, Number(b.action.count) || LIST_BLOCK));
     if (!companyDbReady()) return NextResponse.json({ error: "企業DBがまだ準備できていません" }, { status: 503 });
+    if (!canAcquire(user)) return NextResponse.json({ error: "企業DBからの取得はプレミアムプランの機能です" }, { status: 403 });
     const filter = filterFrom(new URL(`http://x/?${query}`));
     try {
       const r = await acquireList(user, filter, count);
@@ -112,6 +113,14 @@ export async function POST(req: Request) {
       return reply(sessionId, [...history, userMsg], msg);
     }
     if (ex) {
+      if (!canAcquire(user)) {
+        const msg: Msg = {
+          role: "assistant",
+          content: `条件は「${describeFilter(ex.filter)}」と読み取りました。企業データベース（775万社）から直接リストを取得できるのはプレミアムプランの機能です。いまのプランでは「営業リスト作成（${LIST_BLOCK}件 ${LIST_POINTS}🍯）」を発注いただくと、社内がこの条件でリストを作ってお渡しします。`,
+          payload: { type: "list_unavailable" },
+        };
+        return reply(sessionId, [...history, userMsg], msg);
+      }
       if (!companyDbReady()) {
         const msg: Msg = {
           role: "assistant",

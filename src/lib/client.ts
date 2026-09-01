@@ -14,4 +14,4 @@ export async function api<T = unknown>(path: string, init?: RequestInit): Promis
   return data as T;
 }
 
-export type Me = { id: string; email: string; name: string; role: string; points: number };
+export type Me = { id: string; email: string; name: string; role: string; points: number; plan?: string };

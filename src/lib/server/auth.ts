@@ -8,6 +8,7 @@ export type SessionUser = {
   name: string;
   role: string;
   points: number;
+  plan: string;
 };
 
 const COOKIE = "cw_session";
@@ -44,7 +45,7 @@ export async function currentUser(): Promise<SessionUser | null> {
     | undefined;
   if (!session || session.expires_at < Date.now()) return null;
   const user = db
-    .prepare("SELECT id, email, name, role, points FROM users WHERE id = ?")
+    .prepare("SELECT id, email, name, role, points, plan FROM users WHERE id = ?")
     .get(session.user_id) as SessionUser | undefined;
   return user ?? null;
 }

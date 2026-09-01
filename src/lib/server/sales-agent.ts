@@ -150,6 +150,11 @@ export async function previewList(filter: CompanyFilter) {
   };
 }
 
+/** 企業DBからの取得ができるか（社内 or プレミアム） */
+export function canAcquire(user: { role: string; plan?: string }): boolean {
+  return user.role === "admin" || user.plan === "premium" || user.plan === "unlimited";
+}
+
 export function costFor(user: { role: string }, count: number): number {
   if (user.role === "admin") return 0;
   return Math.ceil(Math.min(LIST_MAX, Math.max(1, count)) / LIST_BLOCK) * LIST_POINTS;

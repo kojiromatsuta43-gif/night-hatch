@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * はちみつの瓶。残高が多いほど中身が満ちる（100ptで満タン表示）。
+ * はちみつの瓶。残高が多いほど中身が満ちる（200ptで満タン表示＝プレミアムの1ヶ月分）。
  * 上部ナビの右上に置く。
  */
 export default function HoneyJar({ points, className = "h-9 w-8" }: { points: number; className?: string }) {
-  const level = Math.max(0.08, Math.min(1, points / 100)); // 0.08 = 空でも底に少し
+  const level = Math.max(0.08, Math.min(1, points / 200)); // 0.08 = 空でも底に少し
   const top = 12; // 瓶の中の上端
   const bottom = 42; // 瓶の中の下端
   const y = bottom - (bottom - top) * level;
