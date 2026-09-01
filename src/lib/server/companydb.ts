@@ -262,7 +262,11 @@ function whereOf(f: CompanyFilter): { where: string; params: unknown[] } {
   if (f.q) add("(name ILIKE ? OR ceo ILIKE ? OR address ILIKE ? OR industry_s ILIKE ?)", `%${f.q}%`, `%${f.q}%`, `%${f.q}%`, `%${f.q}%`);
   if (f.prefectures?.length) add(`prefecture IN (${f.prefectures.map(() => "?").join(",")})`, ...f.prefectures);
   if (f.industryL?.length) add(`industry_l IN (${f.industryL.map(() => "?").join(",")})`, ...f.industryL);
-  if (f.industryS) add("industry_s ILIKE ?", `%${f.industryS}%`);
+  if (f.industryS) {
+    // 「美容|サロン|ヘア」のように | 区切りで言い換えを OR で探す
+    const words = f.industryS.split("|").map((w) => w.trim()).filter(Boolean).slice(0, 8);
+    if (words.length) add(`(${words.map(() => "industry_s ILIKE ?").join(" OR ")})`, ...words.map((w) => `%${w}%`));
+  }
   if (f.empMin !== undefined) add("employees >= ?", f.empMin);
   if (f.empMax !== undefined) add("employees <= ?", f.empMax);
   if (f.hasPhone) add("phone IS NOT NULL");

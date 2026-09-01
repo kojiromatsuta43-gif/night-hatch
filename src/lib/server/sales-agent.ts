@@ -56,14 +56,14 @@ type Extracted = {
 const INDUSTRY_L = [
   "建設", "不動産", "医薬・バイオ", "運輸サービス", "中間流通", "小売", "法人サービス", "建設ゼネコン・工事", "広告・情報通信サービス", "食品",
   "機械・電気製品", "消費者サービス", "その他サービス", "外食・中食", "工事・土木", "医療・製薬・福祉", "小売・販売・卸売", "製造", "IT", "商社",
-  "交通・運輸・物流", "自動車・輸送", "機械", "人材・アウトソーシング", "士業", "飲食・外食", "美容・アパレル", "コンサルティング", "広告・制作",
+  "交通・運輸・物流", "自動車・輸送", "機械", "人材・アウトソーシング", "士業", "飲食・外食", "美容・アパレル", "アパレル美容", "コンサルティング", "広告・制作",
 ];
 
 /** 自然文 → 企業DBの検索条件。DBに無い言い回しは小業界の部分一致に落とす */
 export async function extractFilter(message: string): Promise<{ filter: CompanyFilter; count: number; extracted: Extracted } | null> {
   const system = `営業リストの依頼文から、企業データベースの検索条件をJSONで抜き出す。
 - prefectures: 都道府県名を正式名称（例: 福岡県、東京都）で。地方名（九州など）は含まれる都道府県に展開する。
-- industry_keywords: 業種を短い語で（例: 飲食店、美容室、建設、介護、歯科）。DBの大業界は次のいずれか: ${INDUSTRY_L.join("、")}。合うものがあればその名前を入れ、無ければ短い語を入れる。
+- industry_keywords: 業種。DBの大業界（${INDUSTRY_L.join("、")}）に合うものがあればその名前を入れる。加えて、小業界の文字列に部分一致させるための短い言い換えを2〜4個入れる（例: 美容室 → 美容, サロン, ヘア ／ 飲食店 → 飲食, レストラン, 居酒屋 ／ 介護 → 介護, 福祉, デイサービス ／ 歯科 → 歯科, デンタル）。
 - emp_min / emp_max: 従業員数の範囲。指定が無ければ null。
 - need_phone: 電話番号が要るなら true（テレアポ用途なら true）。
 - count: 欲しい社数。無ければ null。
@@ -82,7 +82,7 @@ export async function extractFilter(message: string): Promise<{ filter: CompanyF
     ["機械・電気製品", "製造", "機械"],
     ["運輸サービス", "交通・運輸・物流", "自動車・輸送"],
     ["法人サービス", "人材・アウトソーシング", "コンサルティング"],
-    ["消費者サービス", "美容・アパレル"],
+    ["消費者サービス", "美容・アパレル", "アパレル美容"],
   ];
   const picked = (out.industry_keywords ?? []).filter((k) => INDUSTRY_L.includes(k));
   const industryL = [...new Set(picked.flatMap((k) => FAMILIES.find((f) => f.includes(k)) ?? [k]))];
@@ -90,7 +90,7 @@ export async function extractFilter(message: string): Promise<{ filter: CompanyF
   const filter: CompanyFilter = {
     prefectures: (out.prefectures ?? []).filter(Boolean).slice(0, 47),
     industryL,
-    industryS: rest[0] || undefined,
+    industryS: rest.length ? rest.slice(0, 6).join("|") : undefined,
     empMin: out.emp_min ?? undefined,
     empMax: out.emp_max ?? undefined,
     hasPhone: out.need_phone !== false,
@@ -121,7 +121,7 @@ export function describeFilter(f: CompanyFilter): string {
   const parts: string[] = [];
   if (f.prefectures?.length) parts.push(f.prefectures.join("・"));
   if (f.industryL?.length) parts.push(f.industryL.join("・"));
-  if (f.industryS) parts.push(`「${f.industryS}」を含む業種`);
+  if (f.industryS) parts.push(`「${f.industryS.split("|").join("・")}」を含む業種`);
   if (f.empMin !== undefined || f.empMax !== undefined) parts.push(`従業員 ${f.empMin ?? ""}〜${f.empMax ?? ""}人`);
   if (f.hasPhone) parts.push("電話あり");
   if (f.hasEmail) parts.push("メールあり");
