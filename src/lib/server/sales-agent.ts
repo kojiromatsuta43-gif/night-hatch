@@ -71,7 +71,21 @@ export async function extractFilter(message: string): Promise<{ filter: CompanyF
 リストの依頼でなければ is_list_request=false。JSONのみを返す。`;
   const out = await generateJson<Extracted>(system, message, FILTER_SCHEMA, { task: "backstage" });
   if (!out?.is_list_request) return null;
-  const industryL = (out.industry_keywords ?? []).filter((k) => INDUSTRY_L.includes(k));
+  // 出典ごとに大業界の呼び方が違う（FORCAS系「外食・中食」／SalesNow系「飲食・外食」）ので、同じ仲間はまとめて拾う
+  const FAMILIES: string[][] = [
+    ["外食・中食", "飲食・外食"],
+    ["建設", "建設ゼネコン・工事", "工事・土木"],
+    ["医薬・バイオ", "医療・製薬・福祉"],
+    ["小売", "小売・販売・卸売"],
+    ["中間流通", "商社", "小売・販売・卸売"],
+    ["広告・情報通信サービス", "IT", "広告・制作"],
+    ["機械・電気製品", "製造", "機械"],
+    ["運輸サービス", "交通・運輸・物流", "自動車・輸送"],
+    ["法人サービス", "人材・アウトソーシング", "コンサルティング"],
+    ["消費者サービス", "美容・アパレル"],
+  ];
+  const picked = (out.industry_keywords ?? []).filter((k) => INDUSTRY_L.includes(k));
+  const industryL = [...new Set(picked.flatMap((k) => FAMILIES.find((f) => f.includes(k)) ?? [k]))];
   const rest = (out.industry_keywords ?? []).filter((k) => !INDUSTRY_L.includes(k));
   const filter: CompanyFilter = {
     prefectures: (out.prefectures ?? []).filter(Boolean).slice(0, 47),
