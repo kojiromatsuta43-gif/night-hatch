@@ -9,7 +9,8 @@ import { filterFrom } from "@/lib/server/company-filter";
  */
 export async function POST(req: Request) {
   const user = await requireUser();
-  if (user.role === "freelancer") return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  // 企業DBは会社の資産。いまは社内（管理者）だけが検索・追加できる。お客様には「営業リスト作成」メニューで納品する
+  if (user.role !== "admin") return NextResponse.json({ error: "企業DBは社内専用です" }, { status: 403 });
   const b = await req.json().catch(() => ({}));
   try {
     if (Array.isArray(b?.ids)) return NextResponse.json(await addByIds(user.id, b.ids.map(Number)));

@@ -71,6 +71,7 @@ function SalesInner() {
   const { me } = useMe();
   const sp = useSearchParams();
   const isFreelancer = me?.role === "freelancer";
+  const isAdmin = me?.role === "admin";
 
   const [q, setQ] = useState("");
   const [pref, setPref] = useState("");
@@ -172,15 +173,15 @@ function SalesInner() {
         </div>
       </div>
 
-      {!isFreelancer && (
+      {isAdmin && (
         <div className="mb-4 flex gap-1 text-sm">
           <button onClick={() => setMode("list")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>自分のリスト</button>
-          <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（775万社）</button>
+          <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（社内専用）</button>
         </div>
       )}
 
-      {mode === "db" && !isFreelancer && <CompanySearch isAdmin={me?.role === "admin"} onAdded={load} />}
-      {mode === "db" && !isFreelancer ? null : (
+      {mode === "db" && isAdmin && <CompanySearch isAdmin onAdded={load} />}
+      {mode === "db" && isAdmin ? null : (
       <>
 
       {importOpen && !isFreelancer && <ImportPanel onDone={() => { setImportOpen(false); load(); }} />}
