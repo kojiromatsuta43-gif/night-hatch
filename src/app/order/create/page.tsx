@@ -496,7 +496,7 @@ function OrderForm() {
                 </label>
                 <FileDrop
                   label="素材動画のファイル"
-                  hint="直接アップロードする場合はこちら（1ファイル50MBまで）"
+                  hint="直接アップロードする場合はこちら（1ファイル2GBまで）"
                   accept="video/*"
                   value={materialFiles}
                   onChange={setMaterialFiles}

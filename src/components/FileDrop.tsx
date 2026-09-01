@@ -10,10 +10,14 @@ export type UploadedFile = {
   url: string;
 };
 
+/** 分割アップロードの1かけら（サーバー側 UPLOAD_CHUNK_BYTES と同じ） */
+const CHUNK = 8 * 1024 * 1024;
+
 function prettySize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
 }
 
 export default function FileDrop({
@@ -34,24 +38,75 @@ export default function FileDrop({
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<{ name: string; sent: number; total: number } | null>(null);
   const [error, setError] = useState("");
+
+  /** 8MB を超えるファイルは分割して送る（動画の納品向け。途中経過も出す） */
+  const uploadLarge = async (file: File): Promise<UploadedFile[]> => {
+    const id = crypto.randomUUID();
+    const total = Math.ceil(file.size / CHUNK);
+    for (let i = 0; i < total; i++) {
+      const blob = file.slice(i * CHUNK, Math.min(file.size, (i + 1) * CHUNK));
+      let lastErr = "";
+      let done = false;
+      for (let attempt = 0; attempt < 3 && !done; attempt++) {
+        const res = await fetch("/api/uploads/chunk", {
+          method: "POST",
+          headers: {
+            "x-upload-id": id,
+            "x-chunk-index": String(i),
+            "x-chunk-total": String(total),
+            "x-file-size": String(file.size),
+            "x-file-name": encodeURIComponent(file.name),
+            "x-file-mime": file.type || "application/octet-stream",
+          },
+          body: blob,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          done = true;
+          if (i === total - 1) return data.files as UploadedFile[];
+        } else {
+          lastErr = data.error ?? `HTTP ${res.status}`;
+          // 400（容量オーバーなど）と 409（続きが合わない）はやり直しても直らない
+          if (res.status === 400 || res.status === 409) throw new Error(lastErr);
+          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        }
+      }
+      if (!done) throw new Error(lastErr || "アップロードに失敗しました");
+      setProgress({ name: file.name, sent: Math.min(file.size, (i + 1) * CHUNK), total: file.size });
+    }
+    return [];
+  };
 
   const upload = async (list: FileList | null) => {
     if (!list || list.length === 0) return;
     setError("");
     setBusy(true);
     try {
-      const body = new FormData();
-      Array.from(list).forEach((f) => body.append("file", f));
-      // FormData のときは Content-Type をブラウザに任せる（境界文字列が必要なため）
-      const res = await fetch("/api/uploads", { method: "POST", body });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "アップロードに失敗しました");
-      onChange([...value, ...(data.files as UploadedFile[])]);
+      const files = Array.from(list);
+      const small = files.filter((f) => f.size <= CHUNK);
+      const large = files.filter((f) => f.size > CHUNK);
+      let added: UploadedFile[] = [];
+      if (small.length > 0) {
+        const body = new FormData();
+        small.forEach((f) => body.append("file", f));
+        // FormData のときは Content-Type をブラウザに任せる（境界文字列が必要なため）
+        const res = await fetch("/api/uploads", { method: "POST", body });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "アップロードに失敗しました");
+        added = [...added, ...(data.files as UploadedFile[])];
+      }
+      for (const f of large) {
+        setProgress({ name: f.name, sent: 0, total: f.size });
+        added = [...added, ...(await uploadLarge(f))];
+      }
+      onChange([...value, ...added]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "アップロードに失敗しました");
     } finally {
       setBusy(false);
+      setProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
   };
@@ -100,7 +155,18 @@ export default function FileDrop({
         <div className="text-sm font-medium text-slate-700">
           {busy ? "アップロード中..." : "ドラッグ＆ドロップでアップロード"}
         </div>
-        <div className="mt-1 text-xs text-slate-500">またはクリックしてファイルを選択（1ファイル50MBまで）</div>
+        {progress ? (
+          <div className="mx-auto mt-2 max-w-xs">
+            <div className="h-2 w-full overflow-hidden rounded bg-slate-200">
+              <div className="h-full bg-honey-400 transition-[width]" style={{ width: `${Math.round((progress.sent / progress.total) * 100)}%` }} />
+            </div>
+            <div className="mt-1 truncate text-xs text-slate-500">
+              {progress.name} — {prettySize(progress.sent)} / {prettySize(progress.total)}（この画面を閉じないでください）
+            </div>
+          </div>
+        ) : (
+          <div className="mt-1 text-xs text-slate-500">またはクリックしてファイルを選択（1ファイル2GBまで。動画もそのまま入れられます）</div>
+        )}
         <input
           ref={inputRef}
           type="file"

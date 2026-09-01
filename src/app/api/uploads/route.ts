@@ -3,7 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
-import { ensureUploadDir, uploadPath, MAX_UPLOAD_BYTES, formatBytes } from "@/lib/server/uploads";
+import { ensureUploadDir, uploadPath, checkRoom } from "@/lib/server/uploads";
 
 /** 素材ファイルのアップロード。multipart/form-data の "file" を1つ以上受け取る。 */
 export async function POST(req: Request) {
@@ -22,12 +22,8 @@ export async function POST(req: Request) {
   }
 
   for (const file of files) {
-    if (file.size > MAX_UPLOAD_BYTES) {
-      return NextResponse.json(
-        { error: `「${file.name}」は${formatBytes(MAX_UPLOAD_BYTES)}を超えています。大きい素材はギガファイル便などのURLでご共有ください。` },
-        { status: 400 }
-      );
-    }
+    const room = checkRoom(file.size);
+    if (room) return NextResponse.json({ error: `「${file.name}」: ${room}` }, { status: 400 });
   }
 
   ensureUploadDir();
