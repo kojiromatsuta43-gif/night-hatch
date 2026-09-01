@@ -14,7 +14,6 @@ import { agreementsFor, DEFAULT_VIDEO_CATEGORY } from "@/lib/data";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import type { UploadedFile } from "@/components/FileDrop";
-import FormatIcon from "@/components/FormatIcon";
 import { PlatformRow } from "@/components/PlatformIcons";
 import MicButton from "@/components/MicButton";
 import { PointInline, useMascot } from "@/components/MascotProvider";
@@ -119,7 +118,6 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
     <div className="max-w-2xl space-y-4">
       {/* 何を頼むか（決まっている） */}
       <div className="flex items-center gap-4 rounded-2xl border-2 border-honey-300 bg-honey-50 px-5 py-4">
-        <div className="shrink-0 [&_svg]:h-12 [&_svg]:w-16"><FormatIcon category={item.name} /></div>
         <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold text-honey-700">頼むもの</div>
           <div className="flex items-center gap-2 text-xl font-bold text-hive-900">
