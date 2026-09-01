@@ -2,12 +2,12 @@
 
 import { useId } from "react";
 
-/** リボンをつけた女の子のハチ（発注トップのあいさつ枠だけに登場） */
+/** ブリッジちゃん: リボンをつけた女の子のハチ（発注トップのあいさつ枠だけに登場） */
 export default function BeeGirl({ className = "h-8 w-8" }: { className?: string }) {
   const uid = useId().replace(/:/g, "");
   const bodyClip = `bee-girl-body-${uid}`;
   return (
-    <svg viewBox="0 0 48 48" className={className} role="img" aria-label="リボンをつけたハチ">
+    <svg viewBox="0 0 48 48" className={className} role="img" aria-label="ブリッジちゃん">
       <defs>
         <clipPath id={bodyClip}>
           <rect x="13" y="13" width="22" height="29" rx="11" />

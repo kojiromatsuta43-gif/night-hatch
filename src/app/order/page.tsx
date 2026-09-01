@@ -167,12 +167,15 @@ function FullOrderTop() {
               下の巣から選ぶか、右の「お手本」から始めてください。迷ったら{mascot.consult}でもOK。
             </p>
           </div>
-          {/* 右の余白: リボンをつけた女の子のハチ（ここだけ） */}
-          <div className="ml-auto hidden shrink-0 items-end gap-3 self-stretch lg:flex">
-            <span className="mb-2 hidden self-center rounded-full border-2 border-hive-900 bg-honey-50 px-3 py-1 text-xs font-bold text-hive-900 xl:inline">
-              今日もいっしょにがんばろ〜
+          {/* 右の余白: ブリッジちゃん（ここだけ） */}
+          <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex" title="ブリッジちゃん">
+            <span className="hidden rounded-full border-2 border-hive-900 bg-honey-50 px-3 py-1 text-xs font-bold text-hive-900 xl:inline">
+              ブリッジちゃんも応援してるよ〜
             </span>
-            <BeeGirl className="h-24 w-24 animate-bee-float [animation-delay:0.6s]" />
+            <span className="flex flex-col items-center">
+              <BeeGirl className="h-24 w-24 animate-bee-float [animation-delay:0.6s]" />
+              <span className="-mt-1 text-[10px] font-bold tracking-wider text-hive-500">ブリッジちゃん</span>
+            </span>
           </div>
         </div>
         <Link href="/order/reference" className="group flex flex-col justify-center gap-1.5 border-[3px] border-hive-900 bg-honey-400 px-5 py-4 transition-colors hover:bg-honey-300">
