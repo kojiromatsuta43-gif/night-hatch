@@ -8,6 +8,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
 import { PointInline } from "@/components/MascotProvider";
+import FormatIcon from "@/components/FormatIcon";
+import { PlatformRow } from "@/components/PlatformIcons";
 
 function MenuCard({ item }: { item: CatalogItem }) {
   return (
@@ -15,8 +17,12 @@ function MenuCard({ item }: { item: CatalogItem }) {
       href={`/order/create?category=${encodeURIComponent(item.name)}`}
       className="group flex items-center gap-4 border-2 border-hive-900 bg-white px-4 py-4 transition-colors hover:bg-honey-50"
     >
+      <span className="shrink-0 [&_svg]:h-10 [&_svg]:w-14"><FormatIcon category={item.name} /></span>
       <span className="min-w-0 flex-1">
-        <span className="block text-base font-bold text-hive-900">{item.name}</span>
+        <span className="flex items-center gap-2">
+          <span className="block text-base font-bold text-hive-900">{item.name}</span>
+          <span className="text-hive-900"><PlatformRow category={item.name} className="h-4 w-4" /></span>
+        </span>
         <span className="mt-0.5 block text-sm text-slate-500">{item.size}</span>
         <span className="mt-1 block text-xs text-slate-400">目安 {item.days}</span>
       </span>

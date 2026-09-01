@@ -30,6 +30,20 @@ export default function FormatIcon({ category }: { category: string }) {
           <rect x="10" y="31" width="16" height="3.5" rx="1.7" fill={HONEY} />
         </Frame>
       );
+    case "台本作成（ショート）": // 縦動画のコマ割り台本（フック→本編→CTA）
+      return (
+        <Frame>
+          <rect x="6" y="4" width="22" height="40" rx="2" fill="#fff" stroke={HONEY} strokeWidth="1.5" />
+          <rect x="10" y="9" width="14" height="3.5" rx="1.5" fill={HIVE} />
+          <rect x="10" y="16" width="14" height="2" rx="1" fill={LINE} />
+          <rect x="10" y="20" width="10" height="2" rx="1" fill={LINE} />
+          <rect x="10" y="26" width="8" height="2.6" rx="1.3" fill={HONEY} />
+          <rect x="10" y="32" width="14" height="2" rx="1" fill={LINE} />
+          <rect x="36" y="6" width="20" height="36" rx="2.5" fill={HIVE} />
+          <path d="M43 20l7 4-7 4z" fill="#fff" />
+          <rect x="39" y="34" width="14" height="3" rx="1.5" fill={HONEY} />
+        </Frame>
+      );
     case "台本作成（長尺）": // 台本の書面
       return (
         <Frame>
