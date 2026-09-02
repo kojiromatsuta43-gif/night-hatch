@@ -7,6 +7,7 @@ import { PointInline, useMascot } from "@/components/MascotProvider";
 import TikTokSyncPanel from "@/components/admin/TikTokSyncPanel";
 import AiSettingsPanel from "@/components/admin/AiSettingsPanel";
 import CompanyDbPanel from "@/components/admin/CompanyDbPanel";
+import PlanContractsPanel from "@/components/admin/PlanContractsPanel";
 
 type User = { id: string; email: string; name: string; role: string; points: number; plan: string; ai_extra: number; created_at: string };
 const PLAN_OPTIONS = [["light", "ライト"], ["standard", "スタンダード"], ["premium", "プレミアム"], ["unlimited", "無制限"]] as const;
@@ -19,7 +20,7 @@ type IndustryRequest = { industry_name: string; count: number; last_at: string; 
 export default function AdminPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
-  const [tab, setTab] = useState<"users" | "ng" | "chats" | "refs" | "industries" | "tiktok" | "ai" | "companydb">("users");
+  const [tab, setTab] = useState<"users" | "contracts" | "ng" | "chats" | "refs" | "industries" | "tiktok" | "ai" | "companydb">("users");
   const [users, setUsers] = useState<User[]>([]);
   const [ngWords, setNgWords] = useState<NgWord[]>([]);
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
@@ -63,11 +64,12 @@ export default function AdminPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex flex-wrap gap-2 text-sm">
-        {([["users", "ユーザー管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
+        {([["users", "ユーザー管理"], ["contracts", "契約管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
 
+      {tab === "contracts" && <PlanContractsPanel />}
       {tab === "ai" && <AiSettingsPanel />}
       {tab === "companydb" && <CompanyDbPanel />}
 

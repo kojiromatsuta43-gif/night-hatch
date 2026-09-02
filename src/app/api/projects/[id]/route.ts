@@ -46,6 +46,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     )
     .all(id);
 
+  // 提出物ごとの修正指示コメント（動画の再生位置つき）
+  const comments = db
+    .prepare(
+      `SELECT c.id, c.deliverable_id, c.user_id, c.at_seconds, c.body, c.created_at, u.name AS author_name
+       FROM deliverable_comments c LEFT JOIN users u ON u.id = c.user_id
+       WHERE c.project_id = ? ORDER BY c.created_at`
+    )
+    .all(id);
+
   // 担当者に指定できる人（フリーランス）
   const assignees = db
     .prepare("SELECT id, name FROM users WHERE role = 'freelancer' ORDER BY name")
@@ -54,7 +63,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // 架電案件なら、紐付いた営業リストの集計も一緒に返す
   const leadStats = /架電|テレアポ/.test(String(project.category)) ? projectCallStats(id) : null;
 
-  return NextResponse.json({ ...project, deliverables, assignees, leadStats });
+  return NextResponse.json({ ...project, deliverables, comments, assignees, leadStats });
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

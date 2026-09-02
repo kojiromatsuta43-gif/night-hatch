@@ -57,6 +57,44 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   return NextResponse.json({ id: did });
 }
 
+/**
+ * 提出物の検収。発注者（と管理者）だけが「検収OK」「修正依頼」を付けられる。
+ * 検収OKになると担当者に通知が届く。修正依頼は、具体的な場所をコメント（動画の
+ * 再生位置つき）で伝えるのとセットで使う。
+ */
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireUser();
+  const { id } = await params;
+  const b = await req.json().catch(() => ({}));
+  const itemId = String(b?.itemId ?? "");
+  const status = String(b?.status ?? "");
+  if (!itemId || !["検収OK", "修正依頼", "確認待ち"].includes(status)) {
+    return NextResponse.json({ error: "検収の状態が不正です" }, { status: 400 });
+  }
+  const db = getDb();
+  const project = db.prepare("SELECT * FROM projects WHERE id = ?").get(id) as ProjectRow | undefined;
+  if (!project) return NextResponse.json({ error: "案件が見つかりません" }, { status: 404 });
+  if (project.user_id !== user.id && user.role !== "admin") {
+    return NextResponse.json({ error: "検収は発注者が行います" }, { status: 403 });
+  }
+  const item = db.prepare("SELECT id, kind FROM deliverables WHERE id = ? AND project_id = ?").get(itemId, id) as
+    | { id: string; kind: string }
+    | undefined;
+  if (!item || item.kind !== "提出") return NextResponse.json({ error: "提出物が見つかりません" }, { status: 404 });
+
+  db.prepare("UPDATE deliverables SET status = ? WHERE id = ?").run(status, itemId);
+  if (project.assignee_id && status !== "確認待ち") {
+    notify(project.assignee_id, {
+      id: `accept:${itemId}:${status}`,
+      kind: "project",
+      title: status === "検収OK" ? "提出物が検収されました 🎉" : "修正依頼が届きました",
+      body: project.title,
+      link: `/projects/${id}`,
+    });
+  }
+  return NextResponse.json({ ok: true });
+}
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id } = await params;

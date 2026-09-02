@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
 import { requireUser } from "@/lib/server/auth";
+import { creditPoints, consumeFromGrants, expiringSoon } from "@/lib/server/points-ledger";
 
 export async function GET() {
   const user = await requireUser();
-  const rows = getDb()
+  const db = getDb();
+  const rows = db
     .prepare("SELECT * FROM point_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50")
     .all(user.id);
-  return NextResponse.json({ points: user.points, transactions: rows });
+  const planActive = (db.prepare("SELECT plan_active FROM users WHERE id = ?").get(user.id) as { plan_active: number }).plan_active === 1;
+  return NextResponse.json({ points: user.points, planActive, expiring: expiringSoon(user.id, 60), transactions: rows });
 }
 
 /**
@@ -47,10 +50,15 @@ export async function POST(req: Request) {
   }
 
   db.transaction(() => {
-    db.prepare("UPDATE users SET points = points + ? WHERE id = ?").run(amount, targetId);
-    db.prepare(
-      "INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'adjust', ?)"
-    ).run(crypto.randomUUID(), targetId, amount, memo);
+    if (amount > 0) {
+      creditPoints(db, targetId, amount, "adjust", memo, null);
+    } else {
+      db.prepare("UPDATE users SET points = points + ? WHERE id = ?").run(amount, targetId);
+      db.prepare(
+        "INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'adjust', ?)"
+      ).run(crypto.randomUUID(), targetId, amount, memo);
+      consumeFromGrants(db, targetId, -amount);
+    }
   })();
 
   return NextResponse.json({ ok: true });

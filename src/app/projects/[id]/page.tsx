@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
@@ -14,6 +14,7 @@ import HoneyCells from "@/components/HoneyCells";
 type Deliverable = {
   id: string;
   kind: string;
+  status: string;
   title: string;
   body: string;
   url: string;
@@ -23,6 +24,16 @@ type Deliverable = {
   author_name: string;
   user_id: string;
   created_at: string;
+};
+
+type DComment = {
+  id: string;
+  deliverable_id: string;
+  user_id: string;
+  at_seconds: number | null;
+  body: string;
+  created_at: string;
+  author_name: string;
 };
 
 type Detail = {
@@ -41,9 +52,16 @@ type Detail = {
   assignee_id: string | null;
   assignee_name: string | null;
   deliverables: Deliverable[];
+  comments: DComment[];
   assignees: { id: string; name: string }[];
 };
 
+
+function fmtTime(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function daysBetween(from: string, to: string) {
   const a = new Date(from + "T00:00:00").getTime();
@@ -176,6 +194,26 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [calls, setCalls] = useState("");
   const [connected, setConnected] = useState("");
   const [appts, setAppts] = useState("");
+  // 提出物ごとの修正指示コメント
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [draftAt, setDraftAt] = useState<Record<string, number | null>>({});
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+
+  const review = async (itemId: string, status: string) => {
+    await api(`/api/projects/${id}/deliverables`, { method: "PATCH", body: JSON.stringify({ itemId, status }) });
+    load();
+  };
+  const addComment = async (deliverableId: string) => {
+    const body = (drafts[deliverableId] ?? "").trim();
+    if (!body) return;
+    await api(`/api/projects/${id}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ deliverable_id: deliverableId, body, at_seconds: draftAt[deliverableId] ?? null }),
+    });
+    setDrafts((d) => ({ ...d, [deliverableId]: "" }));
+    setDraftAt((d) => ({ ...d, [deliverableId]: null }));
+    load();
+  };
 
   const load = useCallback(() => {
     api<Detail>(`/api/projects/${id}`)
@@ -336,7 +374,24 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className={`hex-tab px-3 py-0.5 font-black ${d.kind === "提出" ? "bg-hive-900 text-honey-400" : "bg-honey-400 text-hive-900"}`}>
                   {d.kind}
+                  {d.kind === "提出" && (() => {
+                    const nth = p.deliverables.filter((x) => x.kind === "提出").findIndex((x) => x.id === d.id) + 1;
+                    return nth > 1 ? `（第${nth}稿）` : "";
+                  })()}
                 </span>
+                {d.kind === "提出" && (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 font-bold ${
+                      d.status === "検収OK"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : d.status === "修正依頼"
+                          ? "bg-rose-100 text-rose-600"
+                          : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {d.status || "確認待ち"}
+                  </span>
+                )}
                 <span className="font-medium text-slate-600">{d.author_name}</span>
                 <span className="text-slate-400">{d.created_at.slice(0, 16).replace("T", " ")}</span>
                 {d.user_id === me?.id && (
@@ -370,7 +425,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   🔗 {d.url}
                 </a>
               )}
-              {d.upload_id && (
+              {d.upload_id && d.upload_mime?.startsWith("video/") && (
+                <div className="mt-2">
+                  <video
+                    ref={(el) => { videoRefs.current[d.id] = el; }}
+                    src={`/api/uploads/${d.upload_id}`}
+                    controls
+                    preload="metadata"
+                    className="max-h-96 w-full rounded-lg border border-slate-200 bg-black"
+                  />
+                </div>
+              )}
+              {d.upload_id && !d.upload_mime?.startsWith("video/") && (
                 <div className="mt-2">
                   {d.upload_mime?.startsWith("image/") ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -382,6 +448,101 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   )}
                 </div>
               )}
+
+              {/* 修正指示コメント（動画の再生位置つき） */}
+              {(() => {
+                const cs = p.comments?.filter((c) => c.deliverable_id === d.id) ?? [];
+                const canComment = isOwner || isAssignee || me?.role === "admin";
+                const canReview = d.kind === "提出" && (isOwner || me?.role === "admin");
+                const isVideo = Boolean(d.upload_mime?.startsWith("video/"));
+                if (cs.length === 0 && !canComment && !canReview) return null;
+                return (
+                  <div className="mt-3 border-t border-slate-100 pt-3">
+                    {cs.length > 0 && (
+                      <ul className="mb-2 space-y-1.5">
+                        {cs.map((c) => (
+                          <li key={c.id} className="flex items-start gap-2 text-sm">
+                            {c.at_seconds != null ? (
+                              <button
+                                onClick={() => {
+                                  const v = videoRefs.current[d.id];
+                                  if (v) { v.currentTime = c.at_seconds ?? 0; v.play().catch(() => {}); }
+                                }}
+                                className="shrink-0 rounded bg-hive-900 px-2 py-0.5 text-xs font-bold tabular-nums text-honey-400 hover:bg-hive-800"
+                                title="この場面へ移動"
+                              >
+                                ▶ {fmtTime(c.at_seconds)}
+                              </button>
+                            ) : (
+                              <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">💬</span>
+                            )}
+                            <span className="min-w-0">
+                              <span className="whitespace-pre-wrap">{c.body}</span>
+                              <span className="ml-2 text-xs text-slate-400">{c.author_name}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {canComment && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {isVideo && (
+                          <button
+                            onClick={() => {
+                              const v = videoRefs.current[d.id];
+                              if (!v) return;
+                              v.pause();
+                              setDraftAt((m) => ({ ...m, [d.id]: Math.round(v.currentTime * 10) / 10 }));
+                            }}
+                            className={`rounded-full border-2 px-3 py-1 text-xs font-bold ${
+                              draftAt[d.id] != null ? "border-hive-900 bg-honey-400 text-hive-900" : "border-slate-300 text-slate-500 hover:border-hive-900"
+                            }`}
+                          >
+                            {draftAt[d.id] != null ? `⏱ ${fmtTime(draftAt[d.id] ?? 0)} の場面に` : "⏱ 今の場面を指定"}
+                          </button>
+                        )}
+                        {draftAt[d.id] != null && (
+                          <button onClick={() => setDraftAt((m) => ({ ...m, [d.id]: null }))} className="text-xs text-slate-400 hover:text-rose-500">
+                            解除
+                          </button>
+                        )}
+                        <input
+                          value={drafts[d.id] ?? ""}
+                          onChange={(e) => setDrafts((m) => ({ ...m, [d.id]: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) addComment(d.id); }}
+                          placeholder={isVideo ? "例: テロップをもう少し大きく" : "この提出物へのコメント"}
+                          className="min-w-40 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-honey-500 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => addComment(d.id)}
+                          className="rounded-lg bg-hive-900 px-3 py-1.5 text-xs font-bold text-honey-400 hover:bg-hive-800"
+                        >
+                          送る
+                        </button>
+                      </div>
+                    )}
+                    {canReview && d.status !== "検収OK" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <button
+                          onClick={() => review(d.id, "検収OK")}
+                          className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600"
+                        >
+                          ✓ 検収OK（これで完成）
+                        </button>
+                        {d.status !== "修正依頼" && (
+                          <button
+                            onClick={() => review(d.id, "修正依頼")}
+                            className="rounded-lg border-2 border-rose-300 px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                          >
+                            修正をお願いする
+                          </button>
+                        )}
+                        <span className="text-[11px] text-slate-400">修正箇所は上のコメントで具体的に伝わります</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>

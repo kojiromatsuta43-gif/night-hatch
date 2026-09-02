@@ -2,6 +2,8 @@ import { getDb } from "./db";
 import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
 import { warmMissingImages, pendingCount, shrinkOversizedCache } from "./thumbs";
 import { purgeOldChatVideos } from "./uploads";
+import { runMonthlyGrants, runExpiry, jstMonth } from "./points-ledger";
+import { notify } from "./notifications";
 
 /**
  * TikTok の参考動画を定期的に自動で取り込む。
@@ -28,6 +30,41 @@ function purge() {
     if (r.removed > 0) console.log(`[chat video purge] ${r.removed} files, ${Math.round(r.bytes / 1024 / 1024)}MB`);
   } catch (e) {
     console.error("[chat video purge]", e instanceof Error ? e.message : e);
+  }
+}
+
+/**
+ * ハニーPの月次処理（1日1回）。
+ * ・契約中プランへ今月分を付与（月をまたいだ最初の実行で入る）
+ * ・繰越期限を過ぎた付与を失効
+ * ・月が変わったら、先月の月次レポートができたことをお客様へ通知
+ */
+function honey() {
+  try {
+    const db = getDb();
+    const today = jstNow().toISOString().slice(0, 10);
+    const last = (db.prepare("SELECT value FROM app_meta WHERE key = 'honey_daily_day'").get() as { value: string } | undefined)?.value;
+    if (last === today) return;
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('honey_daily_day', ?)").run(today);
+    const granted = runMonthlyGrants();
+    const expired = runExpiry();
+    if (granted || expired) console.log(`[honey] granted:${granted}users expired:${expired}pt`);
+    // 先月のレポート通知（クライアントに1回だけ）
+    const month = jstMonth();
+    const [y, m] = month.split("-").map(Number);
+    const prev = new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 7);
+    const clients = db.prepare("SELECT id FROM users WHERE role = 'client'").all() as { id: string }[];
+    for (const c of clients) {
+      notify(c.id, {
+        id: `report:${c.id}:${prev}`,
+        kind: "report",
+        title: `${Number(prev.slice(5))}月のレポートができました`,
+        body: "今月作った本数・使ったハニー・動画の伸びをまとめました。",
+        link: `/reports?month=${prev}`,
+      });
+    }
+  } catch (e) {
+    console.error("[honey daily]", e instanceof Error ? e.message : e);
   }
 }
 
@@ -79,6 +116,8 @@ export function start() {
   setInterval(() => void tick(), 30 * 60_000);
   setTimeout(purge, 90_000);
   setInterval(purge, 60 * 60_000);
+  setTimeout(honey, 45_000);
+  setInterval(honey, 60 * 60_000);
   setTimeout(warm, 20_000);
   setInterval(warm, 5 * 60_000);
 }

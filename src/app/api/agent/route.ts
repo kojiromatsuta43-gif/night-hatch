@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
+import { consumeFromGrants } from "@/lib/server/points-ledger";
 import { requireUser } from "@/lib/server/auth";
 import { generateText, activeProvider, NoProviderError } from "@/lib/server/llm";
 import { consumeAi, limitResponse } from "@/lib/server/ai-usage";
@@ -145,6 +146,7 @@ export async function POST(req: Request) {
         new Date().toISOString().slice(0, 10)
       );
       db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(points, user.id);
+      consumeFromGrants(db, user.id, points);
       db.prepare(
         "INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'spend', ?)"
       ).run(crypto.randomUUID(), user.id, -points, `案件登録: ${d.title}`);

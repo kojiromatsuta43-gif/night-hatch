@@ -24,6 +24,7 @@ function groupsFor(role: string | undefined, pointName: string): Group[] {
   }
   const see: Item[] = [
     { href: "/", label: "ダッシュボード" },
+    { href: "/reports", label: "月次レポート" },
     { href: "/issue", label: "発注書・請求書" },
     { href: "/points", label: pointName },
     { href: "/guide", label: "デモの歩き方" },

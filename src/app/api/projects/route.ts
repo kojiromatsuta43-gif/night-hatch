@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getDb } from "@/lib/server/db";
+import { consumeFromGrants } from "@/lib/server/points-ledger";
 import { requireUser } from "@/lib/server/auth";
 import { notifyNewJob } from "@/lib/server/notifications";
 import { pointsFor, catalogItem } from "@/lib/brand";
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on, assignee_id) VALUES (?, ?, ?, ?, ?, ?, ?, '募集中', ?, ?, ?)"
     ).run(id, user.id, body.title, body.category, body.description, points, body.deadline, JSON.stringify(detail), new Date().toISOString().slice(0, 10), body.assignee_id ?? null);
     db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(points, user.id);
+    consumeFromGrants(db, user.id, points);
     db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'spend', ?)").run(
       crypto.randomUUID(), user.id, -points, `案件登録: ${body.title}`
     );

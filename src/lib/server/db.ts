@@ -418,6 +418,52 @@ function init(db: Database.Database) {
   CREATE INDEX IF NOT EXISTS idx_ai_usage_user_month ON ai_usage (user_id, kind, month);
   `);
 
+  // ─── ハニーP台帳・プラン契約・納品検収・月次レポート ───
+  // プラン契約の状態（plan は AI上限にも使うので既存。契約中かどうかを分けて持つ）
+  const userCols2 = (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
+  for (const [col, def] of [
+    ["plan_active", "INTEGER NOT NULL DEFAULT 0"],
+    ["plan_since", "TEXT"],
+    ["stripe_customer_id", "TEXT"],
+    ["stripe_subscription_id", "TEXT"],
+    ["tiktok_handle", "TEXT NOT NULL DEFAULT ''"], // 月次レポートで動画の伸びを出すための紐付け
+  ] as const) {
+    if (!userCols2.includes(col)) db.exec(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
+  }
+  db.exec(`
+  CREATE TABLE IF NOT EXISTS point_grants (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    remaining INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    memo TEXT NOT NULL DEFAULT '',
+    expires_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_point_grants_user ON point_grants (user_id, expires_at);
+  -- 提出物の検収状態と、動画の再生位置つき修正指示
+  CREATE TABLE IF NOT EXISTS deliverable_comments (
+    id TEXT PRIMARY KEY,
+    deliverable_id TEXT NOT NULL,
+    project_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    at_seconds REAL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_dcomments ON deliverable_comments (deliverable_id, created_at);
+  `);
+  const delCols = (db.prepare("PRAGMA table_info(deliverables)").all() as { name: string }[]).map((c) => c.name);
+  if (!delCols.includes("status")) db.exec("ALTER TABLE deliverables ADD COLUMN status TEXT NOT NULL DEFAULT ''");
+  // 台帳が無い時代の残高を、失効しない付与として1回だけ取り込む
+  db.prepare(
+    `INSERT INTO point_grants (id, user_id, amount, remaining, kind, memo)
+     SELECT lower(hex(randomblob(16))), u.id, u.points, u.points, 'seed', '台帳導入前の残高'
+       FROM users u
+      WHERE u.points > 0 AND NOT EXISTS (SELECT 1 FROM point_grants g WHERE g.user_id = u.id)`
+  ).run();
+
   // 案件詳細ページ用に追加した列（担当者・依頼日）
   const projCols = (db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]).map((c) => c.name);
   for (const [col, def] of [

@@ -8,6 +8,7 @@ import { PointInline, PointMark, useMascot } from "@/components/MascotProvider";
 import { POINT_PACKS, POINT_UNIT_PRICE, PLANS, priceExclTax, priceInclTax, yen } from "@/lib/points";
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
+type Expiring = { remaining: number; memo: string; expires_at: string };
 
 const PACK_NOTE: Record<number, string> = {
   10: "ショート動画 1本ぶん",
@@ -20,20 +21,41 @@ function PointsInner() {
   const { me, refresh } = useMe();
   const search = useSearchParams();
   const [txs, setTxs] = useState<Tx[]>([]);
+  const [expiring, setExpiring] = useState<Expiring[]>([]);
+  const [planActive, setPlanActive] = useState(false);
   const [busy, setBusy] = useState(0);
+  const [planBusy, setPlanBusy] = useState("");
   const [error, setError] = useState("");
 
   const load = useCallback(() => {
-    api<{ transactions: Tx[] }>("/api/points").then((r) => setTxs(r.transactions)).catch(() => {});
+    api<{ transactions: Tx[]; expiring: Expiring[]; planActive: boolean }>("/api/points")
+      .then((r) => { setTxs(r.transactions); setExpiring(r.expiring ?? []); setPlanActive(Boolean(r.planActive)); })
+      .catch(() => {});
   }, []);
   useEffect(load, [load]);
 
   // 戻ってきた直後は、Webhookの反映を待ってから残高を取り直す
   useEffect(() => {
-    if (search.get("paid") !== "1") return;
+    if (search.get("paid") !== "1" && search.get("plan_paid") !== "1") return;
     const timers = [1000, 3000, 6000].map((ms) => setTimeout(() => { refresh(); load(); }, ms));
     return () => timers.forEach(clearTimeout);
   }, [search, refresh, load]);
+
+  const subscribe = async (planId: string) => {
+    if (planBusy) return;
+    setPlanBusy(planId);
+    setError("");
+    try {
+      const res = await api<{ url: string }>("/api/plans/checkout", {
+        method: "POST",
+        body: JSON.stringify({ plan: planId }),
+      });
+      window.location.assign(res.url);
+    } catch (e) {
+      setPlanBusy("");
+      setError(e instanceof Error ? e.message : "決済画面を開けませんでした");
+    }
+  };
 
   const buy = async (points: number) => {
     if (busy) return;
@@ -73,6 +95,24 @@ function PointsInner() {
           </div>
         </div>
       )}
+      {search.get("plan_paid") === "1" && (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <b>プランのお申込みありがとうございました。</b>
+          <div className="mt-1 text-emerald-700">
+            契約の反映と今月分の{mascot.pointName}付与まで数秒かかることがあります。
+          </div>
+        </div>
+      )}
+      {expiring.length > 0 && (
+        <div className="mb-6 rounded-xl border border-honey-400 bg-honey-50 px-4 py-3 text-sm text-hive-900">
+          <b>まもなく繰越期限を迎える{mascot.pointName}があります。</b>
+          <ul className="mt-1 space-y-0.5 text-xs">
+            {expiring.map((e, i) => (
+              <li key={i}>{e.remaining}<PointInline /> … {e.expires_at} に失効（{e.memo}）</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {search.get("canceled") === "1" && (
         <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
           お支払いは完了していません。もう一度お試しいただけます。
@@ -93,6 +133,7 @@ function PointsInner() {
               <th className="whitespace-nowrap px-4 py-2 text-right">毎月の{mascot.pointName}</th>
               <th className="whitespace-nowrap px-4 py-2 text-right">実質単価</th>
               <th className="whitespace-nowrap px-4 py-2 text-right">繰越</th>
+              {me?.role === "client" && <th className="whitespace-nowrap px-4 py-2" />}
             </tr>
           </thead>
           <tbody>
@@ -103,7 +144,11 @@ function PointsInner() {
                   <td className="whitespace-nowrap px-4 py-2 font-bold">
                     <span className="inline-flex items-center gap-2">
                       {pl.name}
-                      {mine && <span className="rounded bg-honey-400 px-1.5 py-0.5 text-[10px] font-bold text-hive-900">ご利用中</span>}
+                      {mine && (
+                        <span className="rounded bg-honey-400 px-1.5 py-0.5 text-[10px] font-bold text-hive-900">
+                          {planActive ? "契約中" : "ご利用中"}
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">{yen(pl.monthly)}</td>
@@ -113,6 +158,21 @@ function PointsInner() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">{yen(Math.round(pl.monthly / pl.points))}</td>
                   <td className="whitespace-nowrap px-4 py-2 text-right">{pl.carryMonths}ヶ月</td>
+                  {me?.role === "client" && (
+                    <td className="whitespace-nowrap px-4 py-2 text-right">
+                      {mine && planActive ? (
+                        <span className="text-xs text-slate-400">契約中</span>
+                      ) : (
+                        <button
+                          onClick={() => subscribe(pl.id)}
+                          disabled={planBusy !== ""}
+                          className="rounded-lg bg-hive-900 px-3 py-1.5 text-xs font-bold text-honey-400 hover:bg-hive-800 disabled:opacity-40"
+                        >
+                          {planBusy === pl.id ? "移動中..." : "申込む"}
+                        </button>
+                      )}
+                    </td>
+                  )}
                 </tr>
               );
             })}

@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getDb } from "./db";
+import { consumeFromGrants } from "./points-ledger";
 import { getAiSettings, type PlanId, PLAN_LABELS } from "./ai-settings";
 
 /**
@@ -129,6 +130,7 @@ export function buyExtraPack(userId: string): UsageSummary {
       settings.extraUses,
       userId
     );
+    consumeFromGrants(db, userId, settings.extraPoints);
     db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'ai_extra', ?)").run(
       crypto.randomUUID(),
       userId,

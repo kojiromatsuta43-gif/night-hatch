@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getDb } from "./db";
+import { consumeFromGrants } from "./points-ledger";
 import { generateJson, generateText, type ChatMessage } from "./llm";
 import { searchCompanies, addByFilter, getStatus, type CompanyFilter } from "./companydb";
 import { BRAND } from "../brand";
@@ -175,6 +176,7 @@ export async function acquireList(user: { id: string; role: string }, filter: Co
     const charged = Math.ceil(result.added / LIST_BLOCK) * LIST_POINTS;
     db.transaction(() => {
       db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(charged, user.id);
+      consumeFromGrants(db, user.id, charged);
       db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'sales_list', ?)").run(
         crypto.randomUUID(), user.id, -charged, `営業リスト取得 ${result.added}社（${describeFilter(filter)}）`
       );
