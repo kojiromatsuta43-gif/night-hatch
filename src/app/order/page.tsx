@@ -175,7 +175,7 @@ function FeaturedHex({ item }: { item: CatalogItem }) {
     >
       <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-1.5 bg-honey-400 px-4 text-center group-hover:bg-honey-300">
         <span className="text-[10px] font-black tracking-widest text-hive-900/60">メインサービス</span>
-        <span className="text-[15px] font-black leading-tight text-hive-900">{item.name}</span>
+        <span className="whitespace-nowrap text-[13px] font-black leading-tight text-hive-900">{item.name}</span>
         <span className="text-[10px] leading-tight text-hive-900/70">{item.size}</span>
         <span className="flex h-6 items-center text-hive-900 [&_span]:gap-2"><PlatformRow category={item.name} className="h-6 w-6" /></span>
         <span className="text-2xl font-black leading-none text-hive-900">
@@ -216,7 +216,7 @@ function MenuCardList({ items }: { items: CatalogItem[] }) {
 }
 
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
-const HEX_W = 132;
+const HEX_W = 150;
 const HEX_H = Math.round(HEX_W * 1.155);
 const GAP = 4;
 
@@ -226,7 +226,7 @@ function HexHive({ items }: { items: CatalogItem[] }) {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      setPerRow(w >= 1560 ? 8 : w >= 1330 ? 7 : 6);
+      setPerRow(w >= 1700 ? 8 : w >= 1450 ? 7 : 6);
     };
     update();
     window.addEventListener("resize", update);
@@ -278,8 +278,14 @@ function FullOrderTop() {
               下の巣から選ぶか、右の「お手本」から始めてください。迷ったら{mascot.consult}でもOK。
             </p>
           </div>
+          <Link
+            href="/agent"
+            className="ml-auto hidden h-10 shrink-0 items-center bg-hive-900 px-5 text-sm font-black text-honey-400 transition-colors hover:bg-hive-800 sm:flex"
+          >
+            迷ったら{mascot.consult} →
+          </Link>
           {/* 右の余白: ハッチ嬢（ここだけ） */}
-          <span className="ml-6 hidden shrink-0 flex-col items-center lg:flex" title="ハッチ嬢">
+          <span className="hidden shrink-0 flex-col items-center lg:flex" title="ハッチ嬢">
             <BeeGirl className="h-10 w-10 animate-bee-float [animation-delay:0.6s]" />
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチ嬢</span>
           </span>
@@ -318,9 +324,6 @@ function FullOrderTop() {
         <div className="mb-1 flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-black text-hive-900">巣から選ぶ</h2>
           <span className="text-xs text-hive-500">はちみつ色=動画（TikTokメイン）・空色=HP/LP・若草=営業・藤色=採用。定価 1🍯＝1,200円（税別）</span>
-          <Link href="/agent" className="ml-auto flex h-8 items-center gap-2 bg-hive-900 px-4 text-xs font-black text-honey-400 transition-colors hover:bg-hive-800">
-            迷ったら{mascot.consult} →
-          </Link>
         </div>
         <div className="hidden md:block">
           <HexHive items={sortForHive(groups.flatMap((g) => g.items))} />
