@@ -117,6 +117,25 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
   );
 }
 
+/**
+ * 巣の並び順。TikTok・動画まわりを先頭の行に、以降は似たもの同士でまとめる。
+ * 1行目: 動画（採用向けショートも動画つながりでここ）
+ * 2行目: SNS・発信系　3行目: Web・紙・求人原稿　4行目: 営業の3ステップ
+ */
+const HIVE_ORDER = [
+  "ショート動画編集", "台本作成（ショート）", "動画編集（3分）", "台本作成（長尺）", "サムネイル作成", "採用向けショート動画",
+  "カルーセル投稿", "投稿文＋画像", "LINE公式アカウント構築", "SEO記事作成", "グルメサイト掲載文リライト", "軽微な修正",
+  "HP制作（1ページ）", "HP保守・更新（月額）", "LPファーストビュー", "チラシ（A4片面）", "求人原稿作成", "求人媒体の掲載文リライト",
+  "テレアポ台本作成", "営業リスト作成", "テレアポ架電",
+];
+function sortForHive(items: CatalogItem[]): CatalogItem[] {
+  const rank = (n: string) => {
+    const i = HIVE_ORDER.indexOf(n);
+    return i === -1 ? 999 : i; // 新メニューを足し忘れても最後に出る
+  };
+  return [...items].sort((a, b) => rank(a.name) - rank(b.name));
+}
+
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
 const HEX_W = 176;
 const HEX_H = Math.round(HEX_W * 1.155);
@@ -198,7 +217,7 @@ function FullOrderTop() {
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
           <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
         </div>
-        <HexHive items={groups.flatMap((g) => g.items)} />
+        <HexHive items={sortForHive(groups.flatMap((g) => g.items))} />
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
           {groups.map((g) => {
             const info = BRAND.groups.find((x) => x.name === g.heading);
