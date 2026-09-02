@@ -24,7 +24,10 @@ export default function TopNav({ role, name, points, plan }: { role?: string; na
     <div className="sticky top-0 z-40 bg-hive-900 text-white">
       <div className="flex items-center gap-3 px-4 py-2.5 pl-14 sm:gap-6 sm:px-6 md:pl-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Mascot className="h-8 w-8" />
+          {/* 黒バーの上でもハッチくんが見えるように、はちみつ色の座布団を敷く */}
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-honey-400">
+            <Mascot className="h-7 w-7" />
+          </span>
           <span className="text-base font-black tracking-wide">{BRAND.name}</span>
         </Link>
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
