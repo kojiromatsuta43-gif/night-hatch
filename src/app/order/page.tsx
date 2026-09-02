@@ -12,15 +12,15 @@ import { retryImage, iconUrl } from "@/lib/client-img";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
 
-function Avatar({ a }: { a: RefAccount }) {
+function Avatar({ a, size = "h-11 w-11" }: { a: RefAccount; size?: string }) {
   if (a.icon_url) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={iconUrl(a.id)} alt={a.name} title={a.name} onError={retryImage} className="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />;
+    return <img src={iconUrl(a.id)} alt={a.name} title={a.name} onError={retryImage} className={`${size} rounded-full border-2 border-white object-cover shadow-sm`} />;
   }
   return (
     <span
       title={a.name}
-      className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white shadow-sm"
+      className={`flex ${size} items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white shadow-sm`}
       style={{ background: `linear-gradient(135deg, hsl(${a.followers % 360}, 60%, 55%), hsl(${(a.followers % 360) + 40}, 60%, 40%))` }}
     >
       {a.name[0]}
@@ -99,18 +99,18 @@ function HexTile({ item, style }: { item: CatalogItem; style?: React.CSSProperti
       style={{ width: HEX_W, height: HEX_H, ...style }}
     >
       <span
-        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1.5 px-4 text-center ${
+        className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1 px-3 text-center ${
           tone.bg
         }`}
       >
-        <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
-        <span className={`text-[10px] leading-tight ${tone.sub}`}>{item.size}</span>
-        <span className="mt-0.5 flex h-6 items-center text-hive-900 [&_span]:gap-2.5"><PlatformRow category={item.name} className="h-6 w-6" /></span>
-        <span className={`text-xl font-black leading-none ${tone.pt}`}>
+        <span className="text-xs font-bold leading-tight text-hive-900">{item.name}</span>
+        <span className={`text-[9px] leading-tight ${tone.sub}`}>{item.size}</span>
+        <span className="mt-0.5 flex h-5 items-center text-hive-900 [&_span]:gap-2"><PlatformRow category={item.name} className="h-5 w-5" /></span>
+        <span className={`text-lg font-black leading-none ${tone.pt}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
-          <span className="ml-1 text-lg">🍯</span>
-          {item.monthly && <span className="text-[10px] font-bold">/月</span>}
+          <span className="ml-0.5 text-base">🍯</span>
+          {item.monthly && <span className="text-[9px] font-bold">/月</span>}
         </span>
       </span>
     </Link>
@@ -164,7 +164,7 @@ function sortForHive(items: CatalogItem[]): CatalogItem[] {
 
 /** メインサービスの大きなセル */
 function FeaturedHex({ item }: { item: CatalogItem }) {
-  const W = 250;
+  const W = 190;
   const H = Math.round(W * 1.155);
   return (
     <Link
@@ -173,14 +173,14 @@ function FeaturedHex({ item }: { item: CatalogItem }) {
       className="hex-p group relative block bg-hive-900 transition-transform hover:-translate-y-1"
       style={{ width: W, height: H }}
     >
-      <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-2 bg-honey-400 px-6 text-center group-hover:bg-honey-300">
-        <span className="text-[11px] font-black tracking-widest text-hive-900/60">メインサービス</span>
-        <span className="text-lg font-black leading-tight text-hive-900">{item.name}</span>
-        <span className="text-[11px] leading-tight text-hive-900/70">{item.size}</span>
-        <span className="flex h-8 items-center text-hive-900 [&_span]:gap-3"><PlatformRow category={item.name} className="h-8 w-8" /></span>
-        <span className="text-3xl font-black leading-none text-hive-900">
+      <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-1.5 bg-honey-400 px-4 text-center group-hover:bg-honey-300">
+        <span className="text-[10px] font-black tracking-widest text-hive-900/60">メインサービス</span>
+        <span className="text-[15px] font-black leading-tight text-hive-900">{item.name}</span>
+        <span className="text-[10px] leading-tight text-hive-900/70">{item.size}</span>
+        <span className="flex h-6 items-center text-hive-900 [&_span]:gap-2"><PlatformRow category={item.name} className="h-6 w-6" /></span>
+        <span className="text-2xl font-black leading-none text-hive-900">
           {item.points}
-          <span className="ml-1 text-2xl">🍯</span>
+          <span className="ml-1 text-xl">🍯</span>
         </span>
       </span>
     </Link>
@@ -216,7 +216,7 @@ function MenuCardList({ items }: { items: CatalogItem[] }) {
 }
 
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
-const HEX_W = 176;
+const HEX_W = 144;
 const HEX_H = Math.round(HEX_W * 1.155);
 const PER_ROW = 6;
 const GAP = 4;
@@ -254,17 +254,17 @@ function FullOrderTop() {
   const groups = catalogGroups();
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-[1010px] space-y-4">
       {/* ハッチのひとこと ＋ いちばん人気の入口 */}
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-6 py-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-5 py-3.5">
           <span className="flex shrink-0 flex-col items-center">
             <Mascot className="h-14 w-14 animate-bee-float" />
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチくん</span>
           </span>
           <div className="min-w-0">
-            <p className="text-xl font-black text-hive-900 sm:text-2xl">こんにちは、{me?.name ?? "ゲスト"}さん。今日は何をつくる？</p>
-            <p className="mt-1 text-sm text-hive-500">
+            <p className="text-lg font-black text-hive-900 sm:text-xl">こんにちは、{me?.name ?? "ゲスト"}さん。今日は何をつくる？</p>
+            <p className="mt-0.5 text-xs text-hive-500 sm:text-sm">
               下の巣から選ぶか、右の「お手本」から始めてください。迷ったら{mascot.consult}でもOK。
             </p>
           </div>
@@ -274,26 +274,26 @@ function FullOrderTop() {
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチ嬢</span>
           </span>
         </div>
-        <Link href="/order/reference" className="group flex flex-col justify-center gap-2 border-[3px] border-hive-900 bg-honey-400 px-6 py-5 transition-colors hover:bg-honey-300">
-          <span className="text-xs font-bold tracking-widest text-hive-900">いちばん人気</span>
-          <span className="text-xl font-black leading-snug text-hive-900 sm:text-2xl">「このアカウントみたいに作りたい」から始める</span>
+        <Link href="/order/reference" className="group flex flex-col justify-center gap-1.5 border-[3px] border-hive-900 bg-honey-400 px-5 py-3.5 transition-colors hover:bg-honey-300">
+          <span className="text-[10px] font-bold tracking-widest text-hive-900">いちばん人気</span>
+          <span className="text-[15px] font-black leading-snug text-hive-900">「このアカウントみたいに作りたい」から始める</span>
           <span className="flex items-center gap-2">
             <span className="flex -space-x-2">
-              {strip.map((a) => <Avatar key={a.id} a={a} />)}
+              {strip.map((a) => <Avatar key={a.id} a={a} size="h-8 w-8" />)}
               {rest > 0 && (
-                <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-hive-900 text-[11px] font-bold text-white">+{rest}</span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-hive-900 text-[10px] font-bold text-white">+{rest}</span>
               )}
             </span>
-            <span className="text-xs font-bold text-hive-900/70">業種べつのお手本アカウント</span>
+            <span className="text-[10px] font-bold text-hive-900/70">業種べつのお手本</span>
           </span>
-          <span className="mt-1.5 flex h-12 items-center justify-center bg-hive-900 text-base font-black text-honey-400 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
+          <span className="mt-1 flex h-9 items-center justify-center bg-hive-900 text-sm font-black text-honey-400 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
         </Link>
       </div>
 
       {/* メインサービス: ショート動画編集と台本作成 */}
       <section>
-        <div className="mb-3 flex flex-wrap items-baseline gap-3">
-          <h2 className="text-xl font-black text-hive-900">メインサービス</h2>
+        <div className="mb-2 flex flex-wrap items-baseline gap-3">
+          <h2 className="text-lg font-black text-hive-900">メインサービス</h2>
           <span className="text-xs text-hive-500">TikTok・リール・ショートの台本と編集。セットで1本20🍯</span>
         </div>
         <div className="flex flex-wrap justify-center gap-5 sm:justify-start">
@@ -305,8 +305,8 @@ function FullOrderTop() {
 
       {/* 巣：メニュー */}
       <section>
-        <div className="mb-3 flex flex-wrap items-baseline gap-3">
-          <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
+        <div className="mb-2 flex flex-wrap items-baseline gap-3">
+          <h2 className="text-lg font-black text-hive-900">巣から選ぶ</h2>
           <span className="text-xs text-hive-500">はちみつ色=動画（TikTokメイン）・空色=HP/LP・若草=営業・藤色=採用。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
         </div>
         <div className="hidden md:block">
@@ -315,24 +315,14 @@ function FullOrderTop() {
         <div className="md:hidden">
           <MenuCardList items={sortForHive(groups.flatMap((g) => g.items))} />
         </div>
-        <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
-          {groups.map((g) => {
-            const info = BRAND.groups.find((x) => x.name === g.heading);
-            return (
-              <span key={g.heading}>
-                <b className="text-hive-900">{g.heading}</b>: {g.items.map((i) => i.name).join("・")}
-                {info?.sub ? `（${info.sub}）` : ""}
-              </span>
-            );
-          })}
-        </div>
+
       </section>
 
       {/* 迷子の受け皿：黒帯 */}
-      <Link href="/agent" className="flex flex-wrap items-center gap-4 bg-hive-900 px-6 py-4 text-white transition-colors hover:bg-hive-800">
-        <span className="text-base font-black">どれを選べばいいか分からない？</span>
+      <Link href="/agent" className="flex flex-wrap items-center gap-4 bg-hive-900 px-5 py-2.5 text-white transition-colors hover:bg-hive-800">
+        <span className="text-sm font-black">どれを選べばいいか分からない？</span>
         <span className="text-sm text-hive-200">ハッチに「居酒屋の動画を作りたい」と話しかければ、お手本さがしから発注まで案内します。</span>
-        <span className="ml-auto flex h-9 items-center bg-honey-400 px-4 text-sm font-black text-hive-900">{mascot.consult} →</span>
+        <span className="ml-auto flex h-8 items-center bg-honey-400 px-4 text-sm font-black text-hive-900">{mascot.consult} →</span>
       </Link>
     </div>
   );
