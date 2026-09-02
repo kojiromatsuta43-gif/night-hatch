@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `ハニーPが足りません（必要 ${points} / 残高 ${user.points}）` }, { status: 400 });
   }
   const id = crypto.randomUUID();
+  const item = catalogItem(String(body.category));
   const tx = db.transaction(() => {
     db.prepare(
       "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on, assignee_id) VALUES (?, ?, ?, ?, ?, ?, ?, '募集中', ?, ?, ?)"
@@ -58,6 +59,21 @@ export async function POST(req: Request) {
     db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?, ?, ?, 'spend', ?)").run(
       crypto.randomUUID(), user.id, -points, `案件登録: ${body.title}`
     );
+    // 月額メニューは翌月から自動で継続（いつでも停止できる）
+    if (item?.monthly) {
+      const month = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 7);
+      const baseTitle = String(body.title).replace(/（\d+月分）$/, "");
+      const exists = db
+        .prepare("SELECT id FROM menu_subscriptions WHERE user_id = ? AND category = ? AND base_title = ? AND active = 1")
+        .get(user.id, body.category, baseTitle);
+      if (!exists) {
+        db.prepare(
+          "INSERT INTO menu_subscriptions (id, user_id, category, base_title, detail, points, last_month) VALUES (?,?,?,?,?,?,?)"
+        ).run(crypto.randomUUID(), user.id, String(body.category), baseTitle, JSON.stringify(detail), points, month);
+      } else {
+        db.prepare("UPDATE menu_subscriptions SET last_month = ? WHERE id = ?").run(month, (exists as { id: string }).id);
+      }
+    }
   });
   tx();
 

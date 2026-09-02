@@ -3,6 +3,8 @@ import { isTikTokSyncConfigured, runTikTokSync } from "./tiktok";
 import { warmMissingImages, pendingCount, shrinkOversizedCache } from "./thumbs";
 import { purgeOldChatVideos } from "./uploads";
 import { runMonthlyGrants, runExpiry, jstMonth } from "./points-ledger";
+import { consumeFromGrants } from "./points-ledger";
+import crypto from "crypto";
 import { notify } from "./notifications";
 
 /**
@@ -49,6 +51,7 @@ function honey() {
     const granted = runMonthlyGrants();
     const expired = runExpiry();
     if (granted || expired) console.log(`[honey] granted:${granted}users expired:${expired}pt`);
+    renewMonthlyMenus();
     // 先月のレポート通知（クライアントに1回だけ）
     const month = jstMonth();
     const [y, m] = month.split("-").map(Number);
@@ -65,6 +68,64 @@ function honey() {
     }
   } catch (e) {
     console.error("[honey daily]", e instanceof Error ? e.message : e);
+  }
+}
+
+/**
+ * 月額メニュー（HP保守・SNS運用など）の自動継続。
+ * 月が変わったら、契約中の予約ごとに今月分の案件を作ってハニーPを引く。
+ * 残高が足りない月はスキップして通知（月内に補充されれば翌日の実行で作られる）。
+ */
+function renewMonthlyMenus() {
+  const db = getDb();
+  const month = jstMonth();
+  const monthNum = Number(month.slice(5));
+  const subs = db
+    .prepare("SELECT * FROM menu_subscriptions WHERE active = 1 AND last_month < ?")
+    .all(month) as { id: string; user_id: string; category: string; base_title: string; detail: string | null; points: number }[];
+  for (const sub of subs) {
+    try {
+      const u = db.prepare("SELECT points FROM users WHERE id = ?").get(sub.user_id) as { points: number } | undefined;
+      if (!u) continue;
+      if (u.points < sub.points) {
+        notify(sub.user_id, {
+          id: `subshort:${sub.id}:${month}`,
+          kind: "points",
+          title: `「${sub.base_title}」の継続にハニーPが足りません`,
+          body: `今月分（${sub.points}pt）の残高が不足しています。チャージされしだい自動で継続します。`,
+          link: "/points",
+        });
+        continue;
+      }
+      const title = `${sub.base_title}（${monthNum}月分）`;
+      const deadline = new Date(Date.now() + 9 * 3600 * 1000);
+      deadline.setUTCMonth(deadline.getUTCMonth() + 1, 0); // 月末
+      const projectId = crypto.randomUUID();
+      db.transaction(() => {
+        db.prepare(
+          "INSERT INTO projects (id, user_id, title, category, description, points, deadline, status, detail, requested_on) VALUES (?,?,?,?,?,?,?,'募集中',?,date('now'))"
+        ).run(
+          projectId, sub.user_id, title, sub.category,
+          `月額メニューの自動継続（${monthNum}月分）`, sub.points,
+          deadline.toISOString().slice(0, 10), sub.detail
+        );
+        db.prepare("UPDATE users SET points = points - ? WHERE id = ?").run(sub.points, sub.user_id);
+        consumeFromGrants(db, sub.user_id, sub.points);
+        db.prepare("INSERT INTO point_transactions (id, user_id, amount, kind, memo) VALUES (?,?,?,'spend',?)").run(
+          crypto.randomUUID(), sub.user_id, -sub.points, `月額メニュー継続: ${title}`
+        );
+        db.prepare("UPDATE menu_subscriptions SET last_month = ? WHERE id = ?").run(month, sub.id);
+      })();
+      notify(sub.user_id, {
+        id: `subrenew:${sub.id}:${month}`,
+        kind: "project",
+        title: `「${sub.base_title}」の${monthNum}月分を継続しました`,
+        body: `${sub.points}ptを使用。停止はハニーPのページからいつでもできます。`,
+        link: `/projects/${projectId}`,
+      });
+    } catch (e) {
+      console.error("[menu renew]", e instanceof Error ? e.message : e);
+    }
   }
 }
 

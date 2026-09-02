@@ -275,7 +275,7 @@ function OrderForm() {
             {item && (
               <p className="mt-2 text-xs text-slate-500">
                 {item.size}。目安 {item.days}
-                {item.monthly ? "。月額メニューは1か月ぶんを1件として発注します" : ""}
+                {item.monthly ? "。月額メニューは翌月から自動で継続されます（ハニーPのページからいつでも停止できます）" : ""}
               </p>
             )}
           </div>

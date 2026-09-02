@@ -454,6 +454,20 @@ function init(db: Database.Database) {
   );
   CREATE INDEX IF NOT EXISTS idx_dcomments ON deliverable_comments (deliverable_id, created_at);
   `);
+  // 月額メニュー（HP保守・SNS運用など）の自動継続
+  db.exec(`
+  CREATE TABLE IF NOT EXISTS menu_subscriptions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    category TEXT NOT NULL,
+    base_title TEXT NOT NULL,
+    detail TEXT,
+    points INTEGER NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    last_month TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  `);
   const delCols = (db.prepare("PRAGMA table_info(deliverables)").all() as { name: string }[]).map((c) => c.name);
   if (!delCols.includes("status")) db.exec("ALTER TABLE deliverables ADD COLUMN status TEXT NOT NULL DEFAULT ''");
   // 台帳が無い時代の残高を、失効しない付与として1回だけ取り込む

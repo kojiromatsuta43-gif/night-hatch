@@ -11,6 +11,54 @@ const catalog: CatalogItem[] = [
   { name: "投稿文＋画像", points: 7, group: "SNS・Webまわり", size: "SNS投稿1本ぶん", days: "3日〜" },
   { name: "LPファーストビュー", points: 30, group: "SNS・Webまわり", size: "訴求・デザイン込み", days: "1週間〜" },
   { name: "軽微な修正", points: 2, group: "SNS・Webまわり", size: "テロップ差し替えなど", days: "1日〜" },
+  // ── Web・集客まわり（FOODハッチのメニューを業種を問わない形で展開） ──
+  // 値付けの根拠: P ≒ 世間の相場 ÷ 3 ÷ 1,200円。「相場の約1/3で使える」を崩さないこと。
+  //   HP1p: 相場15万→40P / SEO記事: 1.8万→5P / 掲載文: 2.2万→6P / LINE構築: 7万→20P
+  //   チラシ: 5万→15P / HP保守: 月1.8万→5P/月 / 求人原稿: 1.5万→4P / 採用動画: 3.6万→10P / 求人リライト: 1.5万→4P
+  { name: "HP制作（1ページ）", points: 40, group: "SNS・Webまわり", size: "スマホ対応・問い合わせ導線・地図", days: "2週間〜",
+    questions: [
+      { key: "現状", label: "いまのHP", type: "select", required: true, options: ["ない", "ある（作り直したい）", "ある（このまま改善したい）"] },
+      { key: "現HP", label: "いまのHPやSNSのURL", type: "text" },
+      { key: "載せたいこと", label: "載せたいこと", type: "multi", required: true, options: ["サービス・料金", "予約・問い合わせ（電話・LINE・フォーム）", "アクセス・地図", "会社・お店の想い", "お客様の声", "採用", "実績・事例"] },
+      { key: "問い合わせ先", label: "予約・問い合わせの受け口", type: "text", placeholder: "電話番号、LINE公式、予約サイトなど" },
+      { key: "参考", label: "参考にしたいサイト（URL）", type: "textarea" },
+      { key: "素材", label: "ロゴ・写真", type: "file" },
+      { key: "ドメイン", label: "ドメイン（URL）", type: "select", required: true, options: ["持っている", "新しく取りたい（取得代行）", "相談したい"] },
+    ] },
+  { name: "SEO記事作成", points: 5, group: "SNS・Webまわり", size: "検索されるブログ1本", days: "3日〜",
+    questions: [
+      { key: "狙う言葉", label: "検索されたい言葉", type: "text", required: true, placeholder: "例: 福岡 外壁塗装 相場" },
+      { key: "掲載先", label: "掲載先", type: "select", required: true, options: ["自社HPのブログ", "note", "Googleビジネスプロフィール", "その他"] },
+      { key: "ネタ", label: "書いてほしいネタ・自社の強み", type: "textarea", required: true },
+    ] },
+  { name: "グルメサイト掲載文リライト", points: 6, group: "SNS・Webまわり", size: "食べログ・ホットペッパー等の掲載文を強く", days: "3日〜",
+    questions: [
+      { key: "媒体", label: "直したい媒体", type: "multi", required: true, options: ["食べログ", "ぐるなび", "ホットペッパーグルメ", "ホットペッパービューティー", "楽天ビューティ", "Googleマップ", "その他"] },
+      { key: "ページURL", label: "掲載ページのURL", type: "textarea", required: true },
+      { key: "推し", label: "もっと伝えたい強み", type: "textarea", required: true },
+    ] },
+  { name: "LINE公式アカウント構築", points: 20, group: "SNS・Webまわり", size: "リッチメニュー・あいさつ・クーポン設計", days: "1週間〜",
+    questions: [
+      { key: "現状", label: "LINE公式アカウント", type: "select", required: true, options: ["まだない（開設から）", "ある（整えたい）"] },
+      { key: "やりたいこと", label: "やりたいこと", type: "multi", required: true, options: ["クーポン配信", "予約受付", "サービス案内", "ポイントカード", "友だち追加特典"] },
+      { key: "友だち特典", label: "友だち追加の特典", type: "text", placeholder: "例: 初回10%オフ" },
+      { key: "素材", label: "ロゴ・写真", type: "file" },
+    ] },
+  { name: "チラシ（A4片面）", points: 15, group: "SNS・Webまわり", size: "ポスティング・店頭/展示会配布", days: "5日〜",
+    questions: [
+      { key: "目的", label: "チラシの目的", type: "select", required: true, options: ["新規オープン・リニューアル", "新サービス・キャンペーン", "イベント集客", "採用", "その他"] },
+      { key: "載せる内容", label: "載せたい内容（サービス・価格・特典など）", type: "textarea", required: true },
+      { key: "配り方", label: "配り方", type: "select", options: ["ポスティング", "店頭・手配り", "新聞折込", "展示会・イベント", "まだ決めていない"] },
+      { key: "素材", label: "ロゴ・写真", type: "file" },
+      { key: "参考", label: "参考にしたいチラシ", type: "textarea" },
+      { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ", "印刷も手配してほしい（実費別）"] },
+    ] },
+  { name: "HP保守・更新（月額）", points: 5, group: "SNS・Webまわり", size: "月2回までの更新＋動作チェック", days: "月単位", monthly: true,
+    questions: [
+      { key: "サイトURL", label: "サイトのURL", type: "text", required: true },
+      { key: "更新内容", label: "今月の更新内容", type: "textarea", required: true, placeholder: "例: 料金ページの改定、お知らせ2本、写真の差し替え" },
+      { key: "更新方法", label: "更新のしかた", type: "select", required: true, options: ["管理画面ごと代行（ログイン情報は別途安全に共有）", "修正データを納品（反映は自社で）"] },
+    ] },
   // ── 営業まわり（テレアポは「台本」「リスト」「架電」の3つに分けて、それぞれ別料金） ──
   {
     name: "テレアポ台本作成",
@@ -73,6 +121,28 @@ const catalog: CatalogItem[] = [
       "200コールを超える場合は、もう1件（200コール）として追加で発注してください",
     ],
   },
+  // ── 採用まわり（営業の隣に並べる） ──
+  { name: "求人原稿作成", points: 4, group: "採用まわり", size: "Indeed・タウンワーク向け1職種", days: "2日〜",
+    questions: [
+      { key: "職種", label: "募集する職種", type: "text", required: true, placeholder: "例: 営業スタッフ（正社員）" },
+      { key: "条件", label: "給与・勤務時間・待遇", type: "textarea", required: true },
+      { key: "職場の良さ", label: "職場の良さ（本音でOK）", type: "textarea", required: true },
+      { key: "掲載先", label: "掲載先", type: "multi", options: ["Indeed", "タウンワーク", "バイトル", "自社HP・SNS", "ハローワーク"] },
+    ] },
+  { name: "採用向けショート動画", points: 10, group: "採用まわり", size: "働く様子・先輩の声を30秒に", days: "3日〜",
+    questions: [
+      { key: "職種", label: "募集する職種", type: "text", required: true },
+      { key: "見せたいこと", label: "見せたいこと", type: "multi", required: true, options: ["職場の雰囲気", "先輩スタッフの声", "1日の流れ", "社長・店主の人柄", "仕事のやりがい"] },
+      { key: "素材", label: "素材動画（URL）", type: "text" },
+      { key: "素材ファイル", label: "素材ファイル", type: "file", hint: "スマホで撮った縦動画でOK" },
+      { key: "掲載先", label: "使う場所", type: "multi", options: ["TikTok", "Instagram", "Indeed", "自社HP", "説明会"] },
+    ] },
+  { name: "求人媒体の掲載文リライト", points: 4, group: "採用まわり", size: "応募が来る書き方に直す", days: "2日〜",
+    questions: [
+      { key: "現原稿", label: "いまの求人原稿（貼り付けかURL）", type: "textarea", required: true },
+      { key: "応募状況", label: "いまの応募状況", type: "select", required: true, options: ["ほぼ来ない", "来るが定着しない", "ミスマッチが多い"] },
+      { key: "職場の良さ", label: "職場の良さ（本音でOK）", type: "textarea", required: true },
+    ] },
 ];
 
 export const bridge: Brand = {
@@ -88,7 +158,10 @@ export const bridge: Brand = {
   catalog,
   orderStyle: "full",
   // 発注トップの見出しに添える説明（順番の並べ替えには使わない）
-  groups: [{ name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 75🍯"] }],
+  groups: [
+    { name: "営業まわり", sub: "台本 → リスト → 架電の3ステップ。必要なものだけ頼めます", examples: ["3つまとめて 75🍯"] },
+    { name: "採用まわり", sub: "求人原稿・採用動画・掲載文の見直しで応募を増やします", examples: [] },
+  ],
   defaultAgreements: [],
   demoProjects: [
     { title: "秋の新商品ショート動画", category: "ショート動画編集", description: "秋の新商品を紹介する30秒動画", points: 10, deadline: "2026-08-30", status: "募集中" },

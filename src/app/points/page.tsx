@@ -9,6 +9,7 @@ import { POINT_PACKS, POINT_UNIT_PRICE, PLANS, priceExclTax, priceInclTax, yen }
 
 type Tx = { id: string; amount: number; kind: string; memo: string; created_at: string };
 type Expiring = { remaining: number; memo: string; expires_at: string };
+type Subscription = { id: string; category: string; base_title: string; points: number; last_month: string };
 
 const PACK_NOTE: Record<number, string> = {
   10: "ショート動画 1本ぶん",
@@ -22,6 +23,7 @@ function PointsInner() {
   const search = useSearchParams();
   const [txs, setTxs] = useState<Tx[]>([]);
   const [expiring, setExpiring] = useState<Expiring[]>([]);
+  const [subs, setSubs] = useState<Subscription[]>([]);
   const [planActive, setPlanActive] = useState(false);
   const [busy, setBusy] = useState(0);
   const [planBusy, setPlanBusy] = useState("");
@@ -30,6 +32,9 @@ function PointsInner() {
   const load = useCallback(() => {
     api<{ transactions: Tx[]; expiring: Expiring[]; planActive: boolean }>("/api/points")
       .then((r) => { setTxs(r.transactions); setExpiring(r.expiring ?? []); setPlanActive(Boolean(r.planActive)); })
+      .catch(() => {});
+    api<{ subscriptions: Subscription[] }>("/api/subscriptions")
+      .then((r) => setSubs(r.subscriptions ?? []))
       .catch(() => {});
   }, []);
   useEffect(load, [load]);
@@ -217,6 +222,35 @@ function PointsInner() {
         カード情報がこのシステムに保存されることはありません。
         お支払いが確認できしだい、自動で残高に反映されます。
       </p>
+
+      {subs.length > 0 && (
+        <>
+          <h2 className="mb-1 text-lg font-semibold">毎月の継続メニュー</h2>
+          <p className="mb-3 text-xs text-slate-500">
+            月が変わると自動で1か月ぶんが発注され、{mascot.pointName}が使われます。停止はいつでもできます。
+          </p>
+          <div className="mb-10 rounded-xl border border-slate-200 bg-white">
+            {subs.map((sub) => (
+              <div key={sub.id} className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-sm last:border-0">
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{sub.base_title}</div>
+                  <div className="text-xs text-slate-400">{sub.category} ・ 毎月{sub.points}<PointInline /> ・ 直近 {sub.last_month}</div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!confirm(`「${sub.base_title}」の自動継続を停止しますか？（今月分までで止まります）`)) return;
+                    await api(`/api/subscriptions?id=${sub.id}`, { method: "DELETE" });
+                    load();
+                  }}
+                  className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-rose-400 hover:text-rose-600"
+                >
+                  停止する
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <h2 className="mb-3 text-lg font-semibold">利用履歴</h2>
       <div className="rounded-xl border border-slate-200 bg-white">
