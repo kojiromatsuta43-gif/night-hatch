@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { Mascot, useMascot } from "./MascotProvider";
 
@@ -56,6 +56,23 @@ function isActive(pathname: string, href: string) {
 export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // デスクトップの折りたたみ。前回の状態を覚えておく
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("sidebar_collapsed") === "1") {
+        // 初回マウント時に保存済みの状態へ戻す（サーバー描画と合わせるため effect で行う）
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCollapsed(true);
+      }
+    } catch { /* プライベートモード等では覚えない */ }
+  }, []);
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      try { localStorage.setItem("sidebar_collapsed", c ? "0" : "1"); } catch { /* 無視 */ }
+      return !c;
+    });
+  };
   const { mascot } = useMascot();
   const groups = groupsFor(role, mascot.pointName);
 
@@ -94,8 +111,23 @@ export default function Sidebar({ role }: { role?: string }) {
 
   return (
     <>
-      {/* デスクトップ */}
-      <aside className="hidden w-60 shrink-0 border-r-[3px] border-hive-900 bg-white px-3 py-5 md:block">{nav}</aside>
+      {/* デスクトップ（折りたたみ可） */}
+      <aside
+        className={`hidden shrink-0 overflow-hidden border-hive-900 bg-white transition-all md:block ${
+          collapsed ? "w-0 border-r-0" : "w-60 border-r-[3px] px-3 py-5"
+        }`}
+      >
+        {!collapsed && nav}
+      </aside>
+      <button
+        onClick={toggleCollapsed}
+        aria-label={collapsed ? "メニューを開く" : "メニューをたたむ"}
+        title={collapsed ? "メニューを開く" : "メニューをたたむ"}
+        className="fixed bottom-4 z-40 hidden h-9 w-9 items-center justify-center border-2 border-hive-900 bg-honey-400 text-base font-black text-hive-900 shadow-sm transition-all hover:bg-honey-300 md:flex"
+        style={{ left: collapsed ? 10 : 204 }}
+      >
+        {collapsed ? "»" : "«"}
+      </button>
 
       {/* モバイル: ハンバーガー（上部バーの左端に置く） */}
       <button
