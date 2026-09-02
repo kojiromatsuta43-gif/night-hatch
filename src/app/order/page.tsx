@@ -158,7 +158,7 @@ function FullOrderTop() {
   return (
     <div className="space-y-8">
       {/* ハッチのひとこと ＋ いちばん人気の入口 */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-5 lg:grid-cols-2">
         <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-6 py-5">
           <span className="flex shrink-0 flex-col items-center">
             <Mascot className="h-14 w-14 animate-bee-float" />
@@ -176,9 +176,9 @@ function FullOrderTop() {
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ブリッジ嬢</span>
           </span>
         </div>
-        <Link href="/order/reference" className="group flex flex-col justify-center gap-1.5 border-[3px] border-hive-900 bg-honey-400 px-5 py-4 transition-colors hover:bg-honey-300">
-          <span className="text-[11px] font-bold tracking-widest text-hive-900">いちばん人気</span>
-          <span className="text-lg font-black leading-snug text-hive-900">「このアカウントみたいに作りたい」から始める</span>
+        <Link href="/order/reference" className="group flex flex-col justify-center gap-2 border-[3px] border-hive-900 bg-honey-400 px-6 py-5 transition-colors hover:bg-honey-300">
+          <span className="text-xs font-bold tracking-widest text-hive-900">いちばん人気</span>
+          <span className="text-xl font-black leading-snug text-hive-900 sm:text-2xl">「このアカウントみたいに作りたい」から始める</span>
           <span className="flex items-center gap-2">
             <span className="flex -space-x-2">
               {strip.map((a) => <Avatar key={a.id} a={a} />)}
@@ -186,8 +186,9 @@ function FullOrderTop() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-hive-900 text-[11px] font-bold text-white">+{rest}</span>
               )}
             </span>
+            <span className="text-xs font-bold text-hive-900/70">業種べつのお手本アカウント</span>
           </span>
-          <span className="mt-1 flex h-10 items-center justify-center bg-hive-900 text-sm font-black text-honey-400">お手本を探す →</span>
+          <span className="mt-1.5 flex h-12 items-center justify-center bg-hive-900 text-base font-black text-honey-400 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
         </Link>
       </div>
 
