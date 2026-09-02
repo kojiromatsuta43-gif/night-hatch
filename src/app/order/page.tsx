@@ -218,19 +218,29 @@ function MenuCardList({ items }: { items: CatalogItem[] }) {
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
 const HEX_W = 144;
 const HEX_H = Math.round(HEX_W * 1.155);
-const PER_ROW = 6;
 const GAP = 4;
 
 function HexHive({ items }: { items: CatalogItem[] }) {
-  const rows = Math.ceil(items.length / PER_ROW);
+  // 画面が広いほど1行に多く並べて、縦のスクロールを減らす
+  const [perRow, setPerRow] = useState(6);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setPerRow(w >= 1560 ? 8 : w >= 1330 ? 7 : 6);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  const rows = Math.ceil(items.length / perRow);
   const height = HEX_H + (rows - 1) * HEX_H * 0.75 + 8;
-  const width = PER_ROW * (HEX_W + GAP) + (rows > 1 ? (HEX_W + GAP) / 2 : 0);
+  const width = perRow * (HEX_W + GAP) + (rows > 1 ? (HEX_W + GAP) / 2 : 0);
   return (
     <div className="overflow-x-auto pb-2">
       <div className="relative" style={{ width, height }}>
         {items.map((it, i) => {
-          const r = Math.floor(i / PER_ROW);
-          const c = i % PER_ROW;
+          const r = Math.floor(i / perRow);
+          const c = i % perRow;
           const x = (r % 2) * ((HEX_W + GAP) / 2) + c * (HEX_W + GAP);
           const y = r * HEX_H * 0.75;
           return <HexTile key={it.name} item={it} style={{ left: x, top: y }} />;
@@ -254,7 +264,7 @@ function FullOrderTop() {
   const groups = catalogGroups();
 
   return (
-    <div className="max-w-[1010px] space-y-4">
+    <div className="space-y-4">
       {/* ハッチのひとこと ＋ いちばん人気の入口 */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-5 py-3.5">
