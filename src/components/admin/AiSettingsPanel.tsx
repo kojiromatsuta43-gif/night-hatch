@@ -12,8 +12,10 @@ type Settings = {
   extraUses: number;
   extraPoints: number;
 };
+type UsageRow = { id: string; name: string; plan: string; role: string; ai_extra: number; chat_today: number; chat_month: number; gen_month: number };
 type Data = {
   settings: Settings;
+  usage: UsageRow[];
   routing: Record<Task, { provider: "anthropic" | "gemini"; model: string } | null>;
   keys: { anthropic: boolean; gemini: boolean };
   taskLabels: Record<Task, { name: string; desc: string }>;
@@ -149,6 +151,39 @@ export default function AiSettingsPanel() {
           </label>
           <span className="pb-1 text-xs text-slate-500">＝ 上限に達したお客様は {draft.extraPoints}🍯 で {draft.extraUses} 回追加できます（ハニーP残高から引きます）</span>
         </div>
+      </section>
+
+      <section>
+        <h2 className="mb-1 text-base font-bold">今月の利用状況（ユーザー別）</h2>
+        <p className="mb-3 text-xs text-slate-500">AIを1回でも使った人だけ表示。上限はプランで自動的に効いています。</p>
+        {data.usage.length === 0 ? (
+          <p className="text-sm text-slate-500">今月はまだ利用がありません。</p>
+        ) : (
+          <table className="w-full max-w-2xl text-sm">
+            <thead>
+              <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+                <th className="px-2 py-2">ユーザー</th>
+                <th className="px-2 py-2">プラン</th>
+                <th className="px-2 py-2 text-right">会話 今日</th>
+                <th className="px-2 py-2 text-right">会話 今月</th>
+                <th className="px-2 py-2 text-right">生成 今月</th>
+                <th className="px-2 py-2 text-right">追加残</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.usage.map((u) => (
+                <tr key={u.id} className="border-b border-slate-200">
+                  <td className="px-2 py-1.5 font-bold">{u.name}{u.role === "admin" && <span className="ml-1 text-xs text-slate-400">(管理)</span>}</td>
+                  <td className="px-2 py-1.5 text-xs">{data.planLabels[u.plan] ?? u.plan}</td>
+                  <td className="px-2 py-1.5 text-right tabular-nums">{u.chat_today}</td>
+                  <td className="px-2 py-1.5 text-right tabular-nums">{u.chat_month}</td>
+                  <td className="px-2 py-1.5 text-right tabular-nums">{u.gen_month}</td>
+                  <td className="px-2 py-1.5 text-right tabular-nums">{u.ai_extra > 0 ? `${u.ai_extra}回` : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <div className="flex items-center gap-3">
