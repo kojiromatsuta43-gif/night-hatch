@@ -12,10 +12,12 @@ const catalog: CatalogItem[] = [
   { name: "LPファーストビュー", points: 30, group: "SNS・Webまわり", size: "訴求・デザイン込み", days: "1週間〜" },
   { name: "軽微な修正", points: 2, group: "SNS・Webまわり", size: "テロップ差し替えなど", days: "1日〜" },
   // ── Web・集客まわり（FOODハッチのメニューを業種を問わない形で展開） ──
-  // 値付けの根拠: P ≒ 世間の相場 ÷ 3 ÷ 1,200円。「相場の約1/3で使える」を崩さないこと。
-  //   HP1p: 相場15万→40P / SEO記事: 1.8万→5P / 掲載文: 2.2万→6P / LINE構築: 7万→20P
-  //   チラシ: 5万→15P / HP保守: 月1.8万→5P/月 / 求人原稿: 1.5万→4P / 採用動画: 3.6万→10P / 求人リライト: 1.5万→4P
-  { name: "HP制作（1ページ）", points: 40, group: "SNS・Webまわり", size: "スマホ対応・問い合わせ導線・地図", days: "2週間〜",
+  // 値付けの根拠: 定価は「世間の相場の約2割引き」（P ≒ 相場 × 0.8 ÷ 1,200円）。
+  // 「実質1/3」は補助金（2/3補助）で実現する話なので、定価そのものは相場に寄せる。
+  //   HP1p: 相場15万→100P / SEO記事: 1.8万→12P / 掲載文: 2.2万→15P / LINE構築: 7万→45P
+  //   チラシ: 5万→35P / HP保守: 月1.8万→12P/月 / 求人原稿: 1.5万→10P / 求人リライト: 1.5万→10P
+  //   例外: 採用向けショート動画は「動画まわり」の特別価格に揃える（プランの月8本・MAX20本の設計を崩さないため）
+  { name: "HP制作（1ページ）", points: 100, group: "SNS・Webまわり", size: "スマホ対応・問い合わせ導線・地図", days: "2週間〜",
     questions: [
       { key: "現状", label: "いまのHP", type: "select", required: true, options: ["ない", "ある（作り直したい）", "ある（このまま改善したい）"] },
       { key: "現HP", label: "いまのHPやSNSのURL", type: "text" },
@@ -25,26 +27,26 @@ const catalog: CatalogItem[] = [
       { key: "素材", label: "ロゴ・写真", type: "file" },
       { key: "ドメイン", label: "ドメイン（URL）", type: "select", required: true, options: ["持っている", "新しく取りたい（取得代行）", "相談したい"] },
     ] },
-  { name: "SEO記事作成", points: 5, group: "SNS・Webまわり", size: "検索されるブログ1本", days: "3日〜",
+  { name: "SEO記事作成", points: 12, group: "SNS・Webまわり", size: "検索されるブログ1本", days: "3日〜",
     questions: [
       { key: "狙う言葉", label: "検索されたい言葉", type: "text", required: true, placeholder: "例: 福岡 外壁塗装 相場" },
       { key: "掲載先", label: "掲載先", type: "select", required: true, options: ["自社HPのブログ", "note", "Googleビジネスプロフィール", "その他"] },
       { key: "ネタ", label: "書いてほしいネタ・自社の強み", type: "textarea", required: true },
     ] },
-  { name: "グルメサイト掲載文リライト", points: 6, group: "SNS・Webまわり", size: "食べログ・ホットペッパー等の掲載文を強く", days: "3日〜",
+  { name: "グルメサイト掲載文リライト", points: 15, group: "SNS・Webまわり", size: "食べログ・ホットペッパー等の掲載文を強く", days: "3日〜",
     questions: [
       { key: "媒体", label: "直したい媒体", type: "multi", required: true, options: ["食べログ", "ぐるなび", "ホットペッパーグルメ", "ホットペッパービューティー", "楽天ビューティ", "Googleマップ", "その他"] },
       { key: "ページURL", label: "掲載ページのURL", type: "textarea", required: true },
       { key: "推し", label: "もっと伝えたい強み", type: "textarea", required: true },
     ] },
-  { name: "LINE公式アカウント構築", points: 20, group: "SNS・Webまわり", size: "リッチメニュー・あいさつ・クーポン設計", days: "1週間〜",
+  { name: "LINE公式アカウント構築", points: 45, group: "SNS・Webまわり", size: "リッチメニュー・あいさつ・クーポン設計", days: "1週間〜",
     questions: [
       { key: "現状", label: "LINE公式アカウント", type: "select", required: true, options: ["まだない（開設から）", "ある（整えたい）"] },
       { key: "やりたいこと", label: "やりたいこと", type: "multi", required: true, options: ["クーポン配信", "予約受付", "サービス案内", "ポイントカード", "友だち追加特典"] },
       { key: "友だち特典", label: "友だち追加の特典", type: "text", placeholder: "例: 初回10%オフ" },
       { key: "素材", label: "ロゴ・写真", type: "file" },
     ] },
-  { name: "チラシ（A4片面）", points: 15, group: "SNS・Webまわり", size: "ポスティング・店頭/展示会配布", days: "5日〜",
+  { name: "チラシ（A4片面）", points: 35, group: "SNS・Webまわり", size: "ポスティング・店頭/展示会配布", days: "5日〜",
     questions: [
       { key: "目的", label: "チラシの目的", type: "select", required: true, options: ["新規オープン・リニューアル", "新サービス・キャンペーン", "イベント集客", "採用", "その他"] },
       { key: "載せる内容", label: "載せたい内容（サービス・価格・特典など）", type: "textarea", required: true },
@@ -53,7 +55,7 @@ const catalog: CatalogItem[] = [
       { key: "参考", label: "参考にしたいチラシ", type: "textarea" },
       { key: "印刷", label: "印刷", type: "select", required: true, options: ["データ納品のみ", "印刷も手配してほしい（実費別）"] },
     ] },
-  { name: "HP保守・更新（月額）", points: 5, group: "SNS・Webまわり", size: "月2回までの更新＋動作チェック", days: "月単位", monthly: true,
+  { name: "HP保守・更新（月額）", points: 12, group: "SNS・Webまわり", size: "月2回までの更新＋動作チェック", days: "月単位", monthly: true,
     questions: [
       { key: "サイトURL", label: "サイトのURL", type: "text", required: true },
       { key: "更新内容", label: "今月の更新内容", type: "textarea", required: true, placeholder: "例: 料金ページの改定、お知らせ2本、写真の差し替え" },
@@ -122,7 +124,7 @@ const catalog: CatalogItem[] = [
     ],
   },
   // ── 採用まわり（営業の隣に並べる） ──
-  { name: "求人原稿作成", points: 4, group: "採用まわり", size: "Indeed・タウンワーク向け1職種", days: "2日〜",
+  { name: "求人原稿作成", points: 10, group: "採用まわり", size: "Indeed・タウンワーク向け1職種", days: "2日〜",
     questions: [
       { key: "職種", label: "募集する職種", type: "text", required: true, placeholder: "例: 営業スタッフ（正社員）" },
       { key: "条件", label: "給与・勤務時間・待遇", type: "textarea", required: true },
@@ -137,7 +139,7 @@ const catalog: CatalogItem[] = [
       { key: "素材ファイル", label: "素材ファイル", type: "file", hint: "スマホで撮った縦動画でOK" },
       { key: "掲載先", label: "使う場所", type: "multi", options: ["TikTok", "Instagram", "Indeed", "自社HP", "説明会"] },
     ] },
-  { name: "求人媒体の掲載文リライト", points: 4, group: "採用まわり", size: "応募が来る書き方に直す", days: "2日〜",
+  { name: "求人媒体の掲載文リライト", points: 10, group: "採用まわり", size: "応募が来る書き方に直す", days: "2日〜",
     questions: [
       { key: "現原稿", label: "いまの求人原稿（貼り付けかURL）", type: "textarea", required: true },
       { key: "応募状況", label: "いまの応募状況", type: "select", required: true, options: ["ほぼ来ない", "来るが定着しない", "ミスマッチが多い"] },
