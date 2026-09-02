@@ -105,7 +105,7 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
       >
         <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
         <span className={`text-[10px] leading-tight ${hot ? "text-hive-900/70" : "text-hive-500"}`}>{item.size}</span>
-        <span className="mt-0.5 text-hive-900 [&_span]:gap-2.5"><PlatformRow category={item.name} className="h-6 w-6" /></span>
+        <span className="mt-0.5 flex h-6 items-center text-hive-900 [&_span]:gap-2.5"><PlatformRow category={item.name} className="h-6 w-6" /></span>
         <span className={`text-xl font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
           {item.points}
           {item.quantity ? "〜" : ""}

@@ -2,7 +2,7 @@
  * 制作物がどの媒体向けかをひと目で示す小さなアイコン（TikTok / YouTube / Instagram / LINE / Google）。
  * それぞれの媒体の色（YouTube=赤、Instagram=グラデ、LINE=緑…）で、巣のタイルやメニュー一覧に並べる。
  */
-export type Platform = "tiktok" | "youtube" | "instagram" | "line" | "google" | "web" | "phone";
+export type Platform = "tiktok" | "youtube" | "instagram" | "line" | "google" | "web" | "phone" | "flyer" | "recruit" | "fix";
 
 const LABEL: Record<Platform, string> = {
   tiktok: "TikTok",
@@ -12,6 +12,9 @@ const LABEL: Record<Platform, string> = {
   google: "Google",
   web: "Web",
   phone: "電話",
+  flyer: "チラシ・印刷物",
+  recruit: "採用",
+  fix: "修正",
 };
 
 export function PlatformIcon({ p, className = "h-4 w-4" }: { p: Platform; className?: string }) {
@@ -72,6 +75,31 @@ export function PlatformIcon({ p, className = "h-4 w-4" }: { p: Platform; classN
           <path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" />
         </svg>
       );
+    case "flyer":
+      // 折り目のついたチラシ＋オレンジの拡声ライン
+      return (
+        <svg {...common} fill="none">
+          <path d="M6 3h9l4 4v14H6z" fill="#fff" stroke="#F97316" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M15 3v4h4" stroke="#F97316" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M9 11h7M9 14.5h7M9 18h4.5" stroke="#F97316" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case "fix":
+      // レンチ（軽微な修正）
+      return (
+        <svg {...common} fill="none" stroke="#64748B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.5 6.5a4 4 0 0 0-5.6 4.9L3 17.3a2 2 0 1 0 2.8 2.8l5.9-5.9a4 4 0 0 0 4.9-5.6L13.8 11 12 9.2z" />
+        </svg>
+      );
+    case "recruit":
+      // 人物＋プラス（採用）
+      return (
+        <svg {...common} fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="10" cy="8" r="4" />
+          <path d="M3.5 21a6.5 6.5 0 0 1 13 0" />
+          <path d="M18.5 8.5v5M16 11h5" />
+        </svg>
+      );
   }
 }
 
@@ -86,6 +114,9 @@ export function platformsFor(category: string): Platform[] {
   if (/MEO|Googleマップ|口コミ/.test(c)) return ["google"];
   if (/HP|LP|ホームページ|SEO|グルメサイト|デリバリー/.test(c)) return ["web"];
   if (/テレアポ|架電/.test(c)) return ["phone"];
+  if (/チラシ|パンフ|ポスター/.test(c)) return ["flyer"];
+  if (/求人|採用|リクルート/.test(c)) return ["recruit"];
+  if (/修正/.test(c)) return ["fix"];
   return [];
 }
 
