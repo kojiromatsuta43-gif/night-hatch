@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/server/db";
+import { STATUSES } from "@/lib/data";
 import { requireUser } from "@/lib/server/auth";
 import { projectCallStats } from "@/lib/server/sales";
 import { notifyStatusChange } from "@/lib/server/notifications";
@@ -77,6 +78,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!canView(project, user)) return NextResponse.json({ error: "権限がありません" }, { status: 403 });
 
   if (typeof body.status === "string" && body.status !== project.status) {
+    // 管理者以外は状態を前にしか進められない（間違って戻して混乱しないように）
+    if (user.role !== "admin") {
+      const from = STATUSES.indexOf(project.status as (typeof STATUSES)[number]);
+      const to = STATUSES.indexOf(body.status as (typeof STATUSES)[number]);
+      if (to < 0 || to <= from) {
+        return NextResponse.json({ error: "状態は前にしか進められません（戻すときは管理者にご連絡ください）" }, { status: 400 });
+      }
+    }
     db.prepare("UPDATE projects SET status = ? WHERE id = ?").run(body.status, id);
     notifyStatusChange(project.user_id, { id, title: project.title }, body.status);
     // 担当者にも同じ知らせを出す

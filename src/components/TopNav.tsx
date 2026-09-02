@@ -31,9 +31,7 @@ export default function TopNav({ role, name, points, plan }: { role?: string; na
           <span className="text-base font-black tracking-wide">{BRAND.name}</span>
         </Link>
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
-          <span className="text-white [&_button]:text-white/80 [&_button:hover]:bg-white/10 [&_button:hover]:text-white">
-            <NotificationBell />
-          </span>
+          <NotificationBell />
           {showPoints && (
             <Link href="/points" title={`${mascot.pointName}の残高（クリックで詳細）`} className="flex items-center gap-2">
               <HoneyJar points={points} capacity={capacity} />

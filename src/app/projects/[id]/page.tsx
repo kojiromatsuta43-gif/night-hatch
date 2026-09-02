@@ -307,17 +307,34 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       {/* 進行の操作（発注者・管理者）と担当 */}
       <div className="mt-3 flex flex-wrap items-center gap-2 border-2 border-hive-900 bg-white px-4 py-3">
         <span className="mr-1 text-sm font-black text-hive-900">状態</span>
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => patch({ status: s })}
-            className={`border-2 px-3 py-1 text-sm font-bold transition-colors ${
-              p.status === s ? "border-hive-900 bg-honey-400 text-hive-900" : "border-hive-200 bg-white text-hive-500 hover:border-hive-900 hover:text-hive-900"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
+        {STATUSES.map((s) => {
+          const currentIdx = STATUSES.indexOf(p.status as (typeof STATUSES)[number]);
+          const idx = STATUSES.indexOf(s);
+          const isAdmin = me?.role === "admin";
+          // 管理者以外は前にしか進められない
+          const locked = !isAdmin && idx <= currentIdx && p.status !== s;
+          return (
+            <button
+              key={s}
+              disabled={locked}
+              onClick={() => {
+                if (p.status === s) return;
+                if (!isAdmin && !confirm(`「${s}」に進めます。ステータスは戻せませんが、よろしいですか？`)) return;
+                patch({ status: s });
+              }}
+              title={locked ? "状態は前にしか進められません" : undefined}
+              className={`border-2 px-3 py-1 text-sm font-bold transition-colors ${
+                p.status === s
+                  ? "border-hive-900 bg-honey-400 text-hive-900"
+                  : locked
+                    ? "cursor-not-allowed border-hive-200 bg-white text-hive-200"
+                    : "border-hive-200 bg-white text-hive-500 hover:border-hive-900 hover:text-hive-900"
+              }`}
+            >
+              {s}
+            </button>
+          );
+        })}
         {canEdit && (
           <label className="ml-2 flex items-center gap-2 text-sm">
             <span className="font-bold text-hive-900">担当</span>

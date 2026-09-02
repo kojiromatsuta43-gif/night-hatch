@@ -69,9 +69,26 @@ export default function VideoAnalysisPage() {
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
         />
         <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">
-          {busy ? "分析中..." : "分析する"}
+          {busy ? (
+            <span className="flex items-center gap-2">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+              分析中...
+            </span>
+          ) : "分析する"}
         </button>
       </div>
+      {busy && (
+        <div className="mt-6 flex items-center gap-3 rounded-xl border-2 border-dashed border-honey-400 bg-honey-50 px-5 py-4 text-sm text-hive-900">
+          <svg className="h-6 w-6 shrink-0 animate-spin text-honey-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+            <path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+          ハッチが動画を見ています… 30秒ほどかかることがあります。そのままお待ちください。
+        </div>
+      )}
       {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
       {result && (

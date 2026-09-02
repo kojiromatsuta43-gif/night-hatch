@@ -18,8 +18,8 @@ function groupsFor(role: string | undefined, pointName: string): Group[] {
   if (role === "freelancer") {
     return [
       { heading: "さがす", items: [{ href: "/jobs", label: "お仕事をさがす" }] },
-      { heading: "すすめる", items: [{ href: "/projects", label: "担当案件" }, { href: "/sales", label: "営業リスト" }, { href: "/chat", label: "チャット" }, { href: "/video-analysis", label: "動画分析" }] },
-      { heading: "みる", items: [{ href: "/", label: "ダッシュボード" }, { href: "/guide", label: "デモの歩き方" }] },
+      { heading: "すすめる", items: [{ href: "/projects", label: "担当案件" }, { href: "/sales", label: "営業リスト" }, { href: "/chat", label: "チャット" }] },
+      { heading: "みる", items: [{ href: "/", label: "ダッシュボード" }] },
     ];
   }
   const see: Item[] = [
