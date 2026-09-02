@@ -16,7 +16,6 @@ const catalog: CatalogItem[] = [
   // 「実質1/3」は補助金（2/3補助）で実現する話なので、定価そのものは相場に寄せる。
   //   HP1p: 相場15万→100P / SEO記事: 1.8万→12P / 掲載文: 2.2万→15P / LINE構築: 7万→45P
   //   チラシ: 5万→35P / HP保守: 月1.8万→12P/月 / 求人原稿: 1.5万→10P / 求人リライト: 1.5万→10P
-  //   例外: 採用向けショート動画は「動画まわり」の特別価格に揃える（プランの月8本・MAX20本の設計を崩さないため）
   { name: "HP制作（1ページ）", points: 100, group: "SNS・Webまわり", size: "スマホ対応・問い合わせ導線・地図", days: "2週間〜",
     questions: [
       { key: "現状", label: "いまのHP", type: "select", required: true, options: ["ない", "ある（作り直したい）", "ある（このまま改善したい）"] },
@@ -130,14 +129,6 @@ const catalog: CatalogItem[] = [
       { key: "条件", label: "給与・勤務時間・待遇", type: "textarea", required: true },
       { key: "職場の良さ", label: "職場の良さ（本音でOK）", type: "textarea", required: true },
       { key: "掲載先", label: "掲載先", type: "multi", options: ["Indeed", "タウンワーク", "バイトル", "自社HP・SNS", "ハローワーク"] },
-    ] },
-  { name: "採用向けショート動画", points: 10, group: "採用まわり", size: "働く様子・先輩の声を30秒に", days: "3日〜",
-    questions: [
-      { key: "職種", label: "募集する職種", type: "text", required: true },
-      { key: "見せたいこと", label: "見せたいこと", type: "multi", required: true, options: ["職場の雰囲気", "先輩スタッフの声", "1日の流れ", "社長・店主の人柄", "仕事のやりがい"] },
-      { key: "素材", label: "素材動画（URL）", type: "text" },
-      { key: "素材ファイル", label: "素材ファイル", type: "file", hint: "スマホで撮った縦動画でOK" },
-      { key: "掲載先", label: "使う場所", type: "multi", options: ["TikTok", "Instagram", "Indeed", "自社HP", "説明会"] },
     ] },
   { name: "求人媒体の掲載文リライト", points: 10, group: "採用まわり", size: "応募が来る書き方に直す", days: "2日〜",
     questions: [

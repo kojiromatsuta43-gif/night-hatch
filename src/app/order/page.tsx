@@ -119,15 +119,18 @@ function HexTile({ item, style }: { item: CatalogItem; style?: React.CSSProperti
 
 /**
  * 巣の並び順。TikTok・動画まわりを先頭の行に、以降は似たもの同士でまとめる。
- * 1行目: 動画（採用向けショートも動画つながりでここ）
+ * 1行目: 動画（メインサービスの2つは上の大セルに出すので巣には出さない）
  * 2行目: SNS・発信系　3行目: Web・紙・求人原稿　4行目: 営業の3ステップ
  */
+/** メインサービス。巣ではなく、上の大きなセルで見せる */
+const FEATURED = ["ショート動画編集", "台本作成（ショート）"];
+
 const HIVE_ORDER = [
-  "ショート動画編集", "台本作成（ショート）", "動画編集（3分）", "台本作成（長尺）", "サムネイル作成",
+  "動画編集（3分）", "台本作成（長尺）", "サムネイル作成",
   "カルーセル投稿", "投稿文＋画像", "LINE公式アカウント構築", "SEO記事作成", "グルメサイト掲載文リライト", "軽微な修正",
   "HP制作（1ページ）", "HP保守・更新（月額）", "LPファーストビュー", "チラシ（A4片面）",
   "テレアポ台本作成", "営業リスト作成", "テレアポ架電",
-  "求人原稿作成", "採用向けショート動画", "求人媒体の掲載文リライト",
+  "求人原稿作成", "求人媒体の掲載文リライト",
 ];
 
 /**
@@ -156,7 +159,32 @@ function sortForHive(items: CatalogItem[]): CatalogItem[] {
     const i = HIVE_ORDER.indexOf(n);
     return i === -1 ? 999 : i; // 新メニューを足し忘れても最後に出る
   };
-  return [...items].sort((a, b) => rank(a.name) - rank(b.name));
+  return items.filter((it) => !FEATURED.includes(it.name)).sort((a, b) => rank(a.name) - rank(b.name));
+}
+
+/** メインサービスの大きなセル */
+function FeaturedHex({ item }: { item: CatalogItem }) {
+  const W = 250;
+  const H = Math.round(W * 1.155);
+  return (
+    <Link
+      href={`/order/create?category=${encodeURIComponent(item.name)}`}
+      title={`${item.size}／目安 ${item.days}`}
+      className="hex-p group relative block bg-hive-900 transition-transform hover:-translate-y-1"
+      style={{ width: W, height: H }}
+    >
+      <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-2 bg-honey-400 px-6 text-center group-hover:bg-honey-300">
+        <span className="text-[11px] font-black tracking-widest text-hive-900/60">メインサービス</span>
+        <span className="text-lg font-black leading-tight text-hive-900">{item.name}</span>
+        <span className="text-[11px] leading-tight text-hive-900/70">{item.size}</span>
+        <span className="flex h-8 items-center text-hive-900 [&_span]:gap-3"><PlatformRow category={item.name} className="h-8 w-8" /></span>
+        <span className="text-3xl font-black leading-none text-hive-900">
+          {item.points}
+          <span className="ml-1 text-2xl">🍯</span>
+        </span>
+      </span>
+    </Link>
+  );
 }
 
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
@@ -233,6 +261,19 @@ function FullOrderTop() {
           <span className="mt-1.5 flex h-12 items-center justify-center bg-hive-900 text-base font-black text-honey-400 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
         </Link>
       </div>
+
+      {/* メインサービス: ショート動画編集と台本作成 */}
+      <section>
+        <div className="mb-3 flex flex-wrap items-baseline gap-3">
+          <h2 className="text-xl font-black text-hive-900">メインサービス</h2>
+          <span className="text-xs text-hive-500">TikTok・リール・ショートの台本と編集。セットで1本20🍯</span>
+        </div>
+        <div className="flex flex-wrap gap-5">
+          {groups.flatMap((g) => g.items).filter((it) => FEATURED.includes(it.name)).map((it) => (
+            <FeaturedHex key={it.name} item={it} />
+          ))}
+        </div>
+      </section>
 
       {/* 巣：メニュー */}
       <section>
