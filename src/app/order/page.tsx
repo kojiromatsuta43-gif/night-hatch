@@ -187,6 +187,34 @@ function FeaturedHex({ item }: { item: CatalogItem }) {
   );
 }
 
+/** スマホ用: 六角形の巣は横に長すぎるので、2列のカードで見せる（色とアイコンは巣と同じ） */
+function MenuCardList({ items }: { items: CatalogItem[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      {items.map((item) => {
+        const tone = toneFor(item);
+        return (
+          <Link
+            key={item.name}
+            href={`/order/create?category=${encodeURIComponent(item.name)}`}
+            className={`flex flex-col gap-1 border-2 border-hive-900 px-3 py-3 ${tone.bg.split(" ")[0]}`}
+          >
+            <span className="flex h-5 items-center text-hive-900 [&_span]:gap-1.5"><PlatformRow category={item.name} className="h-5 w-5" /></span>
+            <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
+            <span className={`text-[10px] leading-tight ${tone.sub}`}>{item.size}</span>
+            <span className={`mt-auto pt-1 text-lg font-black leading-none ${tone.pt}`}>
+              {item.points}
+              {item.quantity ? "〜" : ""}
+              <span className="ml-0.5 text-base">🍯</span>
+              {item.monthly && <span className="text-[10px] font-bold">/月</span>}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 // 六角形の巣（頂点が上）。横に6枚を隙間なく並べ、次の列は半枚ずらして 3/4 の高さに重ねる
 const HEX_W = 176;
 const HEX_H = Math.round(HEX_W * 1.155);
@@ -268,7 +296,7 @@ function FullOrderTop() {
           <h2 className="text-xl font-black text-hive-900">メインサービス</h2>
           <span className="text-xs text-hive-500">TikTok・リール・ショートの台本と編集。セットで1本20🍯</span>
         </div>
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap justify-center gap-5 sm:justify-start">
           {groups.flatMap((g) => g.items).filter((it) => FEATURED.includes(it.name)).map((it) => (
             <FeaturedHex key={it.name} item={it} />
           ))}
@@ -281,7 +309,12 @@ function FullOrderTop() {
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
           <span className="text-xs text-hive-500">はちみつ色=動画（TikTokメイン）・空色=HP/LP・若草=営業・藤色=採用。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
         </div>
-        <HexHive items={sortForHive(groups.flatMap((g) => g.items))} />
+        <div className="hidden md:block">
+          <HexHive items={sortForHive(groups.flatMap((g) => g.items))} />
+        </div>
+        <div className="md:hidden">
+          <MenuCardList items={sortForHive(groups.flatMap((g) => g.items))} />
+        </div>
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
           {groups.map((g) => {
             const info = BRAND.groups.find((x) => x.name === g.heading);
