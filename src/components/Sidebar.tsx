@@ -123,7 +123,7 @@ export default function Sidebar({ role }: { role?: string }) {
         onClick={toggleCollapsed}
         aria-label={collapsed ? "メニューを開く" : "メニューをたたむ"}
         title={collapsed ? "メニューを開く" : "メニューをたたむ"}
-        className="fixed bottom-4 z-40 hidden h-9 w-9 items-center justify-center border-2 border-hive-900 bg-honey-400 text-base font-black text-hive-900 shadow-sm transition-all hover:bg-honey-300 md:flex"
+        className="fixed top-14 z-40 hidden h-9 w-9 items-center justify-center border-2 border-hive-900 bg-honey-400 text-base font-black text-hive-900 shadow-sm transition-all hover:bg-honey-300 md:flex"
         style={{ left: collapsed ? 10 : 204 }}
       >
         {collapsed ? "»" : "«"}
