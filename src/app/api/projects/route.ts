@@ -9,13 +9,29 @@ import { pointsFor, catalogItem } from "@/lib/brand";
 export async function GET() {
   const user = await requireUser();
   const db = getDb();
-  const rows =
+  const rows = (
     user.role === "admin"
       ? db.prepare("SELECT * FROM projects ORDER BY created_at DESC").all()
       : user.role === "freelancer"
         ? // フリーランスは自分が担当する案件だけ見える
           db.prepare("SELECT * FROM projects WHERE assignee_id = ? ORDER BY created_at DESC").all(user.id)
-        : db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").all(user.id);
+        : db.prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC").all(user.id)
+  ) as Record<string, unknown>[];
+  // バッジ用: 修正依頼になっている提出・検収待ちの提出の数
+  const counts = db
+    .prepare(
+      `SELECT project_id,
+              SUM(CASE WHEN status = '修正依頼' THEN 1 ELSE 0 END) AS revise_count,
+              SUM(CASE WHEN status = '' OR status = '確認待ち' THEN 1 ELSE 0 END) AS await_count
+         FROM deliverables WHERE kind = '提出' GROUP BY project_id`
+    )
+    .all() as { project_id: string; revise_count: number; await_count: number }[];
+  const byId = new Map(counts.map((c) => [c.project_id, c]));
+  for (const r of rows) {
+    const c = byId.get(String(r.id));
+    r.revise_count = c?.revise_count ?? 0;
+    r.await_count = c?.await_count ?? 0;
+  }
   return NextResponse.json(rows);
 }
 

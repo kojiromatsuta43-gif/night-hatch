@@ -6,15 +6,26 @@ import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { Project } from "@/lib/data";
 import { PointInline, useMascot } from "@/components/MascotProvider";
+import AdminDashboard from "@/components/AdminDashboard";
+
+type FStats = { month: string; submissions: number; accepted: number; revising: number };
 
 export default function Dashboard() {
   const { mascot } = useMascot();
   const { me } = useMe();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [fstats, setFstats] = useState<FStats | null>(null);
 
+  const isAdmin = me?.role === "admin";
   useEffect(() => {
+    if (isAdmin) return;
     api<Project[]>("/api/projects").then(setProjects).catch(() => {});
-  }, []);
+  }, [isAdmin]);
+  useEffect(() => {
+    if (me?.role === "freelancer") api<FStats>("/api/freelancer/stats").then(setFstats).catch(() => {});
+  }, [me?.role]);
+
+  if (isAdmin) return <AdminDashboard />;
 
   const done = projects.filter((p) => p.status === "完了");
   const active = projects.filter((p) => p.status !== "完了" && p.status !== "未公開");
@@ -22,7 +33,6 @@ export default function Dashboard() {
   const isFreelancer = me?.role === "freelancer";
   // 制作側は「作業中」「提出済み」が知りたい。発注側は「募集中」が知りたい
   const inProgress = projects.filter((p) => p.status === "制作待ち");
-  const submitted = projects.filter((p) => p.status === "フィードバック");
   const spotlight = isFreelancer ? inProgress : open;
 
   return (
@@ -32,8 +42,8 @@ export default function Dashboard() {
         {(isFreelancer
           ? [
               { label: "作業中", value: `${inProgress.length}件` },
-              { label: "提出済み・確認待ち", value: `${submitted.length}件` },
-              { label: "完了した仕事", value: `${done.length}件` },
+              { label: "修正依頼あり", value: <span className={fstats && fstats.revising > 0 ? "text-rose-600" : undefined}>{fstats?.revising ?? 0}件</span> },
+              { label: "今月の提出 / 検収OK", value: `${fstats?.submissions ?? 0} / ${fstats?.accepted ?? 0}本` },
             ]
           : [
               { label: "完了", value: `${done.length}件` },

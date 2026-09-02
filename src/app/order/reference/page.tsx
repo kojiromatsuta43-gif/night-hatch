@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useMe } from "@/components/AppShell";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/client";
@@ -66,6 +67,8 @@ function fmtFollowers(n: number) {
 }
 
 export default function OrderPage() {
+  const { me } = useMe();
+  const canOrder = me?.role !== "freelancer";
   const router = useRouter();
   const [accounts, setAccounts] = useState<RefAccount[]>([]);
   const [industry, setIndustry] = useState("すべて");
@@ -499,17 +502,21 @@ export default function OrderPage() {
                 <a href={video.url} target="_blank" rel="noreferrer" className="ml-1 font-medium text-honey-600 hover:underline">TikTokで開く →</a>
               ) : "（デモ動画）"}
             </p>
-            <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <button onClick={() => order(DEFAULT_SCRIPT_CATEGORY)} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
-                台本作成で発注
-                <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_SCRIPT_CATEGORY]}<PointInline /></span>
-              </button>
-              <button onClick={() => order(DEFAULT_VIDEO_CATEGORY)} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
-                動画編集で発注
-                <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}<PointInline /></span>
-              </button>
-            </div>
+            {canOrder && (
+              <>
+                <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <button onClick={() => order(DEFAULT_SCRIPT_CATEGORY)} className="rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
+                    台本作成で発注
+                    <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_SCRIPT_CATEGORY]}<PointInline /></span>
+                  </button>
+                  <button onClick={() => order(DEFAULT_VIDEO_CATEGORY)} className="rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500">
+                    動画編集で発注
+                    <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}<PointInline /></span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

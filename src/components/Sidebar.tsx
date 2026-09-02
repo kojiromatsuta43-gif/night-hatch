@@ -10,16 +10,23 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { Mascot, useMascot } from "./MascotProvider";
+import { useMe } from "./AppShell";
 
 type Item = { href: string; label: string };
 type Group = { heading: string; items: Item[] };
 
-function groupsFor(role: string | undefined, pointName: string): Group[] {
+// デモ運用が終わったら Railway に NEXT_PUBLIC_SHOW_GUIDE=off を入れると「デモの歩き方」が消える
+const SHOW_GUIDE = process.env.NEXT_PUBLIC_SHOW_GUIDE !== "off";
+
+function groupsFor(role: string | undefined, pointName: string, hasSales: boolean): Group[] {
   if (role === "freelancer") {
+    const go: Item[] = [{ href: "/projects", label: "担当案件" }];
+    if (hasSales) go.push({ href: "/sales", label: "営業リスト" });
+    go.push({ href: "/chat", label: "チャット" });
     return [
       { heading: "さがす", items: [{ href: "/jobs", label: "お仕事をさがす" }] },
-      { heading: "すすめる", items: [{ href: "/projects", label: "担当案件" }, { href: "/sales", label: "営業リスト" }, { href: "/chat", label: "チャット" }] },
-      { heading: "みる", items: [{ href: "/", label: "ダッシュボード" }] },
+      { heading: "すすめる", items: go },
+      { heading: "みる", items: [{ href: "/", label: "ダッシュボード" }, { href: "/order/reference", label: "お手本ライブラリ" }] },
     ];
   }
   const see: Item[] = [
@@ -27,9 +34,12 @@ function groupsFor(role: string | undefined, pointName: string): Group[] {
     { href: "/reports", label: "月次レポート" },
     { href: "/issue", label: "発注書・請求書" },
     { href: "/points", label: pointName },
-    { href: "/guide", label: "デモの歩き方" },
   ];
+  if (SHOW_GUIDE) see.push({ href: "/guide", label: "デモの歩き方" });
   if (role === "admin") see.push({ href: "/admin", label: "管理" });
+  const go: Item[] = [{ href: "/projects", label: "案件一覧" }];
+  if (hasSales) go.push({ href: "/sales", label: "営業リスト" });
+  go.push({ href: "/chat", label: "チャット" });
   return [
     {
       heading: "つくる",
@@ -42,7 +52,7 @@ function groupsFor(role: string | undefined, pointName: string): Group[] {
         { href: "/video-analysis", label: "動画分析" },
       ],
     },
-    { heading: "すすめる", items: [{ href: "/projects", label: "案件一覧" }, { href: "/sales", label: "営業リスト" }, { href: "/chat", label: "チャット" }] },
+    { heading: "すすめる", items: go },
     { heading: "みる", items: see },
   ];
 }
@@ -74,7 +84,8 @@ export default function Sidebar({ role }: { role?: string }) {
     });
   };
   const { mascot } = useMascot();
-  const groups = groupsFor(role, mascot.pointName);
+  const { me } = useMe();
+  const groups = groupsFor(role, mascot.pointName, Boolean(me?.hasSales));
 
   // 画面遷移したらモバイルのメニューを閉じる（遷移前のパスを覚えておいて比べる）
   const [seenPath, setSeenPath] = useState(pathname);

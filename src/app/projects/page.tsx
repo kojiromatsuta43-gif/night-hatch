@@ -34,16 +34,21 @@ const md = (iso: string) => iso.slice(5).replace("-", "/");
 export default function ProjectsPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<(Project & { revise_count?: number; await_count?: number })[]>([]);
   const [view, setView] = useState<"list" | "board">("board");
   const isFreelancer = me?.role === "freelancer";
 
   const load = useCallback(() => {
-    api<Project[]>("/api/projects").then(setProjects).catch(() => {});
+    api<(Project & { revise_count?: number; await_count?: number })[]>("/api/projects").then(setProjects).catch(() => {});
   }, []);
   useEffect(load, [load]);
 
-  const move = async (id: string, status: Status) => {
+  const isAdmin = me?.role === "admin";
+  const move = async (id: string, status: Status, current: Status) => {
+    if (!isAdmin) {
+      if (STATUSES.indexOf(status) <= STATUSES.indexOf(current)) return;
+      if (!confirm(`「${status}」に進めます。ステータスは戻せませんが、よろしいですか？`)) return;
+    }
     await api(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
     load();
   };
@@ -131,7 +136,15 @@ export default function ProjectsPage() {
                 >
                   <HoneyCells status={p.status} size={26} />
                   <span className="min-w-0">
-                    <span className={`block truncate text-[15px] font-bold ${done ? "text-hive-500" : "text-hive-900"}`}>{p.title}</span>
+                    <span className={`block truncate text-[15px] font-bold ${done ? "text-hive-500" : "text-hive-900"}`}>
+                      {p.title}
+                      {isFreelancer && (p.revise_count ?? 0) > 0 && (
+                        <span className="ml-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-600">修正依頼 {p.revise_count}件</span>
+                      )}
+                      {!isFreelancer && (p.await_count ?? 0) > 0 && (
+                        <span className="ml-2 rounded-full bg-honey-400 px-2 py-0.5 text-[10px] font-bold text-hive-900">検収待ち {p.await_count}件</span>
+                      )}
+                    </span>
                     <span className="block text-xs text-hive-500">
                       {p.category} ・ {p.points}<PointInline />
                     </span>
@@ -169,6 +182,12 @@ export default function ProjectsPage() {
                       <Link href={`/projects/${p.id}`} className="block">
                         <HoneyCells status={p.status} size={18} className="mb-2" />
                         <div className="text-sm font-bold leading-snug text-hive-900 hover:text-honey-700">{p.title}</div>
+                        {isFreelancer && (p.revise_count ?? 0) > 0 && (
+                          <span className="mt-1 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-600">修正依頼 {p.revise_count}件</span>
+                        )}
+                        {!isFreelancer && (p.await_count ?? 0) > 0 && (
+                          <span className="mt-1 inline-block rounded-full bg-honey-400 px-2 py-0.5 text-[10px] font-bold text-hive-900">検収待ち {p.await_count}件</span>
+                        )}
                         <div className="mt-1 text-xs text-hive-500">{p.category}</div>
                         <div className="mt-2 flex items-center justify-between text-xs text-hive-500">
                           <span>{p.points}<PointInline /></span>
@@ -177,10 +196,12 @@ export default function ProjectsPage() {
                       </Link>
                       <select
                         value={p.status}
-                        onChange={(e) => move(p.id, e.target.value as Status)}
+                        onChange={(e) => move(p.id, e.target.value as Status, p.status)}
                         className="mt-2 w-full border border-hive-200 px-1 py-0.5 text-xs text-hive-500"
                       >
-                        {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                        {STATUSES.map((s) => (
+                          <option key={s} disabled={!isAdmin && STATUSES.indexOf(s) < STATUSES.indexOf(p.status)}>{s}</option>
+                        ))}
                       </select>
                     </div>
                   ))}
