@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
-import { isScriptCategory, isVideoCategory } from "@/lib/data";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
 import { retryImage, iconUrl } from "@/lib/client-img";
 
@@ -90,7 +89,8 @@ export default function OrderTopPage() {
 }
 
 /** 六角形のタイル1枚。動画まわりは黄、それ以外は白。黒3pxの縁は、外側の黒い六角形の上に少し小さい六角形を重ねて作る */
-function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?: React.CSSProperties }) {
+function HexTile({ item, style }: { item: CatalogItem; style?: React.CSSProperties }) {
+  const tone = toneFor(item);
   return (
     <Link
       href={`/order/create?category=${encodeURIComponent(item.name)}`}
@@ -100,13 +100,13 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
     >
       <span
         className={`hex-p absolute inset-[3px] flex flex-col items-center justify-center gap-1.5 px-4 text-center ${
-          hot ? "bg-honey-400 group-hover:bg-honey-300" : "bg-white group-hover:bg-honey-50"
+          tone.bg
         }`}
       >
         <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
-        <span className={`text-[10px] leading-tight ${hot ? "text-hive-900/70" : "text-hive-500"}`}>{item.size}</span>
+        <span className={`text-[10px] leading-tight ${tone.sub}`}>{item.size}</span>
         <span className="mt-0.5 flex h-6 items-center text-hive-900 [&_span]:gap-2.5"><PlatformRow category={item.name} className="h-6 w-6" /></span>
-        <span className={`text-xl font-black leading-none ${hot ? "text-hive-900" : "text-honey-700"}`}>
+        <span className={`text-xl font-black leading-none ${tone.pt}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
           <span className="ml-1 text-lg">🍯</span>
@@ -123,11 +123,34 @@ function HexTile({ item, hot, style }: { item: CatalogItem; hot: boolean; style?
  * 2行目: SNS・発信系　3行目: Web・紙・求人原稿　4行目: 営業の3ステップ
  */
 const HIVE_ORDER = [
-  "ショート動画編集", "台本作成（ショート）", "動画編集（3分）", "台本作成（長尺）", "サムネイル作成", "採用向けショート動画",
+  "ショート動画編集", "台本作成（ショート）", "動画編集（3分）", "台本作成（長尺）", "サムネイル作成",
   "カルーセル投稿", "投稿文＋画像", "LINE公式アカウント構築", "SEO記事作成", "グルメサイト掲載文リライト", "軽微な修正",
-  "HP制作（1ページ）", "HP保守・更新（月額）", "LPファーストビュー", "チラシ（A4片面）", "求人原稿作成", "求人媒体の掲載文リライト",
+  "HP制作（1ページ）", "HP保守・更新（月額）", "LPファーストビュー", "チラシ（A4片面）",
   "テレアポ台本作成", "営業リスト作成", "テレアポ架電",
+  "求人原稿作成", "採用向けショート動画", "求人媒体の掲載文リライト",
 ];
+
+/**
+ * タイルの背景色。かたまりごとに色を変えて、巣を見ただけで種類が分かるように。
+ *   動画（TikTokメイン）= はちみつ色 / SNS発信 = 白 / HP・LP・紙 = 空色 / 営業 = 若草 / 採用 = 藤色
+ */
+const TONE_WEB = ["HP制作（1ページ）", "HP保守・更新（月額）", "LPファーストビュー", "チラシ（A4片面）"];
+type Tone = { bg: string; sub: string; pt: string };
+function toneFor(item: CatalogItem): Tone {
+  if (item.group === "動画まわり") {
+    return { bg: "bg-honey-400 group-hover:bg-honey-300", sub: "text-hive-900/70", pt: "text-hive-900" };
+  }
+  if (item.group === "採用まわり") {
+    return { bg: "bg-indigo-100 group-hover:bg-indigo-50", sub: "text-hive-500", pt: "text-indigo-700" };
+  }
+  if (item.group === "営業まわり") {
+    return { bg: "bg-emerald-100 group-hover:bg-emerald-50", sub: "text-hive-500", pt: "text-emerald-700" };
+  }
+  if (TONE_WEB.includes(item.name)) {
+    return { bg: "bg-sky-100 group-hover:bg-sky-50", sub: "text-hive-500", pt: "text-sky-700" };
+  }
+  return { bg: "bg-white group-hover:bg-honey-50", sub: "text-hive-500", pt: "text-honey-700" };
+}
 function sortForHive(items: CatalogItem[]): CatalogItem[] {
   const rank = (n: string) => {
     const i = HIVE_ORDER.indexOf(n);
@@ -154,7 +177,7 @@ function HexHive({ items }: { items: CatalogItem[] }) {
           const c = i % PER_ROW;
           const x = (r % 2) * ((HEX_W + GAP) / 2) + c * (HEX_W + GAP);
           const y = r * HEX_H * 0.75;
-          return <HexTile key={it.name} item={it} hot={isVideoCategory(it.name) || isScriptCategory(it.name)} style={{ left: x, top: y }} />;
+          return <HexTile key={it.name} item={it} style={{ left: x, top: y }} />;
         })}
       </div>
     </div>
@@ -215,7 +238,7 @@ function FullOrderTop() {
       <section>
         <div className="mb-3 flex flex-wrap items-baseline gap-3">
           <h2 className="text-xl font-black text-hive-900">巣から選ぶ</h2>
-          <span className="text-xs text-hive-500">黄色のセルは動画まわり。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
+          <span className="text-xs text-hive-500">はちみつ色=動画（TikTokメイン）・空色=HP/LP・若草=営業・藤色=採用。押すと発注に進みます。定価 1🍯＝1,200円（税別）</span>
         </div>
         <HexHive items={sortForHive(groups.flatMap((g) => g.items))} />
         <div className="mt-1 flex flex-wrap gap-4 text-xs text-hive-500">
