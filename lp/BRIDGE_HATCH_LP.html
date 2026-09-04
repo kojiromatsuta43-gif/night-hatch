@@ -222,6 +222,14 @@ section.cream .chart-panel{background:#fff;}
 .plan .desc{font-size:13px;color:var(--sub);line-height:1.8;}
 .plan.hot .desc{color:var(--grayk);}
 
+/* 実質金額バンド */
+.jitsu{background:var(--honey);color:var(--ink);padding:12px 16px;display:flex;flex-direction:column;gap:1px;}
+.jitsu .jl{font-size:11.5px;font-weight:900;}
+.jitsu .jn{display:flex;align-items:baseline;gap:5px;font-weight:900;font-size:13px;}
+.jitsu .jn b{font-family:'Archivo Black','Arial Black',sans-serif;font-size:31px;font-weight:400;letter-spacing:-0.02em;line-height:1.1;}
+.jitsu .js{font-size:11.5px;font-weight:700;}
+.plans-note{font-size:11px;color:#8a8375;margin-top:14px;line-height:1.7;}
+
 /* subsidy */
 .subsidy{background:var(--ink);padding:44px 48px;margin-top:26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center;}
 .subsidy .badge{display:inline-block;background:var(--honey);color:var(--ink);font-family:'Archivo Black','Arial Black',sans-serif;font-size:12px;letter-spacing:3px;padding:7px 16px;margin-bottom:12px;}
@@ -445,27 +453,32 @@ footer{background:var(--ink);padding:28px 0;}
 <section class="cream" id="price">
   <div class="wrap rev">
     <div class="kicker"><span class="no">05 / PRICE</span><span class="line"></span></div>
-    <h2 class="h2">はじめての会社が、持てる価格。</h2>
+    <h2 class="h2" style="font-size:clamp(22px,2.9vw,38px);">はじめての会社が、持てる価格。<span class="hl">補助金で、実質約1/3。</span></h2>
+    <p class="lead">2年分前金の補助金プランなら、下のプランがすべて実質約1/3。月あたりに直すと、この金額感で始められます。</p>
     <div class="plans">
       <div class="plan">
         <div class="head"><h3>ライト</h3></div>
         <div class="price"><span>月額</span><b>6</b><span>万円</span></div>
         <div class="max">TikTokショート MAX 月5本</div>
+        <div class="jitsu"><span class="jl">補助金プラン（2年分前金）なら</span><span class="jn">実質 月あたり<b>2.8</b>万円相当</span><span class="js">総額154万円 → 実質約68万円</span></div>
         <div class="desc">初期費用10万円<br>まずは小さくお試し</div>
       </div>
       <div class="plan">
         <div class="head"><h3>スタンダード</h3></div>
         <div class="price"><span>月額</span><b>18</b><span>万円</span></div>
         <div class="max">TikTokショート MAX 月18本</div>
+        <div class="jitsu"><span class="jl">補助金プラン（2年分前金）なら</span><span class="jn">実質 月あたり<b>7.4</b>万円相当</span><span class="js">総額482万円 → 実質約177万円</span></div>
         <div class="desc">初期費用50万円<br>週2本のフルセット運用も余裕</div>
       </div>
       <div class="plan hot">
         <div class="head"><h3>プレミアム</h3><span class="rec">おすすめ</span></div>
         <div class="price"><span>月額</span><b>20</b><span>万円</span></div>
         <div class="max">TikTokショート MAX 月20本（平日毎日）</div>
+        <div class="jitsu"><span class="jl">補助金プラン（2年分前金）なら</span><span class="jn">実質 月あたり<b>8.3</b>万円相当</span><span class="js">総額550万円 → 実質約200万円</span></div>
         <div class="desc">初期費用70万円<br>優先納期・HP/LP・採用/営業パック・専任コンサル</div>
       </div>
     </div>
+    <div class="plans-note">※実質金額は、デジタル化・AI導入補助金（補助率2/3・上限350万円）を2年分前金のご契約に活用した場合の概算です。申請・審査があり、採択をお約束するものではありません。通常プラン（月々払い）もございます。</div>
     <div class="subsidy">
       <div>
         <span class="badge">SUBSIDY — デジタル化・AI導入補助金</span>
