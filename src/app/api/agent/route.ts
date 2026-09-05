@@ -302,9 +302,9 @@ function normalizeDraft(raw: unknown): OrderDraft {
 export async function GET() {
   const user = await requireUser();
   const rows = getDb()
-    .prepare("SELECT id, title, messages, created_at FROM agent_sessions WHERE user_id = ? AND kind = 'agent' ORDER BY created_at DESC LIMIT 30")
-    .all(user.id) as { id: string; title: string; messages: string; created_at: string }[];
+    .prepare("SELECT id, title, messages, created_at, pinned FROM agent_sessions WHERE user_id = ? AND kind = 'agent' ORDER BY pinned DESC, created_at DESC LIMIT 50")
+    .all(user.id) as { id: string; title: string; messages: string; created_at: string; pinned: number }[];
   return NextResponse.json(
-    rows.map((r) => ({ id: r.id, title: r.title, createdAt: r.created_at, messages: JSON.parse(r.messages) }))
+    rows.map((r) => ({ id: r.id, title: r.title, createdAt: r.created_at, pinned: Boolean(r.pinned), messages: JSON.parse(r.messages) }))
   );
 }

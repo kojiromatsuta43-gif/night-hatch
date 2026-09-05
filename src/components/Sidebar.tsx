@@ -38,7 +38,7 @@ function groupsFor(role: string | undefined, pointName: string, hasSales: boolea
   if (SHOW_GUIDE) see.push({ href: "/guide", label: "デモの歩き方" });
   if (role === "admin") see.push({ href: "/admin", label: "管理" });
   const go: Item[] = [{ href: "/projects", label: "案件一覧" }];
-  if (hasSales) go.push({ href: "/sales", label: "営業リスト" });
+  if (hasSales) go.push({ href: "/sales", label: "営業リスト" }, { href: "/sales/form", label: "フォーム営業" });
   go.push({ href: "/chat", label: "チャット" });
   return [
     {

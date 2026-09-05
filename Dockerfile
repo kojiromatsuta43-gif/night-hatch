@@ -23,6 +23,11 @@ RUN npm run build
 
 FROM node:22-slim AS runner
 WORKDIR /app
+# フォーム営業（Playwright）用のブラウザ。Debian の chromium と日本語フォント
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium fonts-ipafont-gothic fonts-ipafont-mincho \
+  && rm -rf /var/lib/apt/lists/*
+ENV CHROMIUM_PATH=/usr/bin/chromium
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 # 永続ボリュームのマウント先（Railway側で /data にボリュームを割り当てる）

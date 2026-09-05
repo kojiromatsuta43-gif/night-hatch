@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
@@ -67,6 +69,8 @@ export default function AdminPage() {
         {([["users", "ユーザー管理"], ["contracts", "契約管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
+        {/* フォーム営業は営業まわりの画面（/sales/form）にある。管理からも飛べるようにしておく */}
+        <Link href="/sales/form" className="rounded-full border border-hive-900 bg-white px-4 py-1.5 font-bold text-hive-900 hover:bg-honey-50">フォーム営業 →</Link>
       </div>
 
       {tab === "contracts" && <PlanContractsPanel />}

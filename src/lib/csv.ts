@@ -34,7 +34,7 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-export type LeadField = "company" | "contact_name" | "phone" | "email" | "address" | "prefecture" | "industry" | "employees" | "website" | "memo";
+export type LeadField = "company" | "contact_name" | "phone" | "email" | "address" | "prefecture" | "industry" | "employees" | "website" | "form_url" | "memo";
 
 export const LEAD_FIELD_LABELS: Record<LeadField, string> = {
   company: "会社名",
@@ -46,6 +46,7 @@ export const LEAD_FIELD_LABELS: Record<LeadField, string> = {
   industry: "業種",
   employees: "従業員数",
   website: "URL",
+  form_url: "問い合わせフォームURL",
   memo: "メモ",
 };
 
@@ -59,6 +60,7 @@ const ALIASES: Record<LeadField, RegExp> = {
   industry: /業種|業態|カテゴリ|industry|category/i,
   employees: /従業員|社員数|人数|規模|employee/i,
   website: /url|hp|ホームページ|web|サイト/i,
+  form_url: /フォーム|form|問い?合わ?せ|contact|inquiry/i,
   memo: /メモ|備考|note|remark|コメント/i,
 };
 
@@ -67,7 +69,7 @@ export function guessMapping(headers: string[]): Partial<Record<LeadField, numbe
   const map: Partial<Record<LeadField, number>> = {};
   const used = new Set<number>();
   // 会社名は「代表者名」などに誤爆しやすいので、担当者を先に確定する
-  const order: LeadField[] = ["contact_name", "prefecture", "phone", "email", "address", "industry", "employees", "website", "memo", "company"];
+  const order: LeadField[] = ["contact_name", "prefecture", "phone", "email", "address", "industry", "employees", "form_url", "website", "memo", "company"];
   for (const f of order) {
     const idx = headers.findIndex((h, i) => !used.has(i) && ALIASES[f].test(h.trim()));
     if (idx >= 0) {

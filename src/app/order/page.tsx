@@ -4,7 +4,7 @@ import { PlatformRow } from "@/components/PlatformIcons";
 import BeeGirl from "@/components/BeeGirl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
+import { Mascot, PointInline, PointMark, useMascot } from "@/components/MascotProvider";
 import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
@@ -109,7 +109,7 @@ function HexTile({ item, style }: { item: CatalogItem; style?: React.CSSProperti
         <span className={`text-lg font-black leading-none ${tone.pt}`}>
           {item.points}
           {item.quantity ? "〜" : ""}
-          <span className="ml-0.5 text-base">🍯</span>
+          <PointInline />
           {item.monthly && <span className="text-[9px] font-bold">/月</span>}
         </span>
       </span>
@@ -180,7 +180,7 @@ function FeaturedHex({ item }: { item: CatalogItem }) {
         <span className="flex h-6 items-center text-hive-900 [&_span]:gap-2"><PlatformRow category={item.name} className="h-6 w-6" /></span>
         <span className="text-2xl font-black leading-none text-hive-900">
           {item.points}
-          <span className="ml-1 text-xl">🍯</span>
+          <PointMark className="ml-1 h-6 w-6" />
         </span>
       </span>
     </Link>
@@ -205,7 +205,7 @@ function MenuCardList({ items }: { items: CatalogItem[] }) {
             <span className={`mt-auto pt-1 text-lg font-black leading-none ${tone.pt}`}>
               {item.points}
               {item.quantity ? "〜" : ""}
-              <span className="ml-0.5 text-base">🍯</span>
+              <PointInline />
               {item.monthly && <span className="text-[10px] font-bold">/月</span>}
             </span>
           </Link>
@@ -310,7 +310,7 @@ function FullOrderTop() {
       <section>
         <div className="mb-1 flex flex-wrap items-baseline gap-3">
           <h2 className="text-lg font-black text-hive-900">メインサービス</h2>
-          <span className="text-xs text-hive-500">TikTok・リール・ショートの台本と編集。セットで1本20🍯</span>
+          <span className="text-xs text-hive-500">TikTok・リール・ショートの台本と編集。セットで1本20<PointInline /></span>
         </div>
         <div className="flex flex-wrap justify-center gap-5 sm:justify-start">
           {groups.flatMap((g) => g.items).filter((it) => FEATURED.includes(it.name)).map((it) => (

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { api } from "@/lib/client";
-import { Mascot, useMascot } from "@/components/MascotProvider";
+import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import AiUsage from "@/components/AiUsage";
 
 type Sample = { name: string; prefecture: string | null; industry: string | null; employees: number | null; phoneMasked: string | null };
@@ -113,7 +113,7 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
                 テレアポのトークスクリプトを作ったり、{isAdmin ? "企業データベース（775万社）から" : "企業データベースから"}条件に合う会社を営業リストに取得できます。
-                {!isAdmin && " リストの取得は200社ごとに20🍯です。"}
+                {!isAdmin && <> リストの取得は200社ごとに20<PointInline />です。</>}
               </p>
               <div className="flex flex-wrap gap-2">
                 {QUICK.map((q) => (
@@ -208,7 +208,7 @@ function ListPreview({ p, latest, busy, onAcquire }: { p: Extract<Payload, { typ
           <input value={count} onChange={(e) => setCount(e.target.value)} inputMode="numeric" className="w-20 rounded border-2 border-hive-900 px-2 py-1 text-sm" />
           <span className="text-xs">社（最大1,000）</span>
           <button onClick={() => { if (window.confirm(`${n} 社を営業リストに取得します${cost ? `（${cost}🍯）` : ""}。よろしいですか？`)) onAcquire(n); }} disabled={busy} className={btnY}>
-            営業リストに取得{cost ? `（${cost}🍯）` : "（無料）"}
+            営業リストに取得{cost ? <>（{cost}<PointInline />）</> : "（無料）"}
           </button>
           <span className="text-xs text-slate-500">{p.unit}</span>
         </div>

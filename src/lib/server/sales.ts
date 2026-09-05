@@ -35,6 +35,7 @@ export type Lead = {
   industry: string;
   employees: number | null;
   website: string;
+  form_url: string;
   memo: string;
   status: LeadStatus;
   project_id: string | null;
@@ -46,7 +47,7 @@ export type Lead = {
   updated_at: string;
 };
 
-export type LeadInput = Partial<Pick<Lead, "company" | "contact_name" | "phone" | "email" | "address" | "prefecture" | "industry" | "website" | "memo">> & {
+export type LeadInput = Partial<Pick<Lead, "company" | "contact_name" | "phone" | "email" | "address" | "prefecture" | "industry" | "website" | "form_url" | "memo">> & {
   employees?: number | string | null;
 };
 
@@ -94,6 +95,9 @@ export function ensureSalesTables() {
   );
   CREATE INDEX IF NOT EXISTS idx_sales_calls_lead ON sales_calls (lead_id, called_at);
   `);
+  // 問い合わせフォームURL（フォーム営業用）。古いDBには無いので後から足す
+  const cols = (db.prepare("PRAGMA table_info(sales_leads)").all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes("form_url")) db.exec("ALTER TABLE sales_leads ADD COLUMN form_url TEXT NOT NULL DEFAULT ''");
 }
 
 /** 住所から都道府県を推定 */
@@ -130,18 +134,19 @@ function toEmployees(v: unknown): number | null {
 const s = (v: unknown, max = 200) => String(v ?? "").trim().slice(0, max);
 
 /** CSV から取り込み。同じ電話番号（または電話が無ければ社名）が既にあれば重複として飛ばす */
-export function importLeads(userId: string, rows: LeadInput[], source: string): { added: number; skipped: number } {
+export function importLeads(userId: string, rows: LeadInput[], source: string): { added: number; skipped: number; ids: string[] } {
   ensureSalesTables();
   const db = getDb();
   const existing = db.prepare("SELECT phone, company FROM sales_leads WHERE user_id = ?").all(userId) as { phone: string; company: string }[];
   const seenPhone = new Set(existing.map((r) => phoneKey(r.phone)).filter(Boolean));
   const seenCompany = new Set(existing.map((r) => r.company));
   const ins = db.prepare(
-    `INSERT INTO sales_leads (id, user_id, company, contact_name, phone, email, address, prefecture, industry, employees, website, memo, source)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO sales_leads (id, user_id, company, contact_name, phone, email, address, prefecture, industry, employees, website, memo, source, form_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   let added = 0;
   let skipped = 0;
+  const ids: string[] = [];
   db.transaction(() => {
     for (const r of rows.slice(0, 5000)) {
       const company = s(r.company, 120);
@@ -157,8 +162,10 @@ export function importLeads(userId: string, rows: LeadInput[], source: string): 
         continue;
       }
       const address = s(r.address, 200);
+      const id = crypto.randomUUID();
+      ids.push(id);
       ins.run(
-        crypto.randomUUID(),
+        id,
         userId,
         company,
         s(r.contact_name, 60),
@@ -170,14 +177,15 @@ export function importLeads(userId: string, rows: LeadInput[], source: string): 
         toEmployees(r.employees),
         s(r.website, 200),
         s(r.memo, 1000),
-        s(source, 80)
+        s(source, 80),
+        s(r.form_url, 300)
       );
       if (key) seenPhone.add(key);
       seenCompany.add(company);
       added++;
     }
   })();
-  return { added, skipped };
+  return { added, skipped, ids };
 }
 
 export type LeadFilter = {

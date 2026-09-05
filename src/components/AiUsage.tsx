@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PointInline } from "@/components/MascotProvider";
 import { api } from "@/lib/client";
 
 export type UsageSummary = {
@@ -54,7 +55,7 @@ export default function AiUsage({ refreshKey = 0, compact = false }: { refreshKe
       <span title="台本づくり・動画分析・資料の読み取り。月初にリセット">生成 今月あと {genLeft}/{u.gen.limit}</span>
       {u.extra > 0 && <span className="text-slate-500">＋追加 {u.extra}回</span>}
       <button onClick={buy} disabled={busy} className="rounded border-2 border-hive-900 bg-honey-400 px-2 py-0.5 font-bold text-hive-900 disabled:opacity-50">
-        {busy ? "処理中..." : `＋${u.extraUses}回（${u.extraPoints}🍯）`}
+        {busy ? "処理中..." : <>＋{u.extraUses}回（{u.extraPoints}<PointInline />）</>}
       </button>
       {msg && <span className="text-slate-600">{msg}</span>}
     </div>

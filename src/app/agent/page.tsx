@@ -36,7 +36,7 @@ type Payload =
   | { type: "order_done"; projectId: string; title: string; points: number };
 
 type Msg = { role: "user" | "assistant"; content: string; payload?: Payload };
-type AgentSession = { id: string; title: string; createdAt: string; messages: Msg[] };
+type AgentSession = { id: string; title: string; createdAt: string; pinned?: boolean; messages: Msg[] };
 type BrandProfile = { id: string; name: string };
 
 // クイック操作とプロンプト集は看板ごと（src/lib/brands/*.ts）
@@ -76,10 +76,31 @@ function AgentPageInner() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { mascot } = useMascot();
 
+  const loadSessions = () => api<AgentSession[]>("/api/agent").then(setSessions).catch(() => {});
   useEffect(() => {
     api<AgentSession[]>("/api/agent").then(setSessions).catch(() => {});
     api<BrandProfile[]>("/api/brand-profiles").then(setProfiles).catch(() => {});
   }, []);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const renameSession = async (s: AgentSession) => {
+    setMenuFor(null);
+    const title = window.prompt("会話の名前", s.title);
+    if (!title || title.trim() === s.title) return;
+    await api(`/api/agent/sessions/${s.id}`, { method: "PATCH", body: JSON.stringify({ title }) }).catch(() => {});
+    loadSessions();
+  };
+  const pinSession = async (s: AgentSession) => {
+    setMenuFor(null);
+    await api(`/api/agent/sessions/${s.id}`, { method: "PATCH", body: JSON.stringify({ pinned: !s.pinned }) }).catch(() => {});
+    loadSessions();
+  };
+  const deleteSession = async (s: AgentSession) => {
+    setMenuFor(null);
+    if (!window.confirm(`「${s.title}」を削除しますか？`)) return;
+    await api(`/api/agent/sessions/${s.id}`, { method: "DELETE" }).catch(() => {});
+    if (s.id === sessionId) { setSessionId(null); setMessages([]); }
+    loadSessions();
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -145,15 +166,33 @@ function AgentPageInner() {
         </button>
         <div className="space-y-1">
           {sessions.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => openSession(s)}
-              className={`block w-full truncate rounded-lg px-3 py-2 text-left text-sm ${
-                s.id === sessionId ? "bg-honey-50 text-honey-700" : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              {s.title}
-            </button>
+            <div key={s.id} className={`group relative flex items-center rounded-lg ${s.id === sessionId ? "bg-honey-50" : "hover:bg-slate-100"}`}>
+              <button
+                onClick={() => openSession(s)}
+                className={`min-w-0 flex-1 truncate px-3 py-2 text-left text-sm ${s.id === sessionId ? "text-honey-700" : "text-slate-600"}`}
+                title={s.title}
+              >
+                {s.pinned && <span className="mr-1 text-[10px]" aria-label="ピン留め">📌</span>}
+                {s.title}
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === s.id ? null : s.id); }}
+                className={`mr-1 shrink-0 rounded px-1.5 py-1 text-slate-500 hover:bg-white hover:text-hive-900 ${menuFor === s.id ? "" : "opacity-0 group-hover:opacity-100"}`}
+                aria-label="会話のメニュー"
+              >
+                ⋯
+              </button>
+              {menuFor === s.id && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuFor(null)} />
+                  <div className="absolute right-1 top-9 z-20 w-36 rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg">
+                    <button onClick={() => pinSession(s)} className="block w-full px-3 py-1.5 text-left hover:bg-slate-100">{s.pinned ? "ピン留めを外す" : "ピン留め"}</button>
+                    <button onClick={() => renameSession(s)} className="block w-full px-3 py-1.5 text-left hover:bg-slate-100">名前を変更</button>
+                    <button onClick={() => deleteSession(s)} className="block w-full px-3 py-1.5 text-left text-rose-600 hover:bg-rose-50">削除</button>
+                  </div>
+                </>
+              )}
+            </div>
           ))}
         </div>
       </aside>
@@ -531,7 +570,7 @@ function OrderForm({
           <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${input} mt-0.5`} disabled={disabled}>
             {BRAND.orderable.map((c) => (
               <option key={c} value={c}>
-                {c}（{POINTS_BY_CATEGORY[c]}🍯）
+                {c}（{POINTS_BY_CATEGORY[c]}<PointInline />）
               </option>
             ))}
           </select>

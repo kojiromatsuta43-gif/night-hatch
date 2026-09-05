@@ -400,6 +400,8 @@ function init(db: Database.Database) {
   // 営業AIの会話を発注エージェントの会話と分ける
   const agentCols = (db.prepare("PRAGMA table_info(agent_sessions)").all() as { name: string }[]).map((c) => c.name);
   if (!agentCols.includes("kind")) db.exec("ALTER TABLE agent_sessions ADD COLUMN kind TEXT NOT NULL DEFAULT 'agent'");
+  // 会話のピン留め（一覧の上に固定）
+  if (!agentCols.includes("pinned")) db.exec("ALTER TABLE agent_sessions ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");
 
   // AI利用上限（プラン）と追加購入分
   if (!userCols.includes("plan")) db.exec("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'light'");

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
-import { parseCsv, guessMapping, LEAD_FIELD_LABELS, type LeadField } from "@/lib/csv";
+import LeadCsvImport from "@/components/sales/LeadCsvImport";
 import CompanySearch from "@/components/sales/CompanySearch";
 import SalesAgent from "@/components/sales/SalesAgent";
 
@@ -36,7 +36,6 @@ type Call = { id: string; result: string; note: string; called_at: string; calle
 
 const STATUSES = ["未着手", "不通", "再架電", "資料送付", "アポ", "成約", "断り", "対象外"];
 const RESULTS = ["不通", "受付止まり", "担当者と話せた", "資料送付", "アポ獲得", "断られた"];
-const FIELDS: LeadField[] = ["company", "contact_name", "phone", "email", "address", "prefecture", "industry", "employees", "website", "memo"];
 
 const STATUS_STYLE: Record<string, string> = {
   未着手: "bg-slate-100 text-slate-600",
@@ -85,10 +84,12 @@ function SalesInner() {
   const [data, setData] = useState<ListRes | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [importOpen, setImportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(sp.get("import") === "1");
   const [msg, setMsg] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [bulkProject, setBulkProject] = useState("");
+  const [formCampaigns, setFormCampaigns] = useState<{ id: string; name: string; status: string }[]>([]);
+  const [bulkForm, setBulkForm] = useState("");
   const [mode, setMode] = useState<"list" | "db" | "agent">(sp.get("mode") === "db" ? "db" : sp.get("mode") === "agent" ? "agent" : "list");
 
   const query = useMemo(() => {
@@ -110,6 +111,7 @@ function SalesInner() {
   useEffect(load, [load]);
   useEffect(() => {
     api<Project[]>("/api/projects").then((ps) => setProjects(ps.filter((p) => /架電|テレアポ/.test(p.category)))).catch(() => {});
+    api<{ items: { id: string; name: string; status: string }[] }>("/api/sales/form/campaigns").then((r) => setFormCampaigns(r.items.filter((c) => c.status !== "done"))).catch(() => {});
   }, []);
 
   const callProjects = projects;
@@ -189,7 +191,7 @@ function SalesInner() {
       {(mode === "db" && isAdmin) || (mode === "agent" && !isFreelancer) ? null : (
       <>
 
-      {importOpen && !isFreelancer && <ImportPanel onDone={() => { setImportOpen(false); load(); }} />}
+      {importOpen && !isFreelancer && <LeadCsvImport campaigns={formCampaigns} onDone={() => { setImportOpen(false); load(); }} />}
 
       {/* 状態の内訳 */}
       <div className="mb-3 flex flex-wrap gap-1.5 text-xs">
@@ -259,6 +261,30 @@ function SalesInner() {
               </select>
               <button onClick={() => bulk({ type: "assign", projectId: bulkProject || null })} className={btnY} disabled={!bulkProject && selected.size === 0}>
                 {bulkProject ? "この案件に紐付ける" : "紐付けを外す"}
+              </button>
+            </>
+          )}
+          {!isFreelancer && (
+            <>
+              <select value={bulkForm} onChange={(e) => setBulkForm(e.target.value)} className={input}>
+                <option value="">フォーム営業に追加…</option>
+                {formCampaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <button
+                disabled={!bulkForm}
+                onClick={async () => {
+                  setMsg("");
+                  try {
+                    const r = await api<{ picked: number; added: number; excluded: number; suppressed: number; duplicated: number; noUrl: number }>(`/api/sales/form/campaigns/${bulkForm}/leads`, { method: "POST", body: JSON.stringify({ leadIds: [...selected] }) });
+                    setMsg(`フォーム営業に追加 ${r.added}件（除外 ${r.excluded + r.suppressed} ／ 重複・90日以内 ${r.duplicated} ／ URL無し ${r.noUrl}）`);
+                    setSelected(new Set());
+                  } catch (e) {
+                    setMsg(e instanceof Error ? e.message : "追加できませんでした");
+                  }
+                }}
+                className={`${btnY} disabled:opacity-40`}
+              >
+                追加
               </button>
             </>
           )}
@@ -448,122 +474,6 @@ function CallPanel({ lead, onPatch, onChanged }: { lead: Lead; onPatch: (b: Reco
           ))}
         </ul>
       </div>
-    </div>
-  );
-}
-
-/** CSV取り込み: ファイル → 列の対応 → プレビュー → 取り込み */
-function ImportPanel({ onDone }: { onDone: () => void }) {
-  const [rows, setRows] = useState<string[][]>([]);
-  const [fileName, setFileName] = useState("");
-  const [hasHeader, setHasHeader] = useState(true);
-  const [map, setMap] = useState<Partial<Record<LeadField, number>>>({});
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
-
-  const headers = hasHeader ? rows[0] ?? [] : (rows[0] ?? []).map((_, i) => `${i + 1}列目`);
-  const body = hasHeader ? rows.slice(1) : rows;
-
-  const onFile = async (f: File | undefined) => {
-    if (!f) return;
-    setMsg("");
-    setFileName(f.name);
-    const buf = await f.arrayBuffer();
-    // Excel の CSV は Shift_JIS のことが多いので、UTF-8 で化けたら Shift_JIS で読み直す
-    let text = new TextDecoder("utf-8", { fatal: false }).decode(buf);
-    if (text.includes("�")) {
-      try {
-        text = new TextDecoder("shift_jis").decode(buf);
-      } catch {
-        /* そのまま */
-      }
-    }
-    const parsed = parseCsv(text);
-    setRows(parsed);
-    setMap(guessMapping(parsed[0] ?? []));
-  };
-
-  const toLeads = () =>
-    body.map((r) => {
-      const o: Record<string, string> = {};
-      for (const f of FIELDS) {
-        const idx = map[f];
-        if (idx !== undefined && idx >= 0) o[f] = r[idx] ?? "";
-      }
-      return o;
-    });
-
-  const submit = async () => {
-    if (map.company === undefined) {
-      setMsg("「会社名」にあたる列を選んでください");
-      return;
-    }
-    setBusy(true);
-    setMsg("");
-    try {
-      const r = await api<{ added: number; skipped: number }>("/api/sales/leads", { method: "POST", body: JSON.stringify({ rows: toLeads(), source: fileName }) });
-      setMsg(`${r.added}件を取り込みました${r.skipped ? `（重複・空欄 ${r.skipped}件は飛ばしました）` : ""}`);
-      setTimeout(onDone, 800);
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : "取り込めませんでした");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className={`${box} mb-4 p-4`}>
-      <div className="mb-2 text-sm font-bold">CSVを取り込む</div>
-      <p className="mb-3 text-xs text-slate-500">
-        Excel で「CSV（UTF-8）」または「CSV」形式で保存したファイルを選んでください。列の並びは自由です。同じ電話番号の会社は重複として飛ばします。
-        取り込んだリストはこのアカウントだけが見られます。
-      </p>
-      <input type="file" accept=".csv,.tsv,.txt,text/csv" onChange={(e) => onFile(e.target.files?.[0])} className="text-sm" />
-      {rows.length > 0 && (
-        <div className="mt-4">
-          <label className="mb-2 flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={hasHeader} onChange={(e) => setHasHeader(e.target.checked)} />
-            1行目は見出し
-          </label>
-          <div className="mb-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-            {FIELDS.map((f) => (
-              <label key={f} className="text-xs">
-                {LEAD_FIELD_LABELS[f]}{f === "company" && <span className="text-rose-600">＊</span>}
-                <select
-                  value={map[f] ?? -1}
-                  onChange={(e) => setMap({ ...map, [f]: Number(e.target.value) < 0 ? undefined : Number(e.target.value) })}
-                  className={`${input} block w-full`}
-                >
-                  <option value={-1}>（使わない）</option>
-                  {headers.map((h, i) => <option key={i} value={i}>{h || `${i + 1}列目`}</option>)}
-                </select>
-              </label>
-            ))}
-          </div>
-          <div className="mb-2 text-xs font-bold">プレビュー（先頭5件 / 全{body.length}件）</div>
-          <div className="overflow-x-auto rounded border border-slate-300">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 text-left text-slate-500">
-                  {FIELDS.filter((f) => map[f] !== undefined).map((f) => <th key={f} className="px-2 py-1">{LEAD_FIELD_LABELS[f]}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {toLeads().slice(0, 5).map((o, i) => (
-                  <tr key={i} className="border-t border-slate-200">
-                    {FIELDS.filter((f) => map[f] !== undefined).map((f) => <td key={f} className="px-2 py-1 max-w-48 truncate">{o[f]}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <button onClick={submit} disabled={busy} className={`${btnY} disabled:opacity-50`}>{busy ? "取り込み中..." : `${body.length}件を取り込む`}</button>
-            {msg && <span className="text-sm text-slate-600">{msg}</span>}
-          </div>
-        </div>
-      )}
-      {rows.length === 0 && msg && <div className="mt-2 text-sm text-slate-600">{msg}</div>}
     </div>
   );
 }

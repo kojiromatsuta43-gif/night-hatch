@@ -126,8 +126,8 @@ function PointsInner() {
 
       <h2 className="mb-1 text-lg font-semibold">月額プランと{mascot.pointName}</h2>
       <p className="mb-3 text-xs text-slate-500">
-        定価は 1{mascot.pointEmoji}＝{yen(POINT_UNIT_PRICE)}（税別）。月額プランは定価換算に増量分が付き、上のプランほど1{mascot.pointEmoji}が安くなります。
-        ショート動画は編集10{mascot.pointEmoji}・台本10{mascot.pointEmoji}・サムネ5{mascot.pointEmoji}です。
+        定価は 1<PointInline />＝{yen(POINT_UNIT_PRICE)}（税別）。月額プランは定価換算に増量分が付き、上のプランほど1<PointInline />が安くなります。
+        ショート動画は編集10<PointInline />・台本10<PointInline />・サムネ5<PointInline />です。
       </p>
       <div className="mb-8 max-w-2xl overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
@@ -188,7 +188,7 @@ function PointsInner() {
       <h2 className="mb-1 text-lg font-semibold">{mascot.pointName}を追加で買う</h2>
       <p className="mb-4 text-xs text-slate-500">
         月額プランのポイントが足りなくなったときに、必要な分だけ買い足せます。
-        追加購入は定価（1{mascot.pointEmoji}あたり {yen(POINT_UNIT_PRICE)}・税別）です。
+        追加購入は定価（1<PointInline />あたり {yen(POINT_UNIT_PRICE)}・税別）です。
       </p>
 
       <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-3">

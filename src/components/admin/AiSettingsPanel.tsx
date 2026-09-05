@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PointInline } from "@/components/MascotProvider";
 import { api } from "@/lib/client";
 
 type Task = "chat" | "sales" | "extract" | "backstage";
@@ -146,10 +147,10 @@ export default function AiSettingsPanel() {
             <input type="number" min={1} className={input} value={draft.extraUses} onChange={(e) => setDraft({ ...draft, extraUses: Math.max(1, Number(e.target.value) || 1) })} />
           </label>
           <label className="text-xs">
-            追加パックの価格（🍯）
+            追加パックの価格（<PointInline />）
             <input type="number" min={1} className={input} value={draft.extraPoints} onChange={(e) => setDraft({ ...draft, extraPoints: Math.max(1, Number(e.target.value) || 1) })} />
           </label>
-          <span className="pb-1 text-xs text-slate-500">＝ 上限に達したお客様は {draft.extraPoints}🍯 で {draft.extraUses} 回追加できます（ハニーP残高から引きます）</span>
+          <span className="pb-1 text-xs text-slate-500">＝ 上限に達したお客様は {draft.extraPoints}<PointInline /> で {draft.extraUses} 回追加できます（ハニーP残高から引きます）</span>
         </div>
       </section>
 

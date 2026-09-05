@@ -6,6 +6,7 @@ import { runMonthlyGrants, runExpiry, jstMonth } from "./points-ledger";
 import { consumeFromGrants } from "./points-ledger";
 import crypto from "crypto";
 import { notify } from "./notifications";
+import { tick as formOutreachTick } from "./form-outreach/worker";
 
 /**
  * TikTok の参考動画を定期的に自動で取り込む。
@@ -179,6 +180,8 @@ export function start() {
   setInterval(purge, 60 * 60_000);
   setTimeout(honey, 45_000);
   setInterval(honey, 60 * 60_000);
+  // フォーム営業: 実行中キャンペーンを1分ごとに拾う（FORM_OUTREACH=off で無効）
+  setInterval(formOutreachTick, 60_000);
   setTimeout(warm, 20_000);
   setInterval(warm, 5 * 60_000);
 }

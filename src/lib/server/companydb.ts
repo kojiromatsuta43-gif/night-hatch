@@ -358,6 +358,7 @@ function toLead(r: Company): LeadInput {
     industry: r.industry_s ?? r.industry_l ?? "",
     employees: r.employees,
     website: r.website ?? "",
+    form_url: r.form_url ?? "",
     memo: memoParts.join(" / "),
   };
 }
