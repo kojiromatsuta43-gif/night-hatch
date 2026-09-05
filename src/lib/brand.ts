@@ -1,16 +1,13 @@
-import { bridge } from "./brands/bridge";
 import { food } from "./brands/food";
 import type { Brand, CatalogItem } from "./brand-types";
 
 export type { Brand, CatalogItem, Question, Quantity } from "./brand-types";
 
 /**
- * 看板の切替。Railway の Variables に NEXT_PUBLIC_APP_BRAND=food を入れると FOOD HATCH になる。
- * NEXT_PUBLIC_ 付きなのはビルド時に画面側へ埋め込むため（サーバー側でも同じ値が読める）。
- * 未設定なら BRIDGE HATCH。
+ * FOOD HATCH は飲食店専用（2026-09-05 に BRIDGE HATCH から分離）。
+ * 看板の切替は廃止し、常に food を使う。BRIDGE 側の改修は git（remote: bridge）から取り込む。
  */
-const id = (process.env.NEXT_PUBLIC_APP_BRAND ?? "bridge").trim().toLowerCase();
-export const BRAND: Brand = id === "food" ? food : bridge;
+export const BRAND: Brand = food;
 
 export const CATALOG: CatalogItem[] = BRAND.catalog;
 

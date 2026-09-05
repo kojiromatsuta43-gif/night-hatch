@@ -103,7 +103,7 @@ function PaymentSettings() {
 
         {doneCount < 4 && (
           <div className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600">
-            Railway → プロジェクト <b>blissful-learning</b> → サービス <b>create-works</b> → <b>Variables</b> タブで、
+            Railway → プロジェクト <b>blissful-learning</b> → サービス <b>food-hatch</b> → <b>Variables</b> タブで、
             上の名前のまま追加してください。保存すると自動で再起動され、この画面の印が緑になります。
             <br />
             <b className="text-hive-900">鍵はチャットやメールに貼らず、Railwayの入力欄に直接貼り付けてください。</b>

@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 
-/** BRIDGE HATCH のマスコット。丸っこい可愛らしいミツバチ。 */
+/** FOOD HATCH のマスコット（BRIDGE HATCH と共通のハッチ）。丸っこい可愛らしいミツバチ。 */
 export default function BeeLogo({ className = "h-8 w-8" }: { className?: string }) {
   const uid = useId().replace(/:/g, "");
   const bodyClip = `bee-body-${uid}`;

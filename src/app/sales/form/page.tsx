@@ -160,7 +160,7 @@ function SendersPanel({ senders, onChanged }: { senders: Sender[]; onChanged: ()
   };
   return (
     <div>
-      <p className="mb-3 text-xs text-slate-500">フォームに入力される差出人です。お客様の送信はお客様ご自身の会社名・担当者名で行います（BRIDGE HATCH名義では送りません）。</p>
+      <p className="mb-3 text-xs text-slate-500">フォームに入力される差出人です。お客様の送信はお客様ご自身の会社名・担当者名で行います（FOOD HATCH名義では送りません）。</p>
       <div className={`${box} mb-4 overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead><tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500"><th className="px-2 py-2">ラベル</th><th className="px-2 py-2">会社</th><th className="px-2 py-2">担当者</th><th className="px-2 py-2">メール</th><th className="px-2 py-2">電話</th><th className="px-2 py-2"></th></tr></thead>

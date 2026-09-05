@@ -1,4 +1,8 @@
-# CREATE WORKS
+# FOOD HATCH
+
+飲食店専用の発注・管理プラットフォーム（2026-09-05 に BRIDGE HATCH から分離）。
+リポジトリ: `kojiromatsuta43-gif/food-hatch`。共通の仕組みの改修は BRIDGE 側で先に入れ、`git fetch bridge && git merge bridge/main` で取り込む。
+本番: https://food-hatch-production.up.railway.app（Railway service `food-hatch`）
 
 制作案件の発注・管理プラットフォーム。参考動画からの発注、AIによる台本生成、案件進行管理、書類発行までを1つにまとめたデモアプリです。
 

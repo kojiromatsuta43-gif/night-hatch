@@ -1,5 +1,5 @@
 // フォーム営業（お問い合わせフォーム経由の営業文送信）のテーブルと型。
-// 単体版 form-outreach/ を BRIDGE HATCH 本体に組み込んだもの。DBは本体の app.db を共用する。
+// 単体版 form-outreach/ を FOOD HATCH 本体に組み込んだもの。DBは本体の app.db を共用する。
 import path from "path";
 import fs from "fs";
 import { DATA_DIR, getDb } from "../db";
@@ -133,7 +133,7 @@ export function ensureFormTables() {
 }
 
 /** 配信停止リンクなどで使う自分のURL */
-export const APP_URL = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://create-works-production.up.railway.app").replace(/\/$/, "");
+export const APP_URL = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://food-hatch-production.up.railway.app").replace(/\/$/, "");
 
 export type Channel = "form" | "email" | "both";
 

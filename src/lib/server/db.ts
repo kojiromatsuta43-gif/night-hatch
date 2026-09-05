@@ -1,13 +1,24 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { BRAND } from "../brand";
-import { bridge } from "../brands/bridge";
-import { food } from "../brands/food";
 import crypto from "crypto";
 import refSeed from "./ref-seed.json";
 
-/** 全看板の業種初期値。看板を切り替えたときに、前の看板の初期値を見分けるために使う */
-const ALL_BRAND_INDUSTRIES = Array.from(new Set([...bridge.industries, ...food.industries]));
+/**
+ * 旧 BRIDGE HATCH（看板切替時代）の初期値。FOOD 専用になった今は「掃除する対象」としてだけ持つ。
+ * 看板切替前に起動した DB に残っている業種タブ・デモ案件を見分けるために使う。
+ */
+const LEGACY_BRIDGE_INDUSTRIES = [
+  "美容クリニック", "美容サロン", "美容室", "ネイル", "マツエク", "飲食", "フィットネス",
+  "医療・介護", "不動産", "建設・工務店", "買取・リユース", "製造業", "人材・転職",
+];
+const LEGACY_BRIDGE_DEMO_PROJECTS: { title: string; category: string }[] = [
+  { title: "秋の新商品ショート動画", category: "ショート動画編集" },
+  { title: "採用ショート動画 台本", category: "台本作成（ショート）" },
+  { title: "新商品LPファーストビュー修正", category: "LPファーストビュー" },
+  { title: "会社紹介動画編集", category: "動画編集（3分）" },
+];
+const ALL_BRAND_INDUSTRIES = Array.from(new Set([...LEGACY_BRIDGE_INDUSTRIES, ...BRAND.industries]));
 
 const CATEGORY_JA: Record<string, string> = {
   kaitori: "買取・リユース",
@@ -624,7 +635,7 @@ function seedIndustries(db: Database.Database) {
       `DELETE FROM projects WHERE title = ? AND category = ?
          AND id NOT IN (SELECT project_id FROM deliverables)`
     );
-    for (const pj of bridge.demoProjects) delDemo.run(pj.title, pj.category);
+    for (const pj of LEGACY_BRIDGE_DEMO_PROJECTS) delDemo.run(pj.title, pj.category);
     // 飲食版のデモ案件が無ければ、デモクライアントに入れる
     const client = db.prepare("SELECT id FROM users WHERE email = 'client@example.com'").get() as { id: string } | undefined;
     if (client) {

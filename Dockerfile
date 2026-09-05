@@ -15,9 +15,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# 看板の切替（bridge / food）。NEXT_PUBLIC_ 変数はビルド時に画面へ埋め込まれるので、
+# 看板（FOOD 固定。互換のため変数は残す）。NEXT_PUBLIC_ 変数はビルド時に画面へ埋め込まれるので、
 # Railway の Variables をビルド引数として受け取る必要がある（宣言しないと build に届かない）
-ARG NEXT_PUBLIC_APP_BRAND=bridge
+ARG NEXT_PUBLIC_APP_BRAND=food
 ENV NEXT_PUBLIC_APP_BRAND=$NEXT_PUBLIC_APP_BRAND
 RUN npm run build
 
@@ -34,7 +34,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATA_DIR=/data
 ENV HOSTNAME=0.0.0.0
 # サーバー側（API・DBの初期値）も同じ看板を見る
-ARG NEXT_PUBLIC_APP_BRAND=bridge
+ARG NEXT_PUBLIC_APP_BRAND=food
 ENV NEXT_PUBLIC_APP_BRAND=$NEXT_PUBLIC_APP_BRAND
 
 # standalone 出力には public と .next/static が build スクリプトでコピー済み
