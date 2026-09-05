@@ -17,7 +17,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   const counts: Record<string, number> = {};
   for (const r of db.prepare("SELECT status, COUNT(*) n FROM form_jobs WHERE campaign_id=? AND is_test=0 GROUP BY status").all(id) as { status: string; n: number }[]) counts[r.status] = r.n;
   const jobs = db
-    .prepare("SELECT id, lead_id, company_name, form_url, domain, industry, is_test, status, result_text, sent_at, updated_at, attempts FROM form_jobs WHERE campaign_id=? ORDER BY updated_at DESC, id DESC LIMIT 300")
+    .prepare("SELECT id, lead_id, company_name, form_url, domain, industry, is_test, status, result_text, sent_at, updated_at, attempts, channel, email FROM form_jobs WHERE campaign_id=? ORDER BY updated_at DESC, id DESC LIMIT 300")
     .all(id)
     .map((j) => ({ ...(j as Job), result_text: String((j as Job).result_text || "").split("\n")[0].slice(0, 120) }));
   return NextResponse.json({
@@ -27,7 +27,8 @@ export async function GET(_req: Request, ctx: Ctx) {
     jobs,
     running: isRunning(id),
     windowOk: inSendWindow(c),
-    sentToday: sentToday(id),
+    sentToday: sentToday(id, "form"),
+    emailSentToday: sentToday(id, "email"),
     statusLabel: STATUS_LABEL,
     workerEnabled: workerEnabled(),
   });
@@ -58,13 +59,14 @@ export async function PATCH(req: Request, ctx: Ctx) {
   if (b.action === "update") {
     if (isRunning(id)) return NextResponse.json({ error: "実行中は変更できません。一時停止してください" }, { status: 400 });
     const mode = ["template", "ai", "hybrid"].includes(b.mode) ? b.mode : c.mode;
+    const channel = ["form", "email", "both"].includes(b.channel) ? b.channel : c.channel;
     db.prepare(
-      `UPDATE form_campaigns SET name=?, mode=?, subject_text=?, template_text=?, ai_instruction=?, daily_limit=?, send_window_start=?, send_window_end=?, weekdays_only=?, sender_id=? WHERE id=?`
+      `UPDATE form_campaigns SET name=?, mode=?, subject_text=?, template_text=?, ai_instruction=?, daily_limit=?, send_window_start=?, send_window_end=?, weekdays_only=?, sender_id=?, channel=?, email_daily_limit=? WHERE id=?`
     ).run(
       s(b.name, 80) || c.name, mode, s(b.subject_text, 120), s(b.template_text, 4000) || c.template_text, s(b.ai_instruction, 500),
       Math.min(2000, Math.max(1, n(b.daily_limit, c.daily_limit))), Math.min(23, Math.max(0, n(b.send_window_start, c.send_window_start))),
       Math.min(24, Math.max(1, n(b.send_window_end, c.send_window_end))), b.weekdays_only === false || b.weekdays_only === 0 ? 0 : 1,
-      s(b.sender_id, 64) || c.sender_id, id
+      s(b.sender_id, 64) || c.sender_id, channel, Math.min(5000, Math.max(1, n(b.email_daily_limit, c.email_daily_limit))), id
     );
     return NextResponse.json({ ok: true });
   }

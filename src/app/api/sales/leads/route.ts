@@ -48,10 +48,10 @@ export async function POST(req: Request) {
     const c = db.prepare("SELECT id, user_id FROM form_campaigns WHERE id = ?").get(campaignId) as { id: string; user_id: string } | undefined;
     if (!c || (c.user_id !== user.id && user.role !== "admin")) return NextResponse.json({ error: "キャンペーンが見つかりません" }, { status: 404 });
     const leads = db
-      .prepare(`SELECT id, company, form_url, website, industry, prefecture, contact_name, memo FROM sales_leads WHERE id IN (${result.ids.map(() => "?").join(",")})`)
+      .prepare(`SELECT id, company, form_url, website, email, industry, prefecture, contact_name, memo FROM sales_leads WHERE id IN (${result.ids.map(() => "?").join(",")})`)
       .all(...result.ids) as LeadLike[];
     const form = addLeadsToCampaign(campaignId, leads);
-    return NextResponse.json({ ...result, ids: undefined, form: { ...form, withUrl: leads.filter((l) => formUrlFromLead(l) || l.website).length } });
+    return NextResponse.json({ ...result, ids: undefined, form: { ...form, withUrl: leads.filter((l) => formUrlFromLead(l) || l.website || l.email).length } });
   }
   return NextResponse.json({ ...result, ids: undefined });
 }

@@ -87,6 +87,25 @@ export function ensureFormTables() {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- メール配信停止（アドレス単位。配信停止リンク・バウンス・苦情で登録）
+  CREATE TABLE IF NOT EXISTS form_email_optouts (
+    email TEXT PRIMARY KEY,
+    reason TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- 差出人ドメイン（クライアント自身のドメインをDNS認証して使う）
+  CREATE TABLE IF NOT EXISTS form_email_domains (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    provider_id TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending',
+    records TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_form_email_domains_user ON form_email_domains (user_id);
+
   CREATE TABLE IF NOT EXISTS form_site_cache (
     domain TEXT PRIMARY KEY,
     title TEXT NOT NULL DEFAULT '',
@@ -94,7 +113,29 @@ export function ensureFormTables() {
     fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   `);
+  // 後から足した列
+  const addCol = (table: string, col: string, def: string) => {
+    const cols = (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name);
+    if (!cols.includes(col)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`);
+  };
+  addCol("form_campaigns", "channel", "TEXT NOT NULL DEFAULT 'form'");           // form | email | both（フォーム優先、無ければメール）
+  addCol("form_campaigns", "email_daily_limit", "INTEGER NOT NULL DEFAULT 100"); // ウォームアップ用に控えめ
+  addCol("form_jobs", "channel", "TEXT NOT NULL DEFAULT 'form'");
+  addCol("form_jobs", "email", "TEXT NOT NULL DEFAULT ''");
+  addCol("form_jobs", "unsub_token", "TEXT NOT NULL DEFAULT ''");
+  addCol("form_jobs", "provider_message_id", "TEXT NOT NULL DEFAULT ''");
+  addCol("form_senders", "from_email", "TEXT NOT NULL DEFAULT ''");             // 差出人アドレス
+  addCol("form_senders", "email_method", "TEXT NOT NULL DEFAULT 'smtp'");        // smtp（自分のGmail等）| service（Resend・認証ドメイン）
+  addCol("form_senders", "smtp_host", "TEXT NOT NULL DEFAULT 'smtp.gmail.com'");
+  addCol("form_senders", "smtp_port", "INTEGER NOT NULL DEFAULT 465");
+  addCol("form_senders", "smtp_user", "TEXT NOT NULL DEFAULT ''");
+  addCol("form_senders", "smtp_pass", "TEXT NOT NULL DEFAULT ''");
 }
+
+/** 配信停止リンクなどで使う自分のURL */
+export const APP_URL = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://create-works-production.up.railway.app").replace(/\/$/, "");
+
+export type Channel = "form" | "email" | "both";
 
 export type SenderProfile = {
   id: string;
@@ -110,6 +151,12 @@ export type SenderProfile = {
   postal: string;
   address: string;
   url: string;
+  from_email: string;
+  email_method: "smtp" | "service";
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_pass: string;
 };
 
 export type CampaignMode = "template" | "ai" | "hybrid";
@@ -128,6 +175,8 @@ export type Campaign = {
   send_window_start: number;
   send_window_end: number;
   weekdays_only: number;
+  channel: Channel;
+  email_daily_limit: number;
   status: CampaignStatus;
   sent_count: number;
   charged_points: number;
@@ -137,7 +186,7 @@ export type Campaign = {
 export type JobStatus =
   | "queued" | "sending" | "sent"
   | "skip_no_form" | "skip_refused" | "skip_captcha" | "skip_suppressed" | "skip_duplicate"
-  | "failed";
+  | "skip_optout" | "bounced" | "failed";
 
 export type Job = {
   id: number;
@@ -152,6 +201,10 @@ export type Job = {
   representative: string;
   domain: string;
   is_test: number;
+  channel: "form" | "email";
+  email: string;
+  unsub_token: string;
+  provider_message_id: string;
   status: JobStatus;
   message_used: string;
   result_text: string;
@@ -170,6 +223,8 @@ export const STATUS_LABEL: Record<JobStatus, string> = {
   skip_captcha: "CAPTCHA",
   skip_suppressed: "除外リスト",
   skip_duplicate: "90日以内に送信済",
+  skip_optout: "配信停止済",
+  bounced: "不達",
   failed: "失敗",
 };
 

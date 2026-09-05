@@ -9,6 +9,7 @@ import { activeProvider } from "../llm";
 import { ensureFormTables, domainOf, isExcludedDomain, FORM_BLOCK_POINTS, FORM_BLOCK_SIZE, type Campaign, type Job, type JobStatus, type SenderProfile } from "./schema";
 import { launchBrowser, submitToCompany, fetchSiteText } from "./engine";
 import { composeMessage, findNgWords } from "./message";
+import { buildEmailBody, isOptedOut, sendEmail, senderEmailOk, unsubUrlFor } from "./email";
 
 const running = new Map<string, { stop: boolean }>();
 const CONCURRENCY = Math.max(1, Number(process.env.FORM_CONCURRENCY ?? 1));
@@ -32,11 +33,11 @@ export function inSendWindow(c: Campaign): boolean {
   if (c.weekdays_only && (wd === 0 || wd === 6)) return false;
   return h >= c.send_window_start && h < c.send_window_end;
 }
-export function sentToday(campaignId: string): number {
+export function sentToday(campaignId: string, channel?: "form" | "email"): number {
   const day = jstNow().toISOString().slice(0, 10);
   const r = getDb()
-    .prepare("SELECT COUNT(*) n FROM form_jobs WHERE campaign_id=? AND status='sent' AND is_test=0 AND substr(datetime(sent_at,'+9 hours'),1,10)=?")
-    .get(campaignId, day) as { n: number };
+    .prepare(`SELECT COUNT(*) n FROM form_jobs WHERE campaign_id=? AND status='sent' AND is_test=0 AND substr(datetime(sent_at,'+9 hours'),1,10)=?${channel ? " AND channel=?" : ""}`)
+    .get(...(channel ? [campaignId, day, channel] : [campaignId, day])) as { n: number };
   return r.n;
 }
 
@@ -50,8 +51,8 @@ export function loadCampaign(id: string): { campaign: Campaign; sender: SenderPr
   return { campaign, sender };
 }
 
-export type LeadLike = { id?: string | null; company: string; form_url?: string; website?: string; industry?: string; prefecture?: string; contact_name?: string; memo?: string };
-export type AddSummary = { added: number; excluded: number; suppressed: number; duplicated: number; noUrl: number };
+export type LeadLike = { id?: string | null; company: string; form_url?: string; website?: string; email?: string; industry?: string; prefecture?: string; contact_name?: string; memo?: string };
+export type AddSummary = { added: number; addedForm: number; addedEmail: number; excluded: number; suppressed: number; duplicated: number; noUrl: number };
 
 /** メモ欄に「問合せフォーム: URL」と書かれている古いリード用 */
 export function formUrlFromLead(l: LeadLike): string {
@@ -60,14 +61,16 @@ export function formUrlFromLead(l: LeadLike): string {
   return m ? m[1] : "";
 }
 
-/** 営業リストの会社をキャンペーンのジョブとして登録。除外・重複はこの時点で振り分けて理由を残す */
+/** 営業リストの会社をキャンペーンのジョブとして登録。チャネル（フォーム／メール）を振り分け、除外・重複は理由を残す */
 export function addLeadsToCampaign(campaignId: string, leads: LeadLike[]): AddSummary {
   ensureFormTables();
   const db = getDb();
-  const summary: AddSummary = { added: 0, excluded: 0, suppressed: 0, duplicated: 0, noUrl: 0 };
+  const campaign = db.prepare("SELECT channel FROM form_campaigns WHERE id=?").get(campaignId) as { channel: string } | undefined;
+  const mode = (campaign?.channel ?? "form") as "form" | "email" | "both";
+  const summary: AddSummary = { added: 0, addedForm: 0, addedEmail: 0, excluded: 0, suppressed: 0, duplicated: 0, noUrl: 0 };
   const insert = db.prepare(`
-    INSERT INTO form_jobs (campaign_id, lead_id, company_name, form_url, site_url, industry, prefecture, representative, domain, status, result_text)
-    VALUES (@campaign_id, @lead_id, @company_name, @form_url, @site_url, @industry, @prefecture, @representative, @domain, @status, @result_text)`);
+    INSERT INTO form_jobs (campaign_id, lead_id, company_name, form_url, site_url, industry, prefecture, representative, domain, channel, email, unsub_token, status, result_text)
+    VALUES (@campaign_id, @lead_id, @company_name, @form_url, @site_url, @industry, @prefecture, @representative, @domain, @channel, @email, @unsub_token, @status, @result_text)`);
   const isSuppressed = db.prepare("SELECT 1 FROM form_suppressions WHERE domain=?");
   const recentlySent = db.prepare("SELECT 1 FROM form_jobs WHERE domain=? AND status='sent' AND is_test=0 AND sent_at > datetime('now','-90 days')");
   const inCampaign = db.prepare("SELECT 1 FROM form_jobs WHERE campaign_id=? AND domain=?");
@@ -76,7 +79,19 @@ export function addLeadsToCampaign(campaignId: string, leads: LeadLike[]): AddSu
     for (const l of leads) {
       const formUrl = formUrlFromLead(l);
       const site = l.website ?? "";
-      const domain = domainOf(formUrl || site);
+      const email = (l.email ?? "").trim().toLowerCase();
+      const hasForm = Boolean(formUrl || site);
+      const hasEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+      // チャネルの振り分け: フォーム優先、無ければメール
+      let channel: "form" | "email" | null = null;
+      if (mode === "form" && hasForm) channel = "form";
+      else if (mode === "email" && hasEmail) channel = "email";
+      else if (mode === "both") channel = hasForm ? "form" : hasEmail ? "email" : null;
+      if (!channel) {
+        summary.noUrl++;
+        continue;
+      }
+      const domain = channel === "form" ? domainOf(formUrl || site) : domainOf(site) || email.split("@")[1];
       if (!domain) {
         summary.noUrl++;
         continue;
@@ -95,12 +110,18 @@ export function addLeadsToCampaign(campaignId: string, leads: LeadLike[]): AddSu
         status = "skip_suppressed";
         reason = "除外リストに登録済み";
         summary.suppressed++;
+      } else if (channel === "email" && isOptedOut(email)) {
+        status = "skip_optout";
+        reason = "配信停止済みのアドレス";
+        summary.suppressed++;
       } else if (recentlySent.get(domain)) {
         status = "skip_duplicate";
         reason = "90日以内に送信済み";
         summary.duplicated++;
       } else {
         summary.added++;
+        if (channel === "form") summary.addedForm++;
+        else summary.addedEmail++;
       }
       insert.run({
         campaign_id: campaignId,
@@ -112,6 +133,9 @@ export function addLeadsToCampaign(campaignId: string, leads: LeadLike[]): AddSu
         prefecture: l.prefecture ?? "",
         representative: l.contact_name ?? "",
         domain,
+        channel,
+        email: channel === "email" ? email : hasEmail ? email : "",
+        unsub_token: crypto.randomUUID().replace(/-/g, ""),
         status,
         result_text: reason,
       });
@@ -227,6 +251,25 @@ export async function processJob(browser: Browser, jobId: number, opts: { dryRun
   const ng = findNgWords(message);
   if (ng.length) return finish("failed", `NGワード検出: ${ng.join(", ")}`, { message_used: message });
 
+  if (job.channel === "email") {
+    if (!job.email) return finish("failed", "メールアドレスが無い", { message_used: message });
+    if (isOptedOut(job.email)) return finish("skip_optout", "配信停止済みのアドレス", { message_used: message });
+    const chk = senderEmailOk(campaign.user_id, sender);
+    if (!chk.ok) return finish("failed", chk.reason ?? "差出人メールが使えません", { message_used: message });
+    if (opts.dryRun) return finish("queued", "テスト（メールは送っていない）", { message_used: message });
+    try {
+      const token = job.unsub_token || crypto.randomUUID().replace(/-/g, "");
+      if (!job.unsub_token) db.prepare("UPDATE form_jobs SET unsub_token=? WHERE id=?").run(token, jobId);
+      const unsubUrl = unsubUrlFor(token);
+      const body = buildEmailBody(message, sender, unsubUrl);
+      const id = await sendEmail(sender, { from: chk.from, to: job.email, subject, ...body, unsubUrl });
+      db.prepare("UPDATE form_jobs SET provider_message_id=? WHERE id=?").run(id, jobId);
+      return finish("sent", `メール送信（${job.email}）`, { message_used: message });
+    } catch (e) {
+      return finish("failed", `メール送信エラー: ${String((e as Error).message ?? e).slice(0, 150)}`, { message_used: message });
+    }
+  }
+
   const r = await submitToCompany(browser, { jobId, formUrl: job.form_url, siteUrl: job.site_url, sender, subject, message, dryRun: opts.dryRun });
   const detail = [r.detail, ...r.log].join("\n");
   if (r.status === "skip_refused" && job.domain) {
@@ -255,10 +298,19 @@ export async function runCampaign(campaignId: string, opts: { ignoreWindow?: boo
         const { campaign } = loaded;
         if (campaign.status !== "running") { reason = "停止"; return; }
         if (!opts.ignoreWindow && !inSendWindow(campaign)) { reason = "送信時間帯外"; return; }
-        if (sentToday(campaignId) >= campaign.daily_limit) { reason = "本日の上限に到達"; return; }
+        const formOk = sentToday(campaignId, "form") < campaign.daily_limit;
+        const emailOk = sentToday(campaignId, "email") < campaign.email_daily_limit;
+        if (!formOk && !emailOk) { reason = "本日の上限に到達"; return; }
         if (!chargeIfNeeded(campaign)) { reason = "ハニー不足"; stoppedForPoints = true; return; }
-        const next = db.prepare("SELECT id FROM form_jobs WHERE campaign_id=? AND status='queued' AND is_test=0 ORDER BY id LIMIT 1").get(campaignId) as { id: number } | undefined;
-        if (!next) return;
+        const channels = [formOk && "form", emailOk && "email"].filter(Boolean) as string[];
+        const next = db
+          .prepare(`SELECT id, channel FROM form_jobs WHERE campaign_id=? AND status='queued' AND is_test=0 AND channel IN (${channels.map(() => "?").join(",")}) ORDER BY id LIMIT 1`)
+          .get(campaignId, ...channels) as { id: number; channel: string } | undefined;
+        if (!next) {
+          const left = (db.prepare("SELECT COUNT(*) n FROM form_jobs WHERE campaign_id=? AND status='queued' AND is_test=0").get(campaignId) as { n: number }).n;
+          reason = left ? "本日の上限に到達" : "queue empty";
+          return;
+        }
         const claimed = db.prepare("UPDATE form_jobs SET status='sending' WHERE id=? AND status='queued'").run(next.id).changes;
         if (!claimed) continue;
         try {
@@ -267,7 +319,8 @@ export async function runCampaign(campaignId: string, opts: { ignoreWindow?: boo
         } catch (e) {
           db.prepare("UPDATE form_jobs SET status='failed', result_text=?, updated_at=datetime('now') WHERE id=?").run(`例外: ${String(e).slice(0, 150)}`, next.id);
         }
-        await new Promise((r) => setTimeout(r, MIN_WAIT + Math.random() * (MAX_WAIT - MIN_WAIT)));
+        const wait = next.channel === "email" ? 2000 + Math.random() * 3000 : MIN_WAIT + Math.random() * (MAX_WAIT - MIN_WAIT);
+        await new Promise((r) => setTimeout(r, wait));
       }
       reason = "停止要求";
     };

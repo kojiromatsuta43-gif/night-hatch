@@ -21,15 +21,15 @@ export async function POST(req: Request, ctx: Ctx) {
   let rows: LeadLike[] = [];
   if (Array.isArray(b.leadIds) && b.leadIds.length) {
     const ids = (b.leadIds as unknown[]).map(String).slice(0, 5000);
-    rows = db.prepare(`SELECT id, company, form_url, website, industry, prefecture, contact_name, memo FROM sales_leads WHERE user_id=? AND id IN (${ids.map(() => "?").join(",")})`).all(ownerId, ...ids) as LeadLike[];
+    rows = db.prepare(`SELECT id, company, form_url, website, email, industry, prefecture, contact_name, memo FROM sales_leads WHERE user_id=? AND id IN (${ids.map(() => "?").join(",")})`).all(ownerId, ...ids) as LeadLike[];
   } else if (b.all) {
-    const conds = ["user_id = ?", "(form_url != '' OR website != '' OR memo LIKE '%問合せフォーム:%')"];
+    const conds = ["user_id = ?", "(form_url != '' OR website != '' OR email != '' OR memo LIKE '%問合せフォーム:%')"];
     const params: unknown[] = [ownerId];
     if (b.industry) { conds.push("industry = ?"); params.push(String(b.industry)); }
     if (b.prefecture) { conds.push("prefecture = ?"); params.push(String(b.prefecture)); }
     if (b.status) { conds.push("status = ?"); params.push(String(b.status)); }
     const limit = Math.min(5000, Math.max(1, Number(b.limit) || 5000));
-    rows = db.prepare(`SELECT id, company, form_url, website, industry, prefecture, contact_name, memo FROM sales_leads WHERE ${conds.join(" AND ")} ORDER BY created_at LIMIT ${limit}`).all(...params) as LeadLike[];
+    rows = db.prepare(`SELECT id, company, form_url, website, email, industry, prefecture, contact_name, memo FROM sales_leads WHERE ${conds.join(" AND ")} ORDER BY created_at LIMIT ${limit}`).all(...params) as LeadLike[];
   } else {
     return NextResponse.json({ error: "bad request" }, { status: 400 });
   }
