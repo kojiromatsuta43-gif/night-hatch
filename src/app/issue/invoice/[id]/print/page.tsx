@@ -69,7 +69,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
       <div className="p-10 text-sm text-rose-600">
         {error || "請求書が見つかりません"}
         <div className="mt-4">
-          <Link href="/issue" className="text-honey-700 underline">請求・支払いに戻る</Link>
+          <Link href="/issue" className="text-food-700 underline">請求・支払いに戻る</Link>
         </div>
       </div>
     );
@@ -84,7 +84,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       {/* 画面だけに出る操作バー（印刷では消える） */}
       <div className="mx-auto mb-4 flex max-w-[210mm] items-center justify-between px-4 print:hidden">
-        <Link href={`/issue/invoice/${id}`} className="text-sm text-slate-600 hover:text-honey-700">
+        <Link href={`/issue/invoice/${id}`} className="text-sm text-slate-600 hover:text-food-700">
           ← 編集に戻る
         </Link>
         <div className="flex items-center gap-3">
@@ -93,7 +93,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
           </span>
           <button
             onClick={() => window.print()}
-            className="rounded-lg bg-honey-500 px-4 py-2 text-sm font-semibold text-hive-900 hover:bg-honey-400"
+            className="rounded-lg bg-food-500 px-4 py-2 text-sm font-semibold text-white hover:bg-food-600"
           >
             印刷 / PDFで保存
           </button>

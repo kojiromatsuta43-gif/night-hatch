@@ -33,11 +33,11 @@ type Res =
       facets: { prefectures: Facet[]; industries: Facet[]; sources: Facet[]; withPhone: number; withEmail: number; withForm: number };
     };
 
-const box = "rounded border-2 border-hive-900 bg-white";
-const input = "rounded border-2 border-hive-900 px-2 py-1 text-sm bg-white";
-const btn = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold";
-const btnY = `${btn} bg-honey-400 text-hive-900 hover:bg-honey-300 disabled:opacity-40`;
-const btnW = `${btn} bg-white text-hive-900 hover:bg-honey-50 disabled:opacity-40`;
+const box = "rounded rounded-xl border border-food-200 bg-white";
+const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white";
+const btn = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold";
+const btnY = `${btn} bg-food-500 text-white hover:bg-food-600 disabled:opacity-40`;
+const btnW = `${btn} bg-white text-hive-900 hover:bg-food-50 disabled:opacity-40`;
 
 /** 企業DB（775万社）から条件で探して営業リストに追加する */
 export default function CompanySearch({ onAdded, isAdmin }: { onAdded: () => void; isAdmin: boolean }) {
@@ -181,14 +181,14 @@ export default function CompanySearch({ onAdded, isAdmin }: { onAdded: () => voi
         </div>
         {(prefs.length > 0 || inds.length > 0) && (
           <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
-            {prefs.map((v) => <button key={v} onClick={() => toggleIn(prefs, setPrefs, v)} className="rounded border-2 border-hive-900 bg-honey-100 px-2 py-0.5">{v} ×</button>)}
-            {inds.map((v) => <button key={v} onClick={() => toggleIn(inds, setInds, v)} className="rounded border-2 border-hive-900 bg-honey-100 px-2 py-0.5">{v} ×</button>)}
+            {prefs.map((v) => <button key={v} onClick={() => toggleIn(prefs, setPrefs, v)} className="rounded rounded-xl border border-food-200 bg-food-100 px-2 py-0.5">{v} ×</button>)}
+            {inds.map((v) => <button key={v} onClick={() => toggleIn(inds, setInds, v)} className="rounded rounded-xl border border-food-200 bg-food-100 px-2 py-0.5">{v} ×</button>)}
             <button onClick={() => { setPrefs([]); setInds([]); setPage(1); }} className="underline">すべて外す</button>
           </div>
         )}
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2 rounded border-2 border-hive-900 bg-honey-50 px-3 py-2 text-sm">
+      <div className="mb-3 flex flex-wrap items-center gap-2 rounded rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-sm">
         <span className="font-bold">{busy ? "検索中…" : `${total.toLocaleString()} 社`}</span>
         {res?.ready && (
           <span className="text-xs text-slate-600">
@@ -214,7 +214,7 @@ export default function CompanySearch({ onAdded, isAdmin }: { onAdded: () => voi
       <div className={`${box} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+            <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
               <th className="px-2 py-2">
                 <input type="checkbox" checked={items.length > 0 && items.every((c) => selected.has(c.id))} onChange={() => setSelected(items.every((c) => selected.has(c.id)) ? new Set() : new Set(items.map((c) => c.id)))} />
               </th>

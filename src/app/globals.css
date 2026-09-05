@@ -1,9 +1,25 @@
 @import "tailwindcss";
 
-/* ── BRIDGE HATCH のブランドカラー ──────────────────────
-   はちみつの黄色（honey）と、巣箱の黒（hive）。
-   黄色の上に白文字は読みづらいため、ボタンの文字は必ず hive を使う。 */
+/* ── FOOD HATCH のブランドカラー ──────────────────────
+   テラコッタ（food）× クリーム地（cream）× 焦げ茶の文字（hive）。
+   はちみつの黄（honey）は「ハニーP」と巣のモチーフにだけ使う差し色。
+   参考: Monte（テラコッタのカフェ）/ Limón（クリーム地に差し色ひとつ）。
+   テラコッタの上の文字は必ず白（text-white）。 */
 @theme {
+  --color-food-50: #FBF1EA;
+  --color-food-100: #F6DFD1;
+  --color-food-200: #EDC3AE;
+  --color-food-300: #E09A7B;
+  --color-food-400: #D2704F;
+  --color-food-500: #B84B30;
+  --color-food-600: #9E3D25;
+  --color-food-700: #7E2F1C;
+  --color-food-800: #5F1D1A;
+
+  --color-cream-50: #FDFBF6;
+  --color-cream-100: #F8F4E9;
+  --color-cream-200: #EFE7D6;
+
   --color-honey-50: #FFFBEB;
   --color-honey-100: #FFF3C9;
   --color-honey-200: #FFE79B;
@@ -14,27 +30,41 @@
   --color-honey-700: #A06A00;
   --color-honey-800: #7A5100;
 
-  --color-hive-50: #F7F5F1;
-  --color-hive-200: #DED9D0;
-  --color-hive-500: #6B6154;
-  --color-hive-700: #3A3229;
-  --color-hive-800: #2A231B;
-  --color-hive-900: #1C1710;
+  /* 焦げ茶（エスプレッソ）。黒の代わりに文字・濃い面に使う */
+  --color-hive-50: #F8F4E9;
+  --color-hive-200: #E6DACF;
+  --color-hive-500: #8A6F63;
+  --color-hive-700: #4A2C25;
+  --color-hive-800: #3A1F1A;
+  --color-hive-900: #2B1410;
+
+  --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
 
 body {
-  background: var(--app-bg, #FDFAF2);
-  color: #1C1710;
+  background: var(--app-bg, #F8F4E9);
+  color: #2B1410;
   font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
 }
 
-/* ── 巣箱の世界観: 角丸と影をやめ、線で形を作る ──
-   個別の画面を全部書き換えなくても統一されるように、ここでまとめて上書きする。
-   丸いもの（アバター・バッジ）はそのまま。 */
-@layer utilities {
-  [class*="rounded-"]:not([class*="rounded-full"]) { border-radius: 2px !important; }
-  [class*="shadow-"] { box-shadow: none !important; }
+/* ── 食堂の世界観: 見出しは明朝、面はクリーム、角はやわらかく ──
+   見出し（h1/h2）だけ明朝にして「お品書き」の雰囲気を出す。本文はゴシックのまま読みやすく。 */
+h1, h2, .font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
+
+/* 角丸: 大きい面は 14〜16px、小さい部品は 8px。影はごく薄く。 */
+@layer utilities {
+  [class*="rounded-2xl"], [class*="rounded-3xl"] { border-radius: 16px !important; }
+  [class*="rounded-xl"] { border-radius: 14px !important; }
+  [class*="rounded-lg"] { border-radius: 10px !important; }
+  [class*="shadow-"]:not([class*="shadow-none"]) { box-shadow: 0 1px 2px rgba(43, 20, 16, 0.06), 0 6px 20px -12px rgba(184, 75, 48, 0.25) !important; }
+}
+
+/* 白い面はほんのり生成りに寄せる（真っ白のカードが浮かないように） */
+.bg-white { background-color: #FFFDF9; }
 
 /* ── ハニカム（巣箱）のモチーフ ─────────────────────
    六角形は要所だけ: 上部ナビの選択中タブ、メニューの巣、案件の進捗セル。 */

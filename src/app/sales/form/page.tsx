@@ -15,11 +15,11 @@ type Campaign = {
 type ListRes = { items: Campaign[]; defaults: { template_text: string; subject_text: string }; ai: string | null; workerEnabled: boolean; pricing: { block: number; points: number } | null };
 type Suppression = { id: string; domain: string; reason: string; created_at: string };
 
-const box = "rounded border-2 border-hive-900 bg-white";
-const input = "rounded border-2 border-hive-900 px-2 py-1 text-sm bg-white w-full";
-const btn = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold";
-const btnY = `${btn} bg-honey-400 text-hive-900 hover:bg-honey-300 disabled:opacity-50`;
-const btnW = `${btn} bg-white text-hive-900 hover:bg-honey-50`;
+const box = "rounded rounded-xl border border-food-200 bg-white";
+const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white w-full";
+const btn = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold";
+const btnY = `${btn} bg-food-500 text-white hover:bg-food-600 disabled:opacity-50`;
+const btnW = `${btn} bg-white text-hive-900 hover:bg-food-50`;
 const STATUS_JA: Record<string, string> = { draft: "準備中", running: "実行中", paused: "一時停止", done: "完了" };
 
 export default function FormOutreachPage() {
@@ -57,7 +57,7 @@ export default function FormOutreachPage() {
 
       <div className="mb-4 flex flex-wrap gap-1 text-sm">
         {(["list", "senders", "suppress"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`hex-tab px-4 py-1.5 font-bold ${tab === t ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>
+          <button key={t} onClick={() => setTab(t)} className={`hex-tab px-4 py-1.5 font-bold ${tab === t ? "bg-food-500 text-white" : "bg-white text-slate-600"}`}>
             {t === "list" ? "キャンペーン" : t === "senders" ? "送信者（差出人）" : "除外リスト"}
           </button>
         ))}
@@ -67,9 +67,9 @@ export default function FormOutreachPage() {
       {tab === "list" && data && (
         <>
           {data.ai === null && (
-            <div className="mb-3 rounded border-2 border-hive-900 bg-honey-50 px-3 py-2 text-xs">AIのAPIキーが設定されていないため、文面はテンプレートのみで送られます（ハイブリッド／AIを選んでも同じ）。</div>
+            <div className="mb-3 rounded rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-xs">AIのAPIキーが設定されていないため、文面はテンプレートのみで送られます（ハイブリッド／AIを選んでも同じ）。</div>
           )}
-          {!data.workerEnabled && <div className="mb-3 rounded border-2 border-hive-900 bg-honey-50 px-3 py-2 text-xs">このサーバーでは送信ワーカーが無効です（FORM_OUTREACH=off）。</div>}
+          {!data.workerEnabled && <div className="mb-3 rounded rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-xs">このサーバーでは送信ワーカーが無効です（FORM_OUTREACH=off）。</div>}
           <div className="mb-3">
             <button onClick={() => setCreating((v) => !v)} className={btnY} disabled={senders.length === 0}>{creating ? "閉じる" : "＋ 新しいキャンペーン"}</button>
             {senders.length === 0 && <span className="ml-2 text-xs text-slate-500">先に「送信者（差出人）」を登録してください</span>}
@@ -80,7 +80,7 @@ export default function FormOutreachPage() {
           <div className={`${box} overflow-x-auto`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+                <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
                   <th className="px-2 py-2">キャンペーン</th>
                   {me?.role === "admin" && <th className="px-2 py-2">オーナー</th>}
                   <th className="px-2 py-2">差出人</th>
@@ -101,7 +101,7 @@ export default function FormOutreachPage() {
                     {me?.role === "admin" && <td className="px-2 py-2 text-xs">{c.owner_name}</td>}
                     <td className="px-2 py-2 text-xs">{c.sender_label ?? "—"}</td>
                     <td className="px-2 py-2 text-xs">{c.mode === "hybrid" ? "ハイブリッド" : c.mode === "ai" ? "全文AI" : "テンプレ"}</td>
-                    <td className="px-2 py-2"><span className={`rounded px-2 py-0.5 text-xs font-bold ${c.running ? "bg-sky-100 text-sky-800" : c.status === "done" ? "bg-slate-100" : c.status === "running" ? "bg-honey-100" : "bg-white border border-slate-300"}`}>{c.running ? "送信中" : STATUS_JA[c.status] ?? c.status}</span></td>
+                    <td className="px-2 py-2"><span className={`rounded px-2 py-0.5 text-xs font-bold ${c.running ? "bg-sky-100 text-sky-800" : c.status === "done" ? "bg-slate-100" : c.status === "running" ? "bg-food-100" : "bg-white border border-slate-300"}`}>{c.running ? "送信中" : STATUS_JA[c.status] ?? c.status}</span></td>
                     <td className="px-2 py-2 text-right">{c.total}</td>
                     <td className="px-2 py-2 text-right font-bold text-emerald-700">{c.sent}</td>
                     <td className="px-2 py-2 text-right">{c.queued}</td>
@@ -163,7 +163,7 @@ function SendersPanel({ senders, onChanged }: { senders: Sender[]; onChanged: ()
       <p className="mb-3 text-xs text-slate-500">フォームに入力される差出人です。お客様の送信はお客様ご自身の会社名・担当者名で行います（FOOD HATCH名義では送りません）。</p>
       <div className={`${box} mb-4 overflow-x-auto`}>
         <table className="w-full text-sm">
-          <thead><tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500"><th className="px-2 py-2">ラベル</th><th className="px-2 py-2">会社</th><th className="px-2 py-2">担当者</th><th className="px-2 py-2">メール</th><th className="px-2 py-2">電話</th><th className="px-2 py-2"></th></tr></thead>
+          <thead><tr className="border-b-2 border-food-200 text-left text-xs text-slate-500"><th className="px-2 py-2">ラベル</th><th className="px-2 py-2">会社</th><th className="px-2 py-2">担当者</th><th className="px-2 py-2">メール</th><th className="px-2 py-2">電話</th><th className="px-2 py-2"></th></tr></thead>
           <tbody>
             {senders.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-xs text-slate-500">まだありません</td></tr>}
             {senders.map((s) => (
@@ -219,7 +219,7 @@ function SuppressionsPanel({ isAdmin }: { isAdmin: boolean }) {
       </div>
       <div className={`${box} overflow-x-auto`}>
         <table className="w-full text-sm">
-          <thead><tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500"><th className="px-2 py-2">ドメイン</th><th className="px-2 py-2">理由</th><th className="px-2 py-2">登録</th><th></th></tr></thead>
+          <thead><tr className="border-b-2 border-food-200 text-left text-xs text-slate-500"><th className="px-2 py-2">ドメイン</th><th className="px-2 py-2">理由</th><th className="px-2 py-2">登録</th><th></th></tr></thead>
           <tbody>
             {rows.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-xs text-slate-500">まだありません</td></tr>}
             {rows.map((r) => (

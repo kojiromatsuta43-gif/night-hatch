@@ -66,7 +66,7 @@ export default function AdminDashboard() {
           ["AI利用", `${o.totals.ai.chat + o.totals.ai.gen}回`],
           ["契約中", `${o.totals.contracts}社`],
         ].map(([k, v]) => (
-          <div key={k} className="border-[3px] border-hive-900 bg-white px-4 py-3">
+          <div key={k} className="rounded-2xl border border-food-200 bg-white px-4 py-3">
             <div className="text-xs text-slate-500">{k}</div>
             <div className="mt-0.5 text-xl font-black text-hive-900">{v}</div>
           </div>
@@ -76,9 +76,9 @@ export default function AdminDashboard() {
       <section>
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="text-lg font-bold text-hive-900">クライアントの状況</h2>
-          <Link href="/admin" className="text-sm font-bold text-honey-700 hover:underline">契約管理へ →</Link>
+          <Link href="/admin" className="text-sm font-bold text-food-700 hover:underline">契約管理へ →</Link>
         </div>
-        <div className="overflow-x-auto border-2 border-hive-900 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-food-200 bg-white">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
                   <td className="whitespace-nowrap px-3 py-2 font-bold">
                     {c.name}
                     {c.awaiting > 0 && (
-                      <span className="ml-2 rounded-full bg-honey-400 px-2 py-0.5 text-[10px] font-bold text-hive-900">確認促し</span>
+                      <span className="ml-2 rounded-full bg-food-500 px-2 py-0.5 text-[10px] font-bold text-white">確認促し</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
                   <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{c.ordered}件</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{c.active}件</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{c.spent}pt</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{c.awaiting > 0 ? <b className="text-honey-700">{c.awaiting}件</b> : "—"}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{c.awaiting > 0 ? <b className="text-food-700">{c.awaiting}件</b> : "—"}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-500">{ago(c.last_seen_at)}</td>
                 </tr>
               ))}
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
 
       <section>
         <h2 className="mb-2 text-lg font-bold text-hive-900">クリエイターの状況</h2>
-        <div className="overflow-x-auto border-2 border-hive-900 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-food-200 bg-white">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs text-slate-500">

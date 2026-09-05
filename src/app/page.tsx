@@ -51,7 +51,7 @@ export default function Dashboard() {
               { label: `残り${mascot.pointName}`, value: <>{me?.points ?? 0}<PointInline /></> },
             ]
         ).map((s) => (
-          <div key={s.label} className="border-[3px] border-hive-900 bg-white p-5">
+          <div key={s.label} className="rounded-2xl border border-food-200 bg-white p-5">
             <div className="text-sm text-slate-500">{s.label}</div>
             <div className="mt-1 text-3xl font-black text-hive-900">{s.value}</div>
           </div>
@@ -62,12 +62,12 @@ export default function Dashboard() {
         <h2 className="text-lg font-semibold">{isFreelancer ? "作業中の仕事" : "募集中の案件"}</h2>
         <Link
           href={isFreelancer ? "/jobs" : "/order"}
-          className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300"
+          className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white hover:bg-food-600"
         >
           {isFreelancer ? "お仕事をさがす →" : "＋ 新規案件を登録"}
         </Link>
       </div>
-      <div className="overflow-x-auto border-2 border-hive-900 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-food-200 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-500">
@@ -87,7 +87,7 @@ export default function Dashboard() {
             )}
             {spotlight.map((p) => (
               <tr key={p.id} className="border-b border-slate-100 last:border-0">
-                <td className="px-4 py-3 font-medium"><Link href={`/projects/${p.id}`} className="hover:text-honey-700 hover:underline">{p.title}</Link></td>
+                <td className="px-4 py-3 font-medium"><Link href={`/projects/${p.id}`} className="hover:text-food-700 hover:underline">{p.title}</Link></td>
                 <td className="px-4 py-3">{p.category}</td>
                 <td className="px-4 py-3">{p.deadline}</td>
                 {!isFreelancer && <td className="px-4 py-3 text-right">{p.points}<PointInline /></td>}

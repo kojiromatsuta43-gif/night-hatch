@@ -72,7 +72,7 @@ function PaymentSettings() {
       </p>
 
       {msg && (
-        <div className="mb-5 rounded-xl border border-honey-300 bg-honey-50 px-4 py-3 text-sm text-hive-900">{msg}</div>
+        <div className="mb-5 rounded-xl border border-food-300 bg-food-50 px-4 py-3 text-sm text-hive-900">{msg}</div>
       )}
 
       {/* 1. 鍵の設定状況 */}
@@ -157,7 +157,7 @@ function PaymentSettings() {
             {st.ready ? (
               <a
                 href="/api/stripe/connect"
-                className="inline-block rounded-lg bg-honey-400 px-6 py-2.5 text-sm font-bold text-hive-900 hover:bg-honey-300"
+                className="inline-block rounded-lg bg-food-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-food-600"
               >
                 ご自身のStripeを連携する →
               </a>

@@ -58,11 +58,11 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
     }
   };
 
-  const input = "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none";
+  const input = "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none";
 
   return (
     <div className="space-y-5">
-      <div className={`rounded-xl border p-4 text-sm ${st?.configured ? "border-honey-200 bg-honey-50/50 text-hive-900" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+      <div className={`rounded-xl border p-4 text-sm ${st?.configured ? "border-food-200 bg-food-50/50 text-hive-900" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
         {st === null
           ? "読み込み中…"
           : st.configured
@@ -91,7 +91,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
-          <button onClick={add} disabled={!value.trim() || !industry} className="rounded-lg bg-honey-400 px-4 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">追加</button>
+          <button onClick={add} disabled={!value.trim() || !industry} className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">追加</button>
         </div>
         <p className="mt-2 text-xs text-slate-500">
           検索ワードで見つかった投稿者は、ここで選んだ業種の参考アカウントとして自動登録されます。1回の取り込みで設定1件あたり最新20本まで。
@@ -112,7 +112,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
                 setError(e instanceof Error ? e.message : "整理に失敗");
               }
             }}
-            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-honey-400"
+            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-food-400"
             title="日本語の動画が無い投稿者や、フォロワーが多すぎるテレビ局・芸能人などを取り込み分から外します"
           >
             取り込み分を整理
@@ -128,7 +128,7 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
               }
             }}
             disabled={st?.classifying || (st?.unclassified ?? 0) === 0}
-            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-honey-400 disabled:opacity-40"
+            className="mr-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:border-food-400 disabled:opacity-40"
             title="その業種の事業者・店舗・専門家のアカウントだけを残し、一般ユーザーの体験投稿やまとめ・ニュースを外します"
           >
             {st?.classifying ? "AI審査中…" : `AIでお手本を審査（未審査 ${st?.unclassified ?? 0} 件）`}
@@ -145,11 +145,11 @@ export default function TikTokSyncPanel({ industries }: { industries: string[] }
           <div key={q.id} className={`flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-2.5 text-sm last:border-0 ${q.active ? "" : "opacity-50"}`}>
             <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{KIND_LABEL[q.kind]}</span>
             <span className="font-medium">{q.value}</span>
-            <span className="rounded-full bg-honey-50 px-2 py-0.5 text-xs text-hive-900">{q.industry}</span>
+            <span className="rounded-full bg-food-50 px-2 py-0.5 text-xs text-hive-900">{q.industry}</span>
             <span className="ml-auto text-xs text-slate-400">
               {q.last_run_at ? `${fmt(q.last_run_at)} ${q.last_result}` : "未実行"}
             </span>
-            <button onClick={() => sync([q.id])} disabled={busy || !st?.configured || st?.syncing} className="text-xs text-honey-700 hover:underline disabled:opacity-40">これだけ取り込む</button>
+            <button onClick={() => sync([q.id])} disabled={busy || !st?.configured || st?.syncing} className="text-xs text-food-700 hover:underline disabled:opacity-40">これだけ取り込む</button>
             <button
               onClick={async () => { await api(`/api/admin/tiktok/${q.id}`, { method: "PATCH", body: JSON.stringify({ active: !q.active }) }); load(); }}
               className="text-xs text-slate-500 hover:underline"

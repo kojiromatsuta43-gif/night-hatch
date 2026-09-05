@@ -27,8 +27,8 @@ function ScriptsPageInner() {
       <h1 className="text-2xl font-bold mb-2">保存済み台本</h1>
       <p className="mb-6 text-sm text-slate-500">AIエージェントで作成した台本の一覧です。</p>
       <div className="mb-4 flex gap-2 text-sm">
-        <button onClick={() => setFilter("all")} className={`rounded-full px-4 py-1.5 ${filter === "all" ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>すべて ({scripts.length})</button>
-        <button onClick={() => setFilter("fav")} className={`rounded-full px-4 py-1.5 ${filter === "fav" ? "bg-honey-400 text-hive-900" : "border border-slate-300 text-slate-600"}`}>お気に入り ({scripts.filter((s) => s.favorite).length})</button>
+        <button onClick={() => setFilter("all")} className={`rounded-full px-4 py-1.5 ${filter === "all" ? "bg-food-500 text-white" : "border border-slate-300 text-slate-600"}`}>すべて ({scripts.length})</button>
+        <button onClick={() => setFilter("fav")} className={`rounded-full px-4 py-1.5 ${filter === "fav" ? "bg-food-500 text-white" : "border border-slate-300 text-slate-600"}`}>お気に入り ({scripts.filter((s) => s.favorite).length})</button>
       </div>
       {list.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
@@ -39,7 +39,7 @@ function ScriptsPageInner() {
         {list.map((s) => (
           <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-start justify-between gap-2">
-              <button onClick={() => setOpenId(s.id)} className="text-left text-sm font-semibold hover:text-honey-700">{s.title}</button>
+              <button onClick={() => setOpenId(s.id)} className="text-left text-sm font-semibold hover:text-food-700">{s.title}</button>
               <button
                 onClick={async () => { await api(`/api/scripts/${s.id}`, { method: "PATCH", body: JSON.stringify({ favorite: !s.favorite }) }); load(); }}
                 className={s.favorite ? "text-amber-400" : "text-slate-300"}
@@ -52,7 +52,7 @@ function ScriptsPageInner() {
             </div>
             <Link
               href={`/order/create?category=${encodeURIComponent(DEFAULT_VIDEO_CATEGORY)}&script=${s.id}`}
-              className="mt-3 block rounded-lg bg-honey-400 py-2 text-center text-xs font-semibold text-hive-900 hover:bg-honey-300"
+              className="mt-3 block rounded-lg bg-food-500 py-2 text-center text-xs font-semibold text-white hover:bg-food-600"
             >
               🐝 この台本で動画編集を発注する →
             </Link>
@@ -70,7 +70,7 @@ function ScriptsPageInner() {
             <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: marked.parse(open.content) as string }} />
             <Link
               href={`/order/create?category=${encodeURIComponent(DEFAULT_VIDEO_CATEGORY)}&script=${open.id}`}
-              className="mt-5 block rounded-lg bg-honey-400 py-2.5 text-center text-sm font-semibold text-hive-900 hover:bg-honey-300"
+              className="mt-5 block rounded-lg bg-food-500 py-2.5 text-center text-sm font-semibold text-white hover:bg-food-600"
             >
               🐝 この台本で動画編集を発注する →
             </Link>

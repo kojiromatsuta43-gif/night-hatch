@@ -40,19 +40,19 @@ const RESULTS = ["不通", "受付止まり", "担当者と話せた", "資料�
 const STATUS_STYLE: Record<string, string> = {
   未着手: "bg-slate-100 text-slate-600",
   不通: "bg-slate-200 text-slate-700",
-  再架電: "bg-honey-100 text-hive-900",
+  再架電: "bg-food-100 text-hive-900",
   資料送付: "bg-sky-100 text-sky-800",
-  アポ: "bg-honey-400 text-hive-900",
+  アポ: "bg-food-500 text-white",
   成約: "bg-hive-900 text-honey-300",
   断り: "bg-rose-100 text-rose-700",
   対象外: "bg-slate-100 text-slate-400",
 };
 
-const box = "rounded border-2 border-hive-900 bg-white";
-const input = "rounded border-2 border-hive-900 px-2 py-1 text-sm bg-white";
-const btn = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold";
-const btnY = `${btn} bg-honey-400 text-hive-900 hover:bg-honey-300`;
-const btnW = `${btn} bg-white text-hive-900 hover:bg-honey-50`;
+const box = "rounded rounded-xl border border-food-200 bg-white";
+const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white";
+const btn = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold";
+const btnY = `${btn} bg-food-500 text-white hover:bg-food-600`;
+const btnW = `${btn} bg-white text-hive-900 hover:bg-food-50`;
 
 function fmtDate(v: string | null) {
   if (!v) return "";
@@ -178,10 +178,10 @@ function SalesInner() {
 
       {!isFreelancer && (
         <div className="mb-4 flex flex-wrap gap-1 text-sm">
-          <button onClick={() => setMode("list")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "list" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>自分のリスト</button>
-          <button onClick={() => setMode("agent")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "agent" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>営業AI（台本・リスト取得）</button>
+          <button onClick={() => setMode("list")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "list" ? "bg-food-500 text-white" : "bg-white text-slate-600"}`}>自分のリスト</button>
+          <button onClick={() => setMode("agent")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "agent" ? "bg-food-500 text-white" : "bg-white text-slate-600"}`}>営業AI（台本・リスト取得）</button>
           {isAdmin && (
-            <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-honey-400 text-hive-900" : "bg-white text-slate-600"}`}>企業DBから探す（社内専用）</button>
+            <button onClick={() => setMode("db")} className={`hex-tab px-4 py-1.5 font-bold ${mode === "db" ? "bg-food-500 text-white" : "bg-white text-slate-600"}`}>企業DBから探す（社内専用）</button>
           )}
         </div>
       )}
@@ -195,11 +195,11 @@ function SalesInner() {
 
       {/* 状態の内訳 */}
       <div className="mb-3 flex flex-wrap gap-1.5 text-xs">
-        <button onClick={() => { setStatus(""); setPage(1); }} className={`rounded border-2 border-hive-900 px-2 py-0.5 ${status === "" ? "bg-hive-900 text-white" : "bg-white"}`}>
+        <button onClick={() => { setStatus(""); setPage(1); }} className={`rounded rounded-xl border border-food-200 px-2 py-0.5 ${status === "" ? "bg-hive-900 text-white" : "bg-white"}`}>
           すべて {allCount}
         </button>
         {STATUSES.map((s) => (
-          <button key={s} onClick={() => { setStatus(s); setPage(1); }} className={`rounded border-2 border-hive-900 px-2 py-0.5 ${status === s ? "bg-hive-900 text-white" : STATUS_STYLE[s]}`}>
+          <button key={s} onClick={() => { setStatus(s); setPage(1); }} className={`rounded rounded-xl border border-food-200 px-2 py-0.5 ${status === s ? "bg-hive-900 text-white" : STATUS_STYLE[s]}`}>
             {s} {statusCount(s)}
           </button>
         ))}
@@ -251,7 +251,7 @@ function SalesInner() {
 
       {/* まとめて操作 */}
       {selected.size > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded border-2 border-hive-900 bg-honey-50 px-3 py-2 text-sm">
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-sm">
           <span className="font-bold">{selected.size}件を選択中</span>
           {!isFreelancer && (
             <>
@@ -306,7 +306,7 @@ function SalesInner() {
       <div className={`${box} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+            <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
               <th className="px-2 py-2"><input type="checkbox" checked={allSelected} onChange={() => setSelected(allSelected ? new Set() : new Set(allOnPage))} /></th>
               <th className="px-2 py-2">会社名 / 担当者</th>
               <th className="px-2 py-2">電話</th>
@@ -365,7 +365,7 @@ function LeadRow({
 }) {
   return (
     <>
-      <tr className={`border-b border-slate-200 ${open ? "bg-honey-50" : ""}`}>
+      <tr className={`border-b border-slate-200 ${open ? "bg-food-50" : ""}`}>
         <td className="px-2 py-2 align-top"><input type="checkbox" checked={checked} onChange={onToggle} /></td>
         <td className="px-2 py-2 align-top">
           <div className="font-bold">{lead.company}</div>
@@ -379,7 +379,7 @@ function LeadRow({
           <div className="text-slate-500">{lead.industry}{lead.employees ? ` ・ ${lead.employees}人` : ""}</div>
         </td>
         <td className="px-2 py-2 align-top">
-          <select value={lead.status} onChange={(e) => onPatch({ status: e.target.value })} className={`rounded border-2 border-hive-900 px-1.5 py-0.5 text-xs ${STATUS_STYLE[lead.status] ?? ""}`}>
+          <select value={lead.status} onChange={(e) => onPatch({ status: e.target.value })} className={`rounded rounded-xl border border-food-200 px-1.5 py-0.5 text-xs ${STATUS_STYLE[lead.status] ?? ""}`}>
             {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </td>
@@ -397,13 +397,13 @@ function LeadRow({
           {lead.project_id ? <Link href={`/projects/${lead.project_id}`} className="underline">{lead.project_title ?? "案件"}</Link> : <span className="text-slate-400">—</span>}
         </td>
         <td className="px-2 py-2 align-top whitespace-nowrap">
-          <button onClick={onOpen} className={`${btn} ${open ? "bg-hive-900 text-white" : "bg-honey-400 text-hive-900"}`}>
+          <button onClick={onOpen} className={`${btn} ${open ? "bg-hive-900 text-white" : "bg-food-500 text-white"}`}>
             {open ? "閉じる" : "架電を記録"}
           </button>
         </td>
       </tr>
       {open && (
-        <tr className="border-b-2 border-hive-900 bg-honey-50">
+        <tr className="border-b-2 border-food-200 bg-food-50">
           <td colSpan={8} className="px-4 py-3">
             <CallPanel lead={lead} onPatch={onPatch} onChanged={onChanged} />
           </td>
@@ -447,7 +447,7 @@ function CallPanel({ lead, onPatch, onChanged }: { lead: Lead; onPatch: (b: Reco
         <div className="mb-1 text-xs font-bold">架電結果を記録</div>
         <div className="flex flex-wrap gap-1.5 mb-2">
           {RESULTS.map((r) => (
-            <button key={r} onClick={() => setResult(r)} className={`rounded border-2 border-hive-900 px-2 py-0.5 text-xs ${result === r ? "bg-hive-900 text-white" : "bg-white"}`}>{r}</button>
+            <button key={r} onClick={() => setResult(r)} className={`rounded rounded-xl border border-food-200 px-2 py-0.5 text-xs ${result === r ? "bg-hive-900 text-white" : "bg-white"}`}>{r}</button>
           ))}
         </div>
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="話した内容、次に電話する日など" className={`${input} w-full`} />

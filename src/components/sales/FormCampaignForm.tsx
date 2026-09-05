@@ -5,9 +5,9 @@ import { api } from "@/lib/client";
 
 export type Sender = { id: string; label: string; company: string; industry: string; person: string; person_kana: string; email: string; reply_email: string; tel: string; postal: string; address: string; url: string };
 
-const box = "rounded border-2 border-hive-900 bg-white";
-const input = "rounded border-2 border-hive-900 px-2 py-1 text-sm bg-white w-full";
-const btnY = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold bg-honey-400 text-hive-900 hover:bg-honey-300 disabled:opacity-50";
+const box = "rounded rounded-xl border border-food-200 bg-white";
+const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white w-full";
+const btnY = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold bg-food-500 text-white hover:bg-food-600 disabled:opacity-50";
 
 /** フォーム営業キャンペーンの作成・編集フォーム */
 export default function CampaignForm({

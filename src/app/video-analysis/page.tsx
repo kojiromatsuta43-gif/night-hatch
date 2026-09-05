@@ -66,9 +66,9 @@ export default function VideoAnalysisPage() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://www.tiktok.com/@... または https://www.youtube.com/shorts/..."
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
         />
-        <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40">
+        <button onClick={analyze} disabled={busy || !url.trim()} className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40">
           {busy ? (
             <span className="flex items-center gap-2">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -81,8 +81,8 @@ export default function VideoAnalysisPage() {
         </button>
       </div>
       {busy && (
-        <div className="mt-6 flex items-center gap-3 rounded-xl border-2 border-dashed border-honey-400 bg-honey-50 px-5 py-4 text-sm text-hive-900">
-          <svg className="h-6 w-6 shrink-0 animate-spin text-honey-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <div className="mt-6 flex items-center gap-3 rounded-xl border-2 border-dashed border-food-400 bg-food-50 px-5 py-4 text-sm text-hive-900">
+          <svg className="h-6 w-6 shrink-0 animate-spin text-food-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
             <path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
           </svg>
@@ -117,7 +117,7 @@ export default function VideoAnalysisPage() {
                 <div className="text-xs font-semibold text-slate-500">元の動画</div>
                 {result.author && <div className="mt-1 text-sm font-bold">{result.author}</div>}
                 {result.caption && <p className="mt-1 text-sm text-slate-600">{result.caption}</p>}
-                <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-honey-600 hover:underline">
+                <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-food-600 hover:underline">
                   TikTokで開く →
                 </a>
               </div>
@@ -141,7 +141,7 @@ export default function VideoAnalysisPage() {
             <div className="space-y-2">
               {result.scenes.map((s, i) => (
                 <div key={i} className="rounded-lg bg-slate-50 px-4 py-2.5">
-                  <span className="mr-3 font-mono text-xs text-honey-700">{s.time}</span>
+                  <span className="mr-3 font-mono text-xs text-food-700">{s.time}</span>
                   <span className="text-sm font-semibold">{s.label}</span>
                   <p className="mt-0.5 text-sm text-slate-600">{s.note}</p>
                 </div>

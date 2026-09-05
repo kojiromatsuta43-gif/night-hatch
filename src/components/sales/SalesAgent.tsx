@@ -22,9 +22,9 @@ const QUICK = [
   { label: "切り返しだけ", prompt: "「今は必要ない」「資料だけ送って」「他社を使っている」と言われたときの切り返しを、それぞれ3パターンずつ作ってください。商材: " },
 ];
 
-const btn = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold";
-const btnY = `${btn} bg-honey-400 text-hive-900 hover:bg-honey-300 disabled:opacity-40`;
-const btnW = `${btn} bg-white text-hive-900 hover:bg-honey-50 disabled:opacity-40`;
+const btn = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold";
+const btnY = `${btn} bg-food-500 text-white hover:bg-food-600 disabled:opacity-40`;
+const btnW = `${btn} bg-white text-hive-900 hover:bg-food-50 disabled:opacity-40`;
 
 export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolean; onListChanged: () => void }) {
   const { mascot } = useMascot();
@@ -90,19 +90,19 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
         <button onClick={() => { setSessionId(null); setMessages([]); setError(""); }} className={`${btnY} mb-2 w-full`}>＋ 新しい会話</button>
         <div className="space-y-1">
           {sessions.map((s) => (
-            <button key={s.id} onClick={() => { setSessionId(s.id); setMessages(s.messages); setError(""); }} className={`block w-full truncate rounded px-2 py-1.5 text-left text-xs ${s.id === sessionId ? "bg-honey-100 text-hive-900" : "text-slate-600 hover:bg-slate-100"}`}>
+            <button key={s.id} onClick={() => { setSessionId(s.id); setMessages(s.messages); setError(""); }} className={`block w-full truncate rounded px-2 py-1.5 text-left text-xs ${s.id === sessionId ? "bg-food-100 text-hive-900" : "text-slate-600 hover:bg-slate-100"}`}>
               {s.title}
             </button>
           ))}
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col rounded border-2 border-hive-900 bg-white">
-        <div className="flex flex-wrap items-center gap-3 border-b-2 border-hive-900 px-4 py-2">
+      <div className="flex min-w-0 flex-1 flex-col rounded rounded-xl border border-food-200 bg-white">
+        <div className="flex flex-wrap items-center gap-3 border-b-2 border-food-200 px-4 py-2">
           <Mascot className="h-7 w-7 shrink-0" />
           <span className="text-sm font-bold text-hive-900">営業AI</span>
           <div className="hidden sm:block"><AiUsage refreshKey={usageKey} compact /></div>
-          <select value={profileId} onChange={(e) => setProfileId(e.target.value)} className="ml-auto rounded border-2 border-hive-900 px-2 py-1 text-xs">
+          <select value={profileId} onChange={(e) => setProfileId(e.target.value)} className="ml-auto rounded rounded-xl border border-food-200 px-2 py-1 text-xs">
             <option value="">ブランドプロファイルなし</option>
             {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -126,13 +126,13 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : ""}>
                 {m.role === "user" ? (
-                  <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
+                  <div className="max-w-[80%] rounded-2xl bg-food-500 px-4 py-2 text-sm text-white whitespace-pre-wrap">{m.content}</div>
                 ) : (
                   <div className="flex max-w-[95%] gap-2.5">
                     <Mascot className="mt-1 h-8 w-8 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div
-                        className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
+                        className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-food-100 bg-food-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
                         dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
                       />
                       {m.payload?.type === "list_preview" && (
@@ -155,7 +155,7 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
             {busy && (
               <div className="flex items-center gap-2.5">
                 <Mascot className="h-8 w-8 shrink-0 animate-bee-float" />
-                <div className="rounded-2xl border border-honey-100 bg-honey-50/60 px-4 py-2 text-xs text-slate-500">{mascot.thinking}</div>
+                <div className="rounded-2xl border border-food-100 bg-food-50/60 px-4 py-2 text-xs text-slate-500">{mascot.thinking}</div>
               </div>
             )}
             {error && <div className="rounded bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
@@ -163,7 +163,7 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
           </div>
         </div>
 
-        <div className="border-t-2 border-hive-900 p-3">
+        <div className="border-t-2 border-food-200 p-3">
           <div className="flex gap-2">
             <textarea
               value={input}
@@ -171,7 +171,7 @@ export default function SalesAgent({ isAdmin, onListChanged }: { isAdmin: boolea
               onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }}
               rows={3}
               placeholder="例: 福岡県の美容室で従業員5人以下を300社ほしい ／ 飲食店向けのテレアポ台本を作って"
-              className="flex-1 rounded border-2 border-hive-900 px-3 py-2 text-sm"
+              className="flex-1 rounded rounded-xl border border-food-200 px-3 py-2 text-sm"
             />
             <button onClick={() => send()} disabled={busy || !input.trim()} className={btnY}>送信</button>
           </div>
@@ -188,7 +188,7 @@ function ListPreview({ p, latest, busy, onAcquire }: { p: Extract<Payload, { typ
   const cost = p.cost === 0 ? 0 : Math.ceil(n / 200) * 20;
   if (p.total === 0) return null;
   return (
-    <div className="mt-2 rounded border-2 border-hive-900 bg-white p-3 text-sm">
+    <div className="mt-2 rounded rounded-xl border border-food-200 bg-white p-3 text-sm">
       <div className="mb-2 text-xs text-slate-500">{p.description}</div>
       <table className="mb-3 w-full text-xs">
         <tbody>
@@ -205,7 +205,7 @@ function ListPreview({ p, latest, busy, onAcquire }: { p: Extract<Payload, { typ
       </table>
       {latest && (
         <div className="flex flex-wrap items-center gap-2">
-          <input value={count} onChange={(e) => setCount(e.target.value)} inputMode="numeric" className="w-20 rounded border-2 border-hive-900 px-2 py-1 text-sm" />
+          <input value={count} onChange={(e) => setCount(e.target.value)} inputMode="numeric" className="w-20 rounded rounded-xl border border-food-200 px-2 py-1 text-sm" />
           <span className="text-xs">社（最大1,000）</span>
           <button onClick={() => { if (window.confirm(`${n} 社を営業リストに取得します${cost ? `（${cost}🍯）` : ""}。よろしいですか？`)) onAcquire(n); }} disabled={busy} className={btnY}>
             営業リストに取得{cost ? <>（{cost}<PointInline />）</> : "（無料）"}

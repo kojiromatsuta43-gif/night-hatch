@@ -2,7 +2,7 @@
 
 /**
  * 左サイドバー。業務ツールとしての基本の並び（12項目）は動かさず、
- * 見た目だけ巣箱の世界観（太い線・黄×黒・選択中は六角形）に合わせる。
+ * 見た目は食堂の世界観（クリーム地・テラコッタ・選択中は六角形）に合わせる。
  * 項目は「つくる／すすめる／みる」の3つの見出しでまとめる。
  */
 import Link from "next/link";
@@ -107,7 +107,7 @@ export default function Sidebar({ role }: { role?: string }) {
                   key={item.href}
                   href={item.href}
                   className={`block px-3 py-2 text-sm font-bold transition-colors ${
-                    active ? "hex-tab bg-honey-400 text-hive-900" : "text-hive-700 hover:bg-honey-50 hover:text-hive-900"
+                    active ? "hex-tab bg-food-500 text-white" : "text-hive-700 hover:bg-food-100 hover:text-hive-900"
                   }`}
                 >
                   {item.label}
@@ -124,8 +124,8 @@ export default function Sidebar({ role }: { role?: string }) {
     <>
       {/* デスクトップ（折りたたみ可） */}
       <aside
-        className={`hidden shrink-0 overflow-hidden border-hive-900 bg-white transition-all md:block ${
-          collapsed ? "w-0 border-r-0" : "w-60 border-r-[3px] px-3 py-5"
+        className={`hidden shrink-0 overflow-hidden border-food-200 bg-cream-50 transition-all md:block ${
+          collapsed ? "w-0 border-r-0" : "w-60 border-r px-3 py-5"
         }`}
       >
         {!collapsed && nav}
@@ -134,7 +134,7 @@ export default function Sidebar({ role }: { role?: string }) {
         onClick={toggleCollapsed}
         aria-label={collapsed ? "メニューを開く" : "メニューをたたむ"}
         title={collapsed ? "メニューを開く" : "メニューをたたむ"}
-        className="fixed top-14 z-40 hidden h-9 w-9 items-center justify-center border-2 border-hive-900 bg-honey-400 text-base font-black text-hive-900 shadow-sm transition-all hover:bg-honey-300 md:flex"
+        className="fixed top-14 z-40 hidden h-9 w-9 items-center justify-center rounded-xl border border-food-200 bg-food-500 text-base font-black text-white shadow-sm transition-all hover:bg-food-600 md:flex"
         style={{ left: collapsed ? 10 : 204 }}
       >
         {collapsed ? "»" : "«"}
@@ -153,7 +153,7 @@ export default function Sidebar({ role }: { role?: string }) {
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute inset-y-0 left-0 w-64 overflow-y-auto border-r-[3px] border-hive-900 bg-white px-3 py-5">
+          <div className="absolute inset-y-0 left-0 w-64 overflow-y-auto border-r border-food-200 bg-cream-50 px-3 py-5">
             <div className="mb-5 flex items-center justify-between px-3">
               <span className="flex items-center gap-2">
                 <Mascot className="h-7 w-7" />

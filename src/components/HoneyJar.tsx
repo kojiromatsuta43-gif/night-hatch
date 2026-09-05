@@ -44,13 +44,13 @@ export default function HoneyJar({
       {/* くび・ふた */}
       <rect x="13" y="11.5" width="22" height="5" rx="2.5" fill={ratio >= 1 ? "#FFC62E" : "#FFFFFF"} stroke="#FFC62E" strokeWidth="2.4" />
       <rect x="12" y="5" width="24" height="7" rx="3" fill="#FFC62E" />
-      <rect x="14.5" y="7.2" width="19" height="2.6" rx="1.3" fill="#1C1710" opacity="0.35" />
+      <rect x="14.5" y="7.2" width="19" height="2.6" rx="1.3" fill="#2B1410" opacity="0.35" />
       {/* かお（ハッチと同じ目・ほっぺ） */}
-      <circle cx="19.5" cy="27" r="2.2" fill="#1C1710" />
-      <circle cx="28.5" cy="27" r="2.2" fill="#1C1710" />
+      <circle cx="19.5" cy="27" r="2.2" fill="#2B1410" />
+      <circle cx="28.5" cy="27" r="2.2" fill="#2B1410" />
       <circle cx="20.3" cy="26.2" r="0.8" fill="#FFFFFF" />
       <circle cx="29.3" cy="26.2" r="0.8" fill="#FFFFFF" />
-      <path d="M21 32c1.5 1.8 4.5 1.8 6 0" stroke="#1C1710" strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M21 32c1.5 1.8 4.5 1.8 6 0" stroke="#2B1410" strokeWidth="2" strokeLinecap="round" fill="none" />
       <circle cx="15.5" cy="31" r="1.8" fill="#F7A6A0" opacity="0.9" />
       <circle cx="32.5" cy="31" r="1.8" fill="#F7A6A0" opacity="0.9" />
       {overflow && (

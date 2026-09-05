@@ -50,11 +50,11 @@ export default function AiUsage({ refreshKey = 0, compact = false }: { refreshKe
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${compact ? "" : "rounded border-2 border-hive-900 bg-white px-3 py-2"} ${low ? "text-rose-600" : "text-slate-500"}`}>
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${compact ? "" : "rounded rounded-xl border border-food-200 bg-white px-3 py-2"} ${low ? "text-rose-600" : "text-slate-500"}`}>
       <span title="AIチャットの自由入力。日本時間の0時にリセット">会話 今日あと {chatLeft}/{u.chat.limit}</span>
       <span title="台本づくり・動画分析・資料の読み取り。月初にリセット">生成 今月あと {genLeft}/{u.gen.limit}</span>
       {u.extra > 0 && <span className="text-slate-500">＋追加 {u.extra}回</span>}
-      <button onClick={buy} disabled={busy} className="rounded border-2 border-hive-900 bg-honey-400 px-2 py-0.5 font-bold text-hive-900 disabled:opacity-50">
+      <button onClick={buy} disabled={busy} className="rounded rounded-xl border border-food-200 bg-food-500 px-2 py-0.5 font-bold text-white disabled:opacity-50">
         {busy ? "処理中..." : <>＋{u.extraUses}回（{u.extraPoints}<PointInline />）</>}
       </button>
       {msg && <span className="text-slate-600">{msg}</span>}

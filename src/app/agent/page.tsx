@@ -160,16 +160,16 @@ function AgentPageInner() {
       <aside className="w-56 shrink-0 overflow-y-auto">
         <button
           onClick={() => { setSessionId(null); setMessages([]); setError(""); }}
-          className="mb-3 w-full rounded-lg bg-honey-400 px-3 py-2 text-sm font-medium text-hive-900 hover:bg-honey-300"
+          className="mb-3 w-full rounded-lg bg-food-500 px-3 py-2 text-sm font-medium text-white hover:bg-food-600"
         >
           ＋ 新しい会話
         </button>
         <div className="space-y-1">
           {sessions.map((s) => (
-            <div key={s.id} className={`group relative flex items-center rounded-lg ${s.id === sessionId ? "bg-honey-50" : "hover:bg-slate-100"}`}>
+            <div key={s.id} className={`group relative flex items-center rounded-lg ${s.id === sessionId ? "bg-food-50" : "hover:bg-slate-100"}`}>
               <button
                 onClick={() => openSession(s)}
-                className={`min-w-0 flex-1 truncate px-3 py-2 text-left text-sm ${s.id === sessionId ? "text-honey-700" : "text-slate-600"}`}
+                className={`min-w-0 flex-1 truncate px-3 py-2 text-left text-sm ${s.id === sessionId ? "text-food-700" : "text-slate-600"}`}
                 title={s.title}
               >
                 {s.pinned && <span className="mr-1 text-[10px]" aria-label="ピン留め">📌</span>}
@@ -220,10 +220,10 @@ function AgentPageInner() {
             {STAGES.map((s, i) => (
               <div key={s} className="flex flex-1 items-center gap-1">
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className={`truncate text-center text-[10px] ${i <= stage ? "font-bold text-honey-700" : "text-slate-300"}`}>
+                  <span className={`truncate text-center text-[10px] ${i <= stage ? "font-bold text-food-700" : "text-slate-300"}`}>
                     {s}
                   </span>
-                  <span className={`h-1 rounded-full ${i < stage ? "bg-honey-400" : i === stage ? "bg-honey-300" : "bg-slate-100"}`} />
+                  <span className={`h-1 rounded-full ${i < stage ? "bg-food-500" : i === stage ? "bg-food-300" : "bg-slate-100"}`} />
                 </div>
               </div>
             ))}
@@ -234,8 +234,8 @@ function AgentPageInner() {
           {messages.length === 0 && (
             <div className="mx-auto mt-8 max-w-2xl text-center">
               <Mascot className="mx-auto h-20 w-20 animate-bee-float" />
-              <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-honey-200 bg-honey-50 px-6 py-4">
-                <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-honey-200 bg-honey-50" />
+              <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-food-200 bg-food-50 px-6 py-4">
+                <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-food-200 bg-food-50" />
                 <p className="text-lg font-bold text-hive-900">{mascot.greeting}</p>
                 <p className="mt-1 text-sm text-slate-600">
                   参考動画さがし・台本作成から、発注の登録まで会話で進められます。
@@ -247,14 +247,14 @@ function AgentPageInner() {
                   <button
                     key={q.label}
                     onClick={() => send(q.prompt)}
-                    className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-honey-400 hover:bg-honey-50"
+                    className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-food-400 hover:bg-food-50"
                   >
                     <Mascot className="h-7 w-7 shrink-0" />
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold text-hive-900">{q.label}</span>
                       <span className="block text-xs text-slate-400">{q.hint}</span>
                     </span>
-                    <span className="ml-auto text-sm font-semibold text-honey-600 opacity-0 transition-opacity group-hover:opacity-100">→</span>
+                    <span className="ml-auto text-sm font-semibold text-food-600 opacity-0 transition-opacity group-hover:opacity-100">→</span>
                   </button>
                 ))}
               </div>
@@ -264,13 +264,13 @@ function AgentPageInner() {
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : ""}>
                 {m.role === "user" ? (
-                  <div className="max-w-[80%] rounded-2xl bg-honey-400 px-4 py-2 text-sm text-hive-900 whitespace-pre-wrap">{m.content}</div>
+                  <div className="max-w-[80%] rounded-2xl bg-food-500 px-4 py-2 text-sm text-white whitespace-pre-wrap">{m.content}</div>
                 ) : (
                   <div className="flex max-w-[95%] gap-2.5">
                     <Mascot className="mt-1 h-8 w-8 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div
-                        className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
+                        className="prose prose-sm prose-slate max-w-none rounded-2xl rounded-tl-md border border-food-100 bg-food-50/60 px-4 py-3 [&_h1]:text-base [&_h2]:text-sm [&_h1]:font-bold [&_h2]:font-semibold"
                         dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
                       />
                       {m.payload && (
@@ -283,12 +283,12 @@ function AgentPageInner() {
                         />
                       )}
                       {!m.payload && (
-                        <button onClick={() => saveScript(m.content)} className="mt-1 text-xs font-medium text-honey-600 hover:underline">
+                        <button onClick={() => saveScript(m.content)} className="mt-1 text-xs font-medium text-food-600 hover:underline">
                           台本として保存
                         </button>
                       )}
                       {m.payload?.type === "script" && (
-                        <button onClick={() => saveScript(m.content)} className="mt-1 mr-3 text-xs font-medium text-honey-600 hover:underline">
+                        <button onClick={() => saveScript(m.content)} className="mt-1 mr-3 text-xs font-medium text-food-600 hover:underline">
                           台本として保存
                         </button>
                       )}
@@ -300,10 +300,10 @@ function AgentPageInner() {
             {busy && (
               <div className="flex items-center gap-2.5">
                 <Mascot className="h-8 w-8 shrink-0 animate-bee-float" />
-                <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-honey-100 bg-honey-50/60 px-4 py-3">
-                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500" />
-                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.18s]" />
-                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-honey-500 [animation-delay:0.36s]" />
+                <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-food-100 bg-food-50/60 px-4 py-3">
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-food-500" />
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-food-500 [animation-delay:0.18s]" />
+                  <span className="h-2 w-2 animate-bee-dot rounded-full bg-food-500 [animation-delay:0.36s]" />
                   <span className="ml-1.5 text-xs text-slate-500">{mascot.thinking}</span>
                 </div>
               </div>
@@ -325,14 +325,14 @@ function AgentPageInner() {
                 value={promptQuery}
                 onChange={(e) => setPromptQuery(e.target.value)}
                 placeholder="プロンプトを検索..."
-                className="mb-1 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs focus:border-honey-500 focus:outline-none"
+                className="mb-1 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs focus:border-food-500 focus:outline-none"
               />
               <div className="max-h-40 overflow-y-auto">
                 {filteredPrompts.map((p) => (
                   <button
                     key={p}
                     onClick={() => { setInput(p); setPromptOpen(false); setPromptQuery(""); }}
-                    className="block w-full rounded-lg px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-honey-50"
+                    className="block w-full rounded-lg px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-food-50"
                   >
                     {p}
                   </button>
@@ -346,7 +346,7 @@ function AgentPageInner() {
           <div className="flex gap-2">
             <button
               onClick={() => setPromptOpen((v) => !v)}
-              className={`mt-1 self-start rounded-lg border px-2.5 py-1.5 text-xs ${promptOpen ? "border-honey-400 bg-honey-50 text-honey-700" : "border-slate-300 text-slate-500 hover:border-honey-400"}`}
+              className={`mt-1 self-start rounded-lg border px-2.5 py-1.5 text-xs ${promptOpen ? "border-food-400 bg-food-50 text-food-700" : "border-slate-300 text-slate-500 hover:border-food-400"}`}
               title="定型プロンプトから選ぶ"
             >
               📋 プロンプト
@@ -362,7 +362,7 @@ function AgentPageInner() {
               }}
               rows={2}
               placeholder={`${mascot.talkTo} — 例: ${BRAND.agent.promptLibrary[0]}`}
-              className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
             />
             <MicButton
               onText={(t) => setInput((v) => (v ? v + t : t))}
@@ -372,7 +372,7 @@ function AgentPageInner() {
             <button
               onClick={() => send()}
               disabled={busy || !input.trim()}
-              className="rounded-lg bg-honey-400 px-5 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+              className="rounded-lg bg-food-500 px-5 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
             >
               送信
             </button>
@@ -427,12 +427,12 @@ function PayloadView({
                 <button
                   onClick={() => act({ type: "make_script", videoId: v.id }, `この動画で台本を作って: ${v.caption.slice(0, 30)}`)}
                   disabled={busy}
-                  className="flex-1 rounded-md bg-honey-400 py-1 text-[10px] font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+                  className="flex-1 rounded-md bg-food-500 py-1 text-[10px] font-bold text-white hover:bg-food-600 disabled:opacity-40"
                 >
                   この動画で台本を作る
                 </button>
                 {v.url && (
-                  <a href={v.url} target="_blank" rel="noreferrer" className="rounded-md border border-slate-200 px-1.5 py-1 text-[10px] text-slate-500 hover:border-honey-400">
+                  <a href={v.url} target="_blank" rel="noreferrer" className="rounded-md border border-slate-200 px-1.5 py-1 text-[10px] text-slate-500 hover:border-food-400">
                     開く
                   </a>
                 )}
@@ -466,7 +466,7 @@ function PayloadView({
             )
           }
           disabled={busy}
-          className="rounded-lg bg-honey-400 px-4 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+          className="rounded-lg bg-food-500 px-4 py-2 text-xs font-bold text-white hover:bg-food-600 disabled:opacity-40"
         >
           この台本で発注に進む →
         </button>
@@ -482,7 +482,7 @@ function PayloadView({
     const d = payload.draft;
     const short = payload.points > payload.balance;
     return (
-      <div className="mt-2 rounded-xl border border-honey-200 bg-white p-4 text-xs">
+      <div className="mt-2 rounded-xl border border-food-200 bg-white p-4 text-xs">
         <div className="mb-2 text-sm font-bold text-hive-900">発注内容の確認</div>
         <dl className="space-y-1.5">
           {[
@@ -500,7 +500,7 @@ function PayloadView({
           ))}
           <div className="flex gap-2 border-t border-slate-100 pt-1.5">
             <dt className="w-16 shrink-0 text-slate-400">消費</dt>
-            <dd className="font-bold text-honey-700">
+            <dd className="font-bold text-food-700">
               {payload.points}
               <PointInline />（残高 {payload.balance}）
             </dd>
@@ -514,7 +514,7 @@ function PayloadView({
           <button
             onClick={() => act({ type: "place_order", draft: d }, "この内容で発注する")}
             disabled={!isLatest || busy}
-            className="mt-3 w-full rounded-lg bg-honey-400 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+            className="mt-3 w-full rounded-lg bg-food-500 py-2 text-xs font-bold text-white hover:bg-food-600 disabled:opacity-40"
           >
             この内容で発注する
           </button>
@@ -557,9 +557,9 @@ function OrderForm({
   );
   const [note, setNote] = useState(draft.note);
 
-  const input = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-honey-500 focus:outline-none";
+  const input = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-food-500 focus:outline-none";
   return (
-    <div className="mt-2 space-y-2 rounded-xl border border-honey-200 bg-white p-4">
+    <div className="mt-2 space-y-2 rounded-xl border border-food-200 bg-white p-4">
       <label className="block">
         <span className="text-[11px] font-semibold text-slate-600">件名</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-0.5`} placeholder="例: 新メニュー紹介ショート動画" disabled={disabled} />
@@ -592,7 +592,7 @@ function OrderForm({
           )
         }
         disabled={disabled || !title.trim() || !deadline}
-        className="w-full rounded-lg bg-honey-400 py-2 text-xs font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+        className="w-full rounded-lg bg-food-500 py-2 text-xs font-bold text-white hover:bg-food-600 disabled:opacity-40"
       >
         内容を確認する →
       </button>

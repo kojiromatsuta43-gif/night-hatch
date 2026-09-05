@@ -51,7 +51,7 @@ const OTHERS = [
 export default function GuidePage() {
   return (
     <div className="max-w-3xl">
-      <div className="mb-8 rounded-2xl bg-gradient-to-br from-honey-400 to-honey-500 px-7 py-8 text-hive-900">
+      <div className="mb-8 rounded-2xl bg-gradient-to-br from-food-400 to-food-500 px-7 py-8 text-hive-900">
         <div className="text-sm font-medium opacity-80">デモのご案内</div>
         <h1 className="mt-1 flex items-center gap-3 text-3xl font-bold">
           <Mascot className="h-11 w-11" />
@@ -69,16 +69,16 @@ export default function GuidePage() {
           <Link
             key={s.n}
             href={s.href}
-            className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-honey-400"
+            className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-food-400"
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-honey-400 text-sm font-bold text-hive-900">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-food-500 text-sm font-bold text-white">
               {s.n}
             </span>
             <span className="min-w-0">
               <span className="block font-bold">{s.title}</span>
               <span className="mt-1 block text-sm leading-relaxed text-slate-600">{s.body}</span>
               {s.highlight && (
-                <span className="mt-2 inline-block rounded-full bg-honey-50 px-3 py-1 text-xs font-medium text-honey-700">
+                <span className="mt-2 inline-block rounded-full bg-food-50 px-3 py-1 text-xs font-medium text-food-700">
                   {s.highlight}
                 </span>
               )}
@@ -94,7 +94,7 @@ export default function GuidePage() {
           <Link
             key={o.href}
             href={o.href}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-colors hover:border-honey-400"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-colors hover:border-food-400"
           >
             <span className="font-semibold">{o.label}</span>
             <span className="mt-0.5 block text-xs text-slate-500">{o.body}</span>

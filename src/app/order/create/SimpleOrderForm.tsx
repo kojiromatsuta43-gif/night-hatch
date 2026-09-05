@@ -111,15 +111,15 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
     }
   };
 
-  const nextBtn = "rounded-xl bg-honey-400 px-6 py-3 text-base font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40";
+  const nextBtn = "rounded-xl bg-food-500 px-6 py-3 text-base font-bold text-white hover:bg-food-600 disabled:opacity-40";
   const backBtn = "rounded-xl border border-slate-300 px-5 py-3 text-sm hover:bg-slate-100";
 
   return (
     <div className="max-w-2xl space-y-4">
       {/* 何を頼むか（決まっている） */}
-      <div className="flex items-center gap-4 rounded-2xl border-2 border-honey-300 bg-honey-50 px-5 py-4">
+      <div className="flex items-center gap-4 rounded-2xl border-2 border-food-300 bg-food-50 px-5 py-4">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-honey-700">頼むもの</div>
+          <div className="text-xs font-semibold text-food-700">頼むもの</div>
           <div className="flex items-center gap-2 text-xl font-bold text-hive-900">
             {item.name}
             <span className="text-hive-900"><PlatformRow category={item.name} className="h-4 w-4" /></span>
@@ -129,7 +129,7 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <div className="text-2xl font-bold text-honey-700">
+          <div className="text-2xl font-bold text-food-700">
             {points}
             <PointInline />
             {item.monthly && <span className="text-xs font-medium text-slate-500">／月</span>}
@@ -213,7 +213,7 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
                   <button
                     type="button"
                     onClick={() => setAssigneeId("")}
-                    className={`rounded-lg border px-3 py-2 text-sm ${assigneeId === "" ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 bg-white hover:border-honey-400"}`}
+                    className={`rounded-lg border px-3 py-2 text-sm ${assigneeId === "" ? "border-food-500 bg-food-500 text-white" : "border-slate-300 bg-white hover:border-food-400"}`}
                   >
                     おまかせ
                   </button>
@@ -222,7 +222,7 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
                       type="button"
                       key={f.id}
                       onClick={() => setAssigneeId(f.id)}
-                      className={`rounded-lg border px-3 py-2 text-sm ${assigneeId === f.id ? "border-honey-500 bg-honey-400 text-hive-900" : "border-slate-300 bg-white hover:border-honey-400"}`}
+                      className={`rounded-lg border px-3 py-2 text-sm ${assigneeId === f.id ? "border-food-500 bg-food-500 text-white" : "border-slate-300 bg-white hover:border-food-400"}`}
                     >
                       {f.name}
                     </button>
@@ -294,7 +294,7 @@ function SimpleForm({ item, refUrl, refTitle, scriptId }: { item: CatalogItem; r
               ))}
             </ul>
             <label className="flex items-center gap-2 text-sm font-medium">
-              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="h-4 w-4 accent-honey-500" />
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="h-4 w-4 accent-food-500" />
               確認しました
             </label>
           </Block>

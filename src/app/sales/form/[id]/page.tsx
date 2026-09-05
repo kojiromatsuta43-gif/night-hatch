@@ -18,17 +18,17 @@ type Detail = { campaign: Campaign; sender: Sender | null; counts: Record<string
 type JobDetail = Job & { message_used: string; site_url: string; hasShot: boolean };
 type Facet = { v: string; n: number };
 
-const box = "rounded border-2 border-hive-900 bg-white";
-const input = "rounded border-2 border-hive-900 px-2 py-1 text-sm bg-white";
-const btn = "rounded border-2 border-hive-900 px-3 py-1 text-sm font-bold";
-const btnY = `${btn} bg-honey-400 text-hive-900 hover:bg-honey-300 disabled:opacity-50`;
-const btnW = `${btn} bg-white text-hive-900 hover:bg-honey-50 disabled:opacity-50`;
+const box = "rounded rounded-xl border border-food-200 bg-white";
+const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white";
+const btn = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold";
+const btnY = `${btn} bg-food-500 text-white hover:bg-food-600 disabled:opacity-50`;
+const btnW = `${btn} bg-white text-hive-900 hover:bg-food-50 disabled:opacity-50`;
 const STATUS_JA: Record<string, string> = { draft: "準備中", running: "実行中", paused: "一時停止", done: "完了" };
 
 function tagClass(s: string) {
   if (s === "sent") return "bg-emerald-100 text-emerald-800";
   if (s === "failed") return "bg-rose-100 text-rose-700";
-  if (s === "queued") return "bg-honey-100 text-hive-900";
+  if (s === "queued") return "bg-food-100 text-hive-900";
   if (s === "sending") return "bg-sky-100 text-sky-800";
   return "bg-violet-100 text-violet-800";
 }
@@ -94,7 +94,7 @@ export default function FormCampaignPage() {
           <div>
             <h1 className="text-2xl font-bold">
               {c.name}
-              <span className={`ml-2 align-middle rounded px-2 py-0.5 text-xs font-bold ${d.running ? "bg-sky-100 text-sky-800" : "bg-honey-100"}`}>{d.running ? "ハッチが送信中" : STATUS_JA[c.status] ?? c.status}</span>
+              <span className={`ml-2 align-middle rounded px-2 py-0.5 text-xs font-bold ${d.running ? "bg-sky-100 text-sky-800" : "bg-food-100"}`}>{d.running ? "ハッチが送信中" : STATUS_JA[c.status] ?? c.status}</span>
             </h1>
             <p className="text-xs text-slate-500">
               差出人: {d.sender ? `${d.sender.company} ${d.sender.person}` : "—"} ／ 文面: {c.mode === "hybrid" ? "ハイブリッド" : c.mode === "ai" ? "全文AI" : "テンプレ"} ／ {c.send_window_start}〜{c.send_window_end}時{c.weekdays_only ? "（平日）" : ""} ／ 1日 {c.daily_limit}件まで（本日 {d.sentToday}件）
@@ -108,7 +108,7 @@ export default function FormCampaignPage() {
           <Link href="/sales/form" className={btnW}>← 一覧</Link>
         </div>
       </div>
-      {msg && <div className="mb-3 rounded border-2 border-hive-900 bg-honey-50 px-3 py-2 text-sm">{msg}</div>}
+      {msg && <div className="mb-3 rounded rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-sm">{msg}</div>}
       {editing && (
         <CampaignForm senders={senders} defaults={{ template_text: c.template_text, subject_text: c.subject_text }} initial={c as unknown as Record<string, unknown>} onDone={() => { setEditing(false); load(); }} />
       )}
@@ -154,7 +154,7 @@ export default function FormCampaignPage() {
             <div className="mt-3">
               <div className="text-xs text-slate-500">{preview.company}（{preview.industry}）向け ・ {preview.aiUsed ? "AI生成あり" : "テンプレのみ"}</div>
               <div className="text-xs"><b>件名:</b> {preview.subject}</div>
-              <pre className="mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded bg-honey-50 p-2 text-xs">{preview.message}</pre>
+              <pre className="mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded bg-food-50 p-2 text-xs">{preview.message}</pre>
             </div>
           )}
         </div>
@@ -209,7 +209,7 @@ export default function FormCampaignPage() {
       <div className={`${box} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+            <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
               <th className="px-2 py-2">会社</th><th className="px-2 py-2">業種</th><th className="px-2 py-2">状態</th><th className="px-2 py-2">結果</th><th className="px-2 py-2">送信</th><th></th>
             </tr>
           </thead>
@@ -267,13 +267,13 @@ function JobModal({ job, statusLabel, onClose, onChanged }: { job: JobDetail; st
         <div className="grid gap-4 lg:grid-cols-2">
           <div>
             <div className="mb-1 text-xs font-bold">結果・ログ</div>
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-honey-50 p-2 text-[11px]">{job.result_text}</pre>
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-food-50 p-2 text-[11px]">{job.result_text}</pre>
             <div className="mt-2 flex gap-2">
               <button onClick={retry} disabled={busy} className={btnW}>{busy ? "..." : "再試行"}</button>
               <button onClick={suppress} className={`${btn} bg-white text-rose-600`}>このドメインを除外</button>
             </div>
             <div className="mt-3 mb-1 text-xs font-bold">送った文面</div>
-            <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded bg-honey-50 p-2 text-xs">{job.message_used || "（未生成）"}</pre>
+            <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded bg-food-50 p-2 text-xs">{job.message_used || "（未生成）"}</pre>
           </div>
           <div>
             <div className="mb-1 text-xs font-bold">スクリーンショット</div>

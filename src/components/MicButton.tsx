@@ -93,7 +93,7 @@ export default function MicButton({
       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
         listening
           ? "animate-pulse border-rose-400 bg-rose-500 text-white"
-          : "border-slate-300 bg-white text-slate-500 hover:border-honey-400 hover:text-honey-600"
+          : "border-slate-300 bg-white text-slate-500 hover:border-food-400 hover:text-food-600"
       } ${className}`}
     >
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">

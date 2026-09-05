@@ -27,11 +27,11 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-honey-50">
-      <form onSubmit={submit} className="w-full max-w-sm border-[3px] border-hive-900 bg-white p-8">
+    <div className="flex min-h-screen items-center justify-center bg-cream-100">
+      <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-food-200 bg-white p-8 shadow-sm">
         <div className="mb-6 flex flex-col items-center gap-2">
           <BeeLogo className="h-14 w-14" />
-          <span className="text-2xl font-bold tracking-tight text-hive-900">{BRAND.name}</span>
+          <span className="font-display text-2xl tracking-wide text-food-600">{BRAND.name}</span>
           <span className="text-xs text-slate-500">{BRAND.tagline}</span>
         </div>
         <label className="block mb-4">
@@ -41,7 +41,7 @@ export default function SignInPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
           />
         </label>
         <label className="block mb-6">
@@ -52,7 +52,7 @@ export default function SignInPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-16 text-sm focus:border-honey-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-16 text-sm focus:border-food-500 focus:outline-none"
             />
             <button
               type="button"
@@ -64,7 +64,7 @@ export default function SignInPage() {
           </span>
         </label>
         {error && <p className="mb-4 text-sm text-rose-600">{error}</p>}
-        <button className="w-full rounded-lg bg-honey-400 py-2.5 text-sm font-medium text-hive-900 hover:bg-honey-300">
+        <button className="w-full rounded-lg bg-food-500 py-2.5 text-sm font-medium text-white hover:bg-food-600">
           ログイン
         </button>
         <p className="mt-6 text-center text-xs text-slate-400">

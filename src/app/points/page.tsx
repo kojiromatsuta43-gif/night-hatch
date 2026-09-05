@@ -88,7 +88,7 @@ function PointsInner() {
         <PointMark className="h-16 w-16 shrink-0 text-5xl" />
         <div>
           <div className="text-sm text-slate-500">現在の残高</div>
-          <div className="text-4xl font-bold text-honey-700">{me?.points ?? 0}</div>
+          <div className="text-4xl font-bold text-honey-600">{me?.points ?? 0}</div>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ function PointsInner() {
         </div>
       )}
       {expiring.length > 0 && (
-        <div className="mb-6 rounded-xl border border-honey-400 bg-honey-50 px-4 py-3 text-sm text-hive-900">
+        <div className="mb-6 rounded-xl border border-food-400 bg-food-50 px-4 py-3 text-sm text-hive-900">
           <b>まもなく繰越期限を迎える{mascot.pointName}があります。</b>
           <ul className="mt-1 space-y-0.5 text-xs">
             {expiring.map((e, i) => (
@@ -145,12 +145,12 @@ function PointsInner() {
             {PLANS.map((pl) => {
               const mine = me?.plan === pl.id;
               return (
-                <tr key={pl.id} className={`border-b border-slate-100 last:border-0 ${mine ? "bg-honey-50" : ""}`}>
+                <tr key={pl.id} className={`border-b border-slate-100 last:border-0 ${mine ? "bg-food-50" : ""}`}>
                   <td className="whitespace-nowrap px-4 py-2 font-bold">
                     <span className="inline-flex items-center gap-2">
                       {pl.name}
                       {mine && (
-                        <span className="rounded bg-honey-400 px-1.5 py-0.5 text-[10px] font-bold text-hive-900">
+                        <span className="rounded bg-food-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                           {planActive ? "契約中" : "ご利用中"}
                         </span>
                       )}
@@ -159,7 +159,7 @@ function PointsInner() {
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">{yen(pl.monthly)}</td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">
                     {pl.points}<PointInline />
-                    {pl.bonus > 0 && <span className="ml-1 text-[11px] text-honey-700">+{pl.bonus}%増量</span>}
+                    {pl.bonus > 0 && <span className="ml-1 text-[11px] text-food-700">+{pl.bonus}%増量</span>}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-right tabular-nums">{yen(Math.round(pl.monthly / pl.points))}</td>
                   <td className="whitespace-nowrap px-4 py-2 text-right">{pl.carryMonths}ヶ月</td>
@@ -194,7 +194,7 @@ function PointsInner() {
       <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {POINT_PACKS.map((p) => (
           <div key={p} className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 text-center">
-            <div className="text-3xl font-bold text-honey-700">
+            <div className="text-3xl font-bold text-honey-600">
               {p}<PointInline />
             </div>
             <div className="mt-0.5 text-xs text-slate-400">{PACK_NOTE[p] ?? ""}</div>
@@ -205,7 +205,7 @@ function PointsInner() {
             <button
               onClick={() => buy(p)}
               disabled={busy !== 0}
-              className="mt-4 w-full rounded-lg bg-honey-400 py-2.5 text-sm font-bold text-hive-900 hover:bg-honey-300 disabled:opacity-40"
+              className="mt-4 w-full rounded-lg bg-food-500 py-2.5 text-sm font-bold text-white hover:bg-food-600 disabled:opacity-40"
             >
               {busy === p ? "決済画面へ移動しています..." : "購入する"}
             </button>

@@ -224,9 +224,9 @@ function OrderForm() {
             <span
               className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
                 i < step
-                  ? "bg-honey-400 text-hive-900"
+                  ? "bg-food-500 text-white"
                   : i === step
-                    ? "bg-honey-100 text-honey-700 ring-2 ring-honey-500"
+                    ? "bg-food-100 text-food-700 ring-2 ring-food-500"
                     : "bg-slate-200 text-slate-500"
               }`}
             >
@@ -255,8 +255,8 @@ function OrderForm() {
                         title={`${c.size}／${c.days}`}
                         className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                           category === c.name
-                            ? "border-honey-500 bg-honey-400 text-hive-900"
-                            : "border-slate-300 bg-white hover:border-honey-400"
+                            ? "border-food-500 bg-food-500 text-white"
+                            : "border-slate-300 bg-white hover:border-food-400"
                         }`}
                       >
                         {c.name}
@@ -340,8 +340,8 @@ function OrderForm() {
                 onClick={() => setAssigneeId("")}
                 className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                   assigneeId === ""
-                    ? "border-honey-500 bg-honey-400 text-hive-900"
-                    : "border-slate-300 bg-white hover:border-honey-400"
+                    ? "border-food-500 bg-food-500 text-white"
+                    : "border-slate-300 bg-white hover:border-food-400"
                 }`}
               >
                 おまかせ
@@ -353,8 +353,8 @@ function OrderForm() {
                   onClick={() => setAssigneeId(f.id)}
                   className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                     assigneeId === f.id
-                      ? "border-honey-500 bg-honey-400 text-hive-900"
-                      : "border-slate-300 bg-white hover:border-honey-400"
+                      ? "border-food-500 bg-food-500 text-white"
+                      : "border-slate-300 bg-white hover:border-food-400"
                   }`}
                 >
                   {f.name}
@@ -378,7 +378,7 @@ function OrderForm() {
             </label>
             <div className="block">
               <span className="text-sm font-semibold">消費する{mascot.pointName}</span>
-              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-honey-700">
+              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-food-700">
                 {points || "-"} <PointInline />
               </div>
             </div>
@@ -388,7 +388,7 @@ function OrderForm() {
             <button
               disabled={!step1Ok}
               onClick={() => setStep(1)}
-              className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+              className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
             >
               次へ
             </button>
@@ -441,7 +441,7 @@ function OrderForm() {
 
           {isVideo && (
             <>
-              <div className="rounded-lg bg-honey-50 px-4 py-3 text-sm font-semibold text-honey-800">
+              <div className="rounded-lg bg-food-50 px-4 py-3 text-sm font-semibold text-food-800">
                 動画編集フォーム（クラウド発注用）
               </div>
 
@@ -607,7 +607,7 @@ function OrderForm() {
             <button
               disabled={!step2Ok}
               onClick={() => setStep(2)}
-              className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+              className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
             >
               次へ
             </button>
@@ -702,7 +702,7 @@ function OrderForm() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="h-4 w-4 accent-honey-500"
+                className="h-4 w-4 accent-food-500"
               />
               上記すべてに同意します
             </label>
@@ -715,7 +715,7 @@ function OrderForm() {
             <button
               disabled={!agreed}
               onClick={submit}
-              className="rounded-lg bg-honey-400 px-6 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+              className="rounded-lg bg-food-500 px-6 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
             >
               案件を登録する
             </button>

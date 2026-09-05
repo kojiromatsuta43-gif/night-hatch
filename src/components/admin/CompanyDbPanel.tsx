@@ -93,10 +93,10 @@ export default function CompanyDbPanel() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <section className="rounded border-2 border-hive-900 bg-white p-4">
+      <section className="rounded rounded-xl border border-food-200 bg-white p-4">
         <div className="mb-1 flex flex-wrap items-center gap-3">
           <h2 className="text-base font-bold">企業データベース</h2>
-          <span className={`rounded px-2 py-0.5 text-xs font-bold ${st.phase === "ready" ? "bg-honey-400 text-hive-900" : st.phase === "error" ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"}`}>
+          <span className={`rounded px-2 py-0.5 text-xs font-bold ${st.phase === "ready" ? "bg-food-500 text-white" : st.phase === "error" ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"}`}>
             {PHASE_LABEL[st.phase]}
           </span>
           {st.phase === "ready" && <span className="text-sm">{st.total.toLocaleString()} 社</span>}
@@ -108,32 +108,32 @@ export default function CompanyDbPanel() {
         {st.message && st.phase !== "uploading" && <p className={`mt-2 text-sm ${st.phase === "error" ? "text-rose-600" : "text-slate-700"}`}>{st.message}</p>}
       </section>
 
-      <section className="rounded border-2 border-hive-900 bg-white p-4">
+      <section className="rounded rounded-xl border border-food-200 bg-white p-4">
         <h3 className="mb-2 text-sm font-bold">1. Mac で Parquet を書き出す（ターミナルに貼り付け）</h3>
         <pre className="overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100">{`cd ~/zerotel-export && duckdb ブリッジハッチ営業リスト.duckdb -c "COPY (SELECT * FROM 全企業 ORDER BY 都道府県, 大業界) TO '全企業.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)"`}</pre>
         <p className="mt-1 text-xs text-slate-500">数分かかります。~/zerotel-export/全企業.parquet ができます（数百MB）。</p>
       </section>
 
-      <section className="rounded border-2 border-hive-900 bg-white p-4">
+      <section className="rounded rounded-xl border border-food-200 bg-white p-4">
         <h3 className="mb-2 text-sm font-bold">2. ここにアップロード</h3>
         <input ref={fileRef} type="file" accept=".parquet" disabled={!!progress || st.phase === "ingesting"} onChange={(e) => upload(e.target.files?.[0])} className="text-sm" />
         {progress && (
           <div className="mt-2">
             <div className="h-2 w-full overflow-hidden rounded bg-slate-100">
-              <div className="h-full bg-honey-400" style={{ width: `${Math.round((progress.sent / progress.total) * 100)}%` }} />
+              <div className="h-full bg-food-500" style={{ width: `${Math.round((progress.sent / progress.total) * 100)}%` }} />
             </div>
             <div className="mt-1 text-xs text-slate-500">{mb(progress.sent)} / {mb(progress.total)}（この画面を閉じないでください）</div>
           </div>
         )}
       </section>
 
-      <section className="rounded border-2 border-hive-900 bg-white p-4">
+      <section className="rounded rounded-xl border border-food-200 bg-white p-4">
         <h3 className="mb-2 text-sm font-bold">3. 取り込み</h3>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => act("ingest")} disabled={!(st.phase === "uploaded" || st.phase === "error") || !!progress} className="rounded border-2 border-hive-900 bg-honey-400 px-4 py-1.5 text-sm font-bold text-hive-900 disabled:opacity-40">
+          <button onClick={() => act("ingest")} disabled={!(st.phase === "uploaded" || st.phase === "error") || !!progress} className="rounded rounded-xl border border-food-200 bg-food-500 px-4 py-1.5 text-sm font-bold text-white disabled:opacity-40">
             取り込みを開始
           </button>
-          <button onClick={() => act("reset")} disabled={st.phase === "ingesting" || !!progress} className="rounded border-2 border-hive-900 bg-white px-4 py-1.5 text-sm text-rose-600 disabled:opacity-40">
+          <button onClick={() => act("reset")} disabled={st.phase === "ingesting" || !!progress} className="rounded rounded-xl border border-food-200 bg-white px-4 py-1.5 text-sm text-rose-600 disabled:opacity-40">
             全部消してやり直す
           </button>
           {st.phase === "ingesting" && <span className="text-xs text-slate-500">5秒ごとに自動で確認しています…</span>}
@@ -143,7 +143,7 @@ export default function CompanyDbPanel() {
       </section>
 
       {data.summary && (
-        <section className="rounded border-2 border-hive-900 bg-white p-4 text-sm">
+        <section className="rounded rounded-xl border border-food-200 bg-white p-4 text-sm">
           <h3 className="mb-2 text-sm font-bold">内訳</h3>
           <div className="mb-3 flex flex-wrap gap-4 text-xs">
             <span>電話あり {data.summary.facets.withPhone.toLocaleString()}</span>

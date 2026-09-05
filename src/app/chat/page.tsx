@@ -183,7 +183,7 @@ export default function ChatPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="名前・本文で検索"
-            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-honey-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-food-500 focus:outline-none"
           />
         </div>
         {query.trim() && shownUsers.length === 0 && (
@@ -198,10 +198,10 @@ export default function ChatPage() {
               setPeer(u.id);
               setThread(null);
             }}
-            className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-honey-50" : ""}`}
+            className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 ${peer === u.id ? "bg-food-50" : ""}`}
           >
             <span className="relative shrink-0">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-honey-300 to-honey-500 text-sm font-bold text-hive-900">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-food-300 to-food-500 text-sm font-bold text-hive-900">
                 {u.name[0]}
               </span>
               {isOnline(u.last_seen_at) && (
@@ -219,7 +219,7 @@ export default function ChatPage() {
                 ) : (
                   (u.role === "freelancer" ? "フリーランス" : "クライアント")
                 )}
-                {unreadCountFor(u.id) > 0 && <span className="ml-1 text-honey-700">・{unreadCountFor(u.id)}件</span>}
+                {unreadCountFor(u.id) > 0 && <span className="ml-1 text-food-700">・{unreadCountFor(u.id)}件</span>}
               </span>
             </span>
           </button>
@@ -240,8 +240,8 @@ export default function ChatPage() {
                 onClick={() => setThread(null)}
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   thread === null
-                    ? "border-honey-500 bg-honey-400 text-hive-900"
-                    : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+                    ? "border-food-500 bg-food-500 text-white"
+                    : "border-slate-300 bg-white text-slate-600 hover:border-food-400"
                 }`}
               >
                 全般
@@ -252,8 +252,8 @@ export default function ChatPage() {
                   onClick={() => setThread(t.id)}
                   className={`max-w-[16rem] truncate rounded-full border px-3 py-1 text-xs transition-colors ${
                     thread === t.id
-                      ? "border-honey-500 bg-honey-400 text-hive-900"
-                      : "border-slate-300 bg-white text-slate-600 hover:border-honey-400"
+                      ? "border-food-500 bg-food-500 text-white"
+                      : "border-slate-300 bg-white text-slate-600 hover:border-food-400"
                   }`}
                   title={t.title}
                 >
@@ -275,7 +275,7 @@ export default function ChatPage() {
                   <div key={m.id} className={mine ? "flex justify-end" : "flex"}>
                     <div
                       className={`max-w-[70%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${
-                        mine ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-800"
+                        mine ? "bg-food-500 text-white" : "bg-slate-100 text-slate-800"
                       }`}
                     >
                       {m.body}
@@ -333,7 +333,7 @@ export default function ChatPage() {
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
                 aria-label="ファイルを添付"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500 hover:border-honey-400 hover:text-honey-700 disabled:opacity-40"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-500 hover:border-food-400 hover:text-food-700 disabled:opacity-40"
               >
                 {uploading ? "…" : "📎"}
               </button>
@@ -345,12 +345,12 @@ export default function ChatPage() {
                   if (e.key === "Enter" && !e.nativeEvent.isComposing) void send();
                 }}
                 placeholder={thread === null ? "メッセージを入力" : "この案件についてのメッセージ"}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-honey-500 focus:outline-none"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
               />
               <button
                 onClick={() => void send()}
                 disabled={!input.trim() && !attach}
-                className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-medium text-hive-900 disabled:opacity-40 hover:bg-honey-300"
+                className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
               >
                 送信
               </button>

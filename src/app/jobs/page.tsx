@@ -66,7 +66,7 @@ export default function JobsPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               {j.nominated ? (
-                <span className="rounded-full bg-honey-400 px-2.5 py-0.5 text-xs font-bold text-hive-900">
+                <span className="rounded-full bg-food-500 px-2.5 py-0.5 text-xs font-bold text-white">
                   あなたに指名
                 </span>
               ) : null}
@@ -96,11 +96,11 @@ export default function JobsPage() {
           <button
             onClick={() => claim(j)}
             disabled={busyId === j.id}
-            className="rounded-lg bg-honey-400 px-5 py-2 text-sm font-bold text-hive-900 transition-colors hover:bg-honey-300 disabled:opacity-40"
+            className="rounded-lg bg-food-500 px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-food-600 disabled:opacity-40"
           >
             {busyId === j.id ? "受注中..." : "この仕事を受ける"}
           </button>
-          <Link href={`/projects/${j.id}`} className="text-sm text-slate-500 hover:text-honey-600">
+          <Link href={`/projects/${j.id}`} className="text-sm text-slate-500 hover:text-food-600">
             詳しく見る →
           </Link>
         </div>
@@ -112,8 +112,8 @@ export default function JobsPage() {
     <div className="max-w-4xl">
       <div className="mb-6 flex items-start gap-3">
         <Mascot className="h-12 w-12 shrink-0" />
-        <div className="relative rounded-2xl border border-honey-200 bg-white px-4 py-3 shadow-sm">
-          <span className="absolute -left-2 top-4 h-4 w-4 rotate-45 border-b border-l border-honey-200 bg-white" />
+        <div className="relative rounded-2xl border border-food-200 bg-white px-4 py-3 shadow-sm">
+          <span className="absolute -left-2 top-4 h-4 w-4 rotate-45 border-b border-l border-food-200 bg-white" />
           <p className="text-sm font-medium text-hive-900">お仕事をさがしましょう！</p>
           <p className="mt-1 text-xs text-slate-500">
             受けたい仕事の「この仕事を受ける」を押すと、あなたが担当者になります。一度お取引した企業からは、次回以降あなたを指名できるようになります。

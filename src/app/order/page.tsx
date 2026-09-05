@@ -28,55 +28,86 @@ function Avatar({ a, size = "h-11 w-11" }: { a: RefAccount; size?: string }) {
   );
 }
 
+/** 困りごとタイルの色。テラコッタ系の濃淡＋はちみつ・生成りで、6つが見分けられるように */
+const GROUP_TONES: Record<string, { band: string; label: string; ring: string }> = {
+  "集客": { band: "bg-food-500", label: "text-food-600", ring: "group-hover:border-food-400" },
+  "メニュー・売上": { band: "bg-honey-400", label: "text-honey-700", ring: "group-hover:border-honey-400" },
+  "SNS・動画": { band: "bg-food-800", label: "text-food-800", ring: "group-hover:border-food-800" },
+  "営業": { band: "bg-food-300", label: "text-food-600", ring: "group-hover:border-food-300" },
+  "採用": { band: "bg-hive-500", label: "text-hive-500", ring: "group-hover:border-hive-500" },
+  "運営": { band: "bg-cream-200", label: "text-hive-500", ring: "group-hover:border-hive-200" },
+};
+
 /**
  * 店舗向けの発注トップ（FOOD HATCH）。
- * 「困りごと」4つから選ぶだけ。メニューの一覧は次の画面で、そのグループの分だけ見せる。
+ * 「困りごと」6つから選ぶだけ。お品書きのように並べる。メニューの一覧は次の画面で、そのグループの分だけ見せる。
  */
 function SimpleOrderTop() {
   const { me } = useMe();
   const { mascot } = useMascot();
   return (
-    <div className="max-w-3xl">
-      <div className="mb-6 flex items-start gap-3">
-        <Mascot className="h-12 w-12 shrink-0" />
-        <div className="relative border-[3px] border-hive-900 bg-white px-4 py-3">
-          
-          <p className="text-sm font-medium text-hive-900">こんにちは、{me?.name ?? "ゲスト"}さん！今日はお店の何を良くしますか？</p>
-          <p className="mt-1 text-xs text-slate-500">
-            いまの残高は <Link href="/points" className="font-semibold text-honey-600 hover:underline">{me?.points ?? 0}<PointInline /></Link>。
+    <div className="max-w-4xl">
+      {/* あいさつ: ハッチくんと吹き出し */}
+      <div className="mb-8 flex items-end gap-4">
+        <Mascot className="h-20 w-20 shrink-0 animate-bee-float" />
+        <div className="relative flex-1 rounded-2xl border border-food-200 bg-white px-5 py-4 shadow-sm">
+          <span className="absolute -left-2 bottom-5 h-4 w-4 rotate-45 border-b border-l border-food-200 bg-white" aria-hidden="true" />
+          <p className="font-display text-lg text-hive-900">こんにちは、{me?.name ?? "ゲスト"}さん。今日はお店の何を良くしますか？</p>
+          <p className="mt-1.5 text-xs text-hive-500">
+            いまの残高は <Link href="/points" className="font-bold text-honey-700 hover:underline">{me?.points ?? 0}<PointInline /></Link>。
             定価は 1<PointInline />＝1,200円（税別）、プレミアムなら実質1,000円です。
           </p>
         </div>
       </div>
 
-      <h1 className="mb-3 text-xl font-bold text-hive-900">困りごとから選ぶ</h1>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {BRAND.groups.map((g) => (
-          <Link
-            key={g.name}
-            href={`/order/menu?group=${encodeURIComponent(g.name)}`}
-            className="group border-[3px] border-hive-900 bg-white p-5 transition-colors hover:bg-honey-50"
-          >
-            <div className="text-lg font-bold text-hive-900">{g.sub}</div>
-            <div className="mt-1 text-xs font-semibold text-honey-700">{g.name}</div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {g.examples.map((e) => (
-                <span key={e} className="border border-hive-900 px-2.5 py-1 text-xs font-bold text-hive-900">{e}</span>
-              ))}
-            </div>
-            <div className="mt-3 text-right text-sm font-bold text-honey-700 group-hover:underline">メニューを見る →</div>
-          </Link>
-        ))}
+      <div className="mb-4 flex items-baseline gap-3">
+        <h1 className="text-2xl text-hive-900">お品書き</h1>
+        <span className="text-xs font-bold tracking-widest text-food-600">困りごとから選ぶ</span>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {BRAND.groups.map((g, i) => {
+          const tone = GROUP_TONES[g.name] ?? GROUP_TONES["運営"];
+          return (
+            <Link
+              key={g.name}
+              href={`/order/menu?group=${encodeURIComponent(g.name)}`}
+              className={`group relative flex flex-col overflow-hidden rounded-2xl border border-food-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${tone.ring}`}
+            >
+              <span className={`h-1.5 w-full ${tone.band}`} aria-hidden="true" />
+              <span className="flex flex-1 flex-col p-5">
+                <span className="flex items-center justify-between">
+                  <span className={`text-[11px] font-black tracking-widest ${tone.label}`}>{g.name}</span>
+                  <span className={`hex flex h-7 w-7 items-center justify-center text-[11px] font-black text-white ${tone.band} ${g.name === "メニュー・売上" || g.name === "運営" ? "!text-hive-900" : ""}`}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </span>
+                <span className="mt-2 font-display text-xl leading-snug text-hive-900">{g.sub}</span>
+                <span className="mt-3 flex flex-wrap gap-1.5">
+                  {g.examples.map((e) => (
+                    <span key={e} className="rounded-full bg-cream-100 px-2.5 py-1 text-[11px] font-bold text-hive-700">{e}</span>
+                  ))}
+                </span>
+                <span className="mt-auto pt-4 text-right text-sm font-bold text-food-600 group-hover:underline">メニューを見る →</span>
+              </span>
+            </Link>
+          );
+        })}
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Link href="/order/reference" className="border-2 border-hive-900 bg-white px-5 py-4 transition-colors hover:bg-honey-50">
-          <div className="text-sm font-bold text-hive-900">伸びている飲食店の動画をまねる</div>
-          <div className="mt-1 text-xs text-slate-500">お手本の動画を選ぶと、台本と動画編集の発注にそのまま進めます</div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <Link href="/order/reference" className="group flex items-center gap-4 rounded-2xl bg-food-600 px-6 py-5 text-white shadow-sm transition-colors hover:bg-food-700">
+          <span className="hex flex h-12 w-12 shrink-0 items-center justify-center bg-honey-400 text-xl" aria-hidden="true">▶</span>
+          <span>
+            <span className="block font-display text-lg">伸びている飲食店の動画をまねる</span>
+            <span className="mt-1 block text-xs text-food-100">お手本の動画を選ぶと、台本と動画編集の発注にそのまま進めます</span>
+          </span>
         </Link>
-        <Link href="/agent" className="border-2 border-hive-900 bg-white px-5 py-4 transition-colors hover:bg-honey-50">
-          <div className="text-sm font-bold text-hive-900">{mascot.consult}</div>
-          <div className="mt-1 text-xs text-slate-500">「新メニューを考えたい」「口コミに返したい」など、話しかけるだけで整理します</div>
+        <Link href="/agent" className="group flex items-center gap-4 rounded-2xl border border-food-200 bg-white px-6 py-5 shadow-sm transition-colors hover:bg-food-50">
+          <Mascot className="h-12 w-12 shrink-0" />
+          <span>
+            <span className="block font-display text-lg text-hive-900">{mascot.consult}</span>
+            <span className="mt-1 block text-xs text-hive-500">「新メニューを考えたい」「口コミに返したい」など、話しかけるだけで整理します</span>
+          </span>
         </Link>
       </div>
     </div>
@@ -141,7 +172,7 @@ const TONE_WEB = ["HP制作（1ページ）", "HP保守・更新（月額）", "
 type Tone = { bg: string; sub: string; pt: string };
 function toneFor(item: CatalogItem): Tone {
   if (item.group === "動画まわり") {
-    return { bg: "bg-honey-400 group-hover:bg-honey-300", sub: "text-hive-900/70", pt: "text-hive-900" };
+    return { bg: "bg-food-500 group-hover:bg-food-600", sub: "text-white/80", pt: "text-white" };
   }
   if (item.group === "採用まわり") {
     return { bg: "bg-indigo-100 group-hover:bg-indigo-50", sub: "text-hive-500", pt: "text-indigo-700" };
@@ -152,7 +183,7 @@ function toneFor(item: CatalogItem): Tone {
   if (TONE_WEB.includes(item.name)) {
     return { bg: "bg-sky-100 group-hover:bg-sky-50", sub: "text-hive-500", pt: "text-sky-700" };
   }
-  return { bg: "bg-white group-hover:bg-honey-50", sub: "text-hive-500", pt: "text-honey-700" };
+  return { bg: "bg-white group-hover:bg-food-50", sub: "text-hive-500", pt: "text-food-700" };
 }
 function sortForHive(items: CatalogItem[]): CatalogItem[] {
   const rank = (n: string) => {
@@ -173,7 +204,7 @@ function FeaturedHex({ item }: { item: CatalogItem }) {
       className="hex-p group relative block bg-hive-900 transition-transform hover:-translate-y-1"
       style={{ width: W, height: H }}
     >
-      <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-1.5 bg-honey-400 px-4 text-center group-hover:bg-honey-300">
+      <span className="hex-p absolute inset-[4px] flex flex-col items-center justify-center gap-1.5 bg-food-500 px-4 text-center group-hover:bg-food-600">
         <span className="text-[10px] font-black tracking-widest text-hive-900/60">メインサービス</span>
         <span className="whitespace-nowrap text-[13px] font-black leading-tight text-hive-900">{item.name}</span>
         <span className="text-[10px] leading-tight text-hive-900/70">{item.size}</span>
@@ -197,7 +228,7 @@ function MenuCardList({ items }: { items: CatalogItem[] }) {
           <Link
             key={item.name}
             href={`/order/create?category=${encodeURIComponent(item.name)}`}
-            className={`flex flex-col gap-1 border-2 border-hive-900 px-3 py-3 ${tone.bg.split(" ")[0]}`}
+            className={`flex flex-col gap-1 rounded-xl border border-food-200 px-3 py-3 ${tone.bg.split(" ")[0]}`}
           >
             <span className="flex h-5 items-center text-hive-900 [&_span]:gap-1.5"><PlatformRow category={item.name} className="h-5 w-5" /></span>
             <span className="text-[13px] font-bold leading-tight text-hive-900">{item.name}</span>
@@ -267,7 +298,7 @@ function FullOrderTop() {
     <div className="space-y-3">
       {/* ハッチのひとこと ＋ いちばん人気の入口 */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="relative flex items-center gap-4 overflow-hidden border-[3px] border-hive-900 bg-white px-5 py-2.5">
+        <div className="relative flex items-center gap-4 overflow-hidden rounded-2xl border border-food-200 bg-white px-5 py-2.5">
           <span className="flex shrink-0 flex-col items-center">
             <Mascot className="h-10 w-10 animate-bee-float" />
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチくん</span>
@@ -280,7 +311,7 @@ function FullOrderTop() {
           </div>
           <Link
             href="/agent"
-            className="ml-auto hidden h-10 shrink-0 items-center bg-hive-900 px-5 text-sm font-black text-honey-400 transition-colors hover:bg-hive-800 sm:flex"
+            className="ml-auto hidden h-10 shrink-0 items-center bg-hive-900 px-5 text-sm font-black text-honey-300 transition-colors hover:bg-hive-800 sm:flex"
           >
             迷ったら{mascot.consult} →
           </Link>
@@ -290,7 +321,7 @@ function FullOrderTop() {
             <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチ嬢</span>
           </span>
         </div>
-        <Link href="/order/reference" className="group flex flex-col justify-center gap-1 border-[3px] border-hive-900 bg-honey-400 px-5 py-2.5 transition-colors hover:bg-honey-300">
+        <Link href="/order/reference" className="group flex flex-col justify-center gap-1 rounded-2xl border border-food-200 bg-food-500 px-5 py-2.5 transition-colors hover:bg-food-600">
           <span className="text-[10px] font-bold tracking-widest text-hive-900">いちばん人気</span>
           <span className="text-[15px] font-black leading-snug text-hive-900">「このアカウントみたいに作りたい」から始める</span>
           <span className="flex items-center gap-2">
@@ -302,7 +333,7 @@ function FullOrderTop() {
             </span>
             <span className="text-[10px] font-bold text-hive-900/70">業種べつのお手本</span>
           </span>
-          <span className="mt-0.5 flex h-8 items-center justify-center bg-hive-900 text-sm font-black text-honey-400 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
+          <span className="mt-0.5 flex h-8 items-center justify-center bg-hive-900 text-sm font-black text-honey-300 transition-transform group-hover:scale-[1.01]">お手本を探す →</span>
         </Link>
       </div>
 

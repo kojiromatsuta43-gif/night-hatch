@@ -27,7 +27,7 @@ const TASKS: Task[] = ["chat", "sales", "extract", "backstage"];
 const PLANS: PlanKey[] = ["light", "standard", "premium"];
 const PROVIDER_LABEL = { auto: "自動（Claudeの鍵があればClaude）", anthropic: "Claude", gemini: "Gemini" } as const;
 
-const input = "w-full rounded border-2 border-hive-900 px-2 py-1 text-sm";
+const input = "w-full rounded rounded-xl border border-food-200 px-2 py-1 text-sm";
 
 export default function AiSettingsPanel() {
   const [data, setData] = useState<Data | null>(null);
@@ -73,8 +73,8 @@ export default function AiSettingsPanel() {
         <h2 className="mb-1 text-base font-bold">APIキーの状態</h2>
         <p className="mb-3 text-xs text-slate-500">鍵は Railway の環境変数（ANTHROPIC_API_KEY / GEMINI_API_KEY）にだけ置きます。この画面には保存されません。</p>
         <div className="flex gap-3 text-sm">
-          <span className={`rounded px-3 py-1 ${data.keys.anthropic ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-500"}`}>Claude: {data.keys.anthropic ? "設定済み" : "未設定"}</span>
-          <span className={`rounded px-3 py-1 ${data.keys.gemini ? "bg-honey-400 text-hive-900" : "bg-slate-100 text-slate-500"}`}>Gemini: {data.keys.gemini ? "設定済み" : "未設定"}</span>
+          <span className={`rounded px-3 py-1 ${data.keys.anthropic ? "bg-food-500 text-white" : "bg-slate-100 text-slate-500"}`}>Claude: {data.keys.anthropic ? "設定済み" : "未設定"}</span>
+          <span className={`rounded px-3 py-1 ${data.keys.gemini ? "bg-food-500 text-white" : "bg-slate-100 text-slate-500"}`}>Gemini: {data.keys.gemini ? "設定済み" : "未設定"}</span>
         </div>
       </section>
 
@@ -85,14 +85,14 @@ export default function AiSettingsPanel() {
           {TASKS.map((t) => {
             const r = data.routing[t];
             return (
-              <div key={t} className="rounded border-2 border-hive-900 bg-white p-3">
+              <div key={t} className="rounded rounded-xl border border-food-200 bg-white p-3">
                 <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                   <div>
                     <div className="font-bold">{data.taskLabels[t].name}</div>
                     <div className="text-xs text-slate-500">{data.taskLabels[t].desc}</div>
                   </div>
                   <div className="text-xs">
-                    いま実際に使うもの: {r ? <span className="rounded bg-honey-100 px-2 py-0.5 font-mono">{r.provider === "anthropic" ? "Claude" : "Gemini"} / {r.model}</span> : <span className="text-rose-600">鍵が無いため使えません</span>}
+                    いま実際に使うもの: {r ? <span className="rounded bg-food-100 px-2 py-0.5 font-mono">{r.provider === "anthropic" ? "Claude" : "Gemini"} / {r.model}</span> : <span className="text-rose-600">鍵が無いため使えません</span>}
                   </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
@@ -125,7 +125,7 @@ export default function AiSettingsPanel() {
         <p className="mb-3 text-xs text-slate-500">会話＝AIチャットの自由入力（1日あたり）。生成＝台本づくり・動画分析・資料の読み取り（1ヶ月あたり）。管理者と「無制限」プランは数えません。補助金の480万円契約（24ヶ月前払い）のお客様は「プレミアム」にしてください。</p>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+            <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
               <th className="px-2 py-2">プラン</th>
               <th className="px-2 py-2">会話 / 日</th>
               <th className="px-2 py-2">生成 / 月</th>
@@ -162,7 +162,7 @@ export default function AiSettingsPanel() {
         ) : (
           <table className="w-full max-w-2xl text-sm">
             <thead>
-              <tr className="border-b-2 border-hive-900 text-left text-xs text-slate-500">
+              <tr className="border-b-2 border-food-200 text-left text-xs text-slate-500">
                 <th className="px-2 py-2">ユーザー</th>
                 <th className="px-2 py-2">プラン</th>
                 <th className="px-2 py-2 text-right">会話 今日</th>
@@ -188,7 +188,7 @@ export default function AiSettingsPanel() {
       </section>
 
       <div className="flex items-center gap-3">
-        <button onClick={save} disabled={saving} className="rounded bg-honey-400 px-5 py-2 text-sm font-bold text-hive-900 disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="rounded bg-food-500 px-5 py-2 text-sm font-bold text-white disabled:opacity-50">
           {saving ? "保存中..." : "保存する"}
         </button>
         {msg && <span className="text-sm text-slate-600">{msg}</span>}
