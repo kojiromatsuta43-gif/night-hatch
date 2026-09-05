@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Illust from "@/components/Illust";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
@@ -37,7 +38,8 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold mb-6">ダッシュボード</h1>
+      <h1 className="text-2xl">今月のようす</h1>
+      <p className="page-sub mb-6">頼んだものの進み具合と、ハニーの残りをひと目で。</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         {(isFreelancer
           ? [
@@ -46,14 +48,17 @@ export default function Dashboard() {
               { label: "今月の提出 / 検収OK", value: `${fstats?.submissions ?? 0} / ${fstats?.accepted ?? 0}本` },
             ]
           : [
-              { label: "完了", value: `${done.length}件` },
-              { label: "進行中", value: `${active.length}件` },
-              { label: `残り${mascot.pointName}`, value: <>{me?.points ?? 0}<PointInline /></> },
+              { label: "できあがった", value: `${done.length}件`, illust: "sparkle" as const },
+              { label: "いま作っている", value: `${active.length}件`, illust: "donburi" as const },
+              { label: "ハニーの残り", value: <>{me?.points ?? 0}<PointInline /></>, illust: "jar" as const },
             ]
         ).map((s) => (
-          <div key={s.label} className="rounded-2xl border border-food-200 bg-white p-5">
-            <div className="text-sm text-slate-500">{s.label}</div>
-            <div className="mt-1 text-3xl font-black text-hive-900">{s.value}</div>
+          <div key={s.label} className="flex items-center gap-3 rounded-2xl border border-food-200 bg-white p-5">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm text-hive-500">{s.label}</div>
+              <div className="mt-1 text-3xl font-black text-hive-900">{s.value}</div>
+            </div>
+            {"illust" in s && s.illust && <Illust name={s.illust} className="h-14 w-14 shrink-0" />}
           </div>
         ))}
       </div>

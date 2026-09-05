@@ -21,21 +21,21 @@ export default function TopNav({ role, name, points, plan }: { role?: string; na
   const overflow = points > capacity;
 
   return (
-    <div className="sticky top-0 z-40 bg-food-600 text-cream-50">
-      <div className="flex items-center gap-3 px-4 py-2.5 pl-14 sm:gap-6 sm:px-6 md:pl-6">
+    <div className="noren sticky top-0 z-40 bg-food-600 text-cream-50">
+      <div className="flex flex-nowrap items-center gap-2 px-3 py-2.5 pl-12 sm:gap-6 sm:px-6 md:pl-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           {/* テラコッタのバーの上でもハッチくんが見えるように、クリーム色の座布団を敷く */}
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cream-100">
             <Mascot className="h-7 w-7" />
           </span>
-          <span className="text-base font-black tracking-wide">{BRAND.name}</span>
+          <span className="whitespace-nowrap font-display text-base tracking-[0.14em] sm:text-lg sm:tracking-[0.18em]">{BRAND.name}</span>
         </Link>
-        <div className="ml-auto flex items-center gap-2 sm:gap-4">
+        <div className="ml-auto flex flex-nowrap items-center gap-2 sm:gap-4">
           <NotificationBell />
           {showPoints && (
             <Link href="/points" title={`${mascot.pointName}の残高（クリックで詳細）`} className="flex items-center gap-2">
               <HoneyJar points={points} capacity={capacity} />
-              <span className="flex flex-col leading-none">
+              <span className="flex flex-col whitespace-nowrap leading-none">
                 <span className="text-lg font-black text-honey-300">
                   {points}
                   <span className="ml-0.5 text-[11px] font-bold">{mascot.pointName}</span>
@@ -52,7 +52,7 @@ export default function TopNav({ role, name, points, plan }: { role?: string; na
               await api("/api/auth/logout", { method: "POST" });
               window.location.href = "/sign-in";
             }}
-            className="text-xs text-food-100 hover:text-cream-50"
+            className="hidden whitespace-nowrap text-xs text-food-100 hover:text-cream-50 sm:inline"
           >
             ログアウト
           </button>

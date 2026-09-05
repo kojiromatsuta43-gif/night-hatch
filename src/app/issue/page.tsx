@@ -94,7 +94,7 @@ export default function IssuePage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">発注書・請求書</h1>
+        <div><h1 className="text-2xl">お会計</h1><p className="page-sub">頼んだものの発注書と請求書。補助金の申請にも使えます。</p></div>
         <div className="flex gap-2 text-sm">
           <Link href="/issue/issuer" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-food-400">
             自社情報

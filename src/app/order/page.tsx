@@ -9,6 +9,7 @@ import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
 import { retryImage, iconUrl } from "@/lib/client-img";
+import Illust, { GROUP_ILLUST } from "@/components/Illust";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
 
@@ -26,6 +27,16 @@ function Avatar({ a, size = "h-11 w-11" }: { a: RefAccount; size?: string }) {
       {a.name[0]}
     </span>
   );
+}
+
+/** 今月のおすすめ（季節の提案を1つ）。月で切り替える。リンク先は困りごとグループ */
+function seasonalPick(month: number): { title: string; body: string; group: string; cta: string } {
+  if (month === 9 || month === 10) return { title: "秋メニュー、もう決まりましたか？", body: "きのこ・さつまいも・新米の季節。限定5品の企画を12ハニーで。写真映えする盛り付けまで一緒に考えます。", group: "メニュー・売上", cta: "季節メニューを頼む" };
+  if (month === 11 || month === 12) return { title: "忘年会の予約、近くの会社に声をかけましょう", body: "徒歩10分圏内の会社へ宴会プランを案内。テレアポは1件0.25ハニーから。", group: "営業", cta: "宴会の営業を頼む" };
+  if (month === 1 || month === 2) return { title: "歓送迎会シーズンの前に、宴会プランを整えましょう", body: "コース内容・幹事特典・案内資料をセットで。3月の予約は2月に決まります。", group: "営業", cta: "宴会プランを頼む" };
+  if (month === 3 || month === 4) return { title: "新生活のお客さんに、お店を知ってもらう季節", body: "Googleマップの整備とLINE公式の立ち上げで、引っ越してきた人の「近くの店」に入りましょう。", group: "集客", cta: "集客のメニューを見る" };
+  if (month === 5 || month === 6) return { title: "夏に向けて、スタッフを増やしませんか", body: "応募が来る求人原稿と、働く様子のショート動画。まずは原稿4ハニーから。", group: "採用", cta: "採用のメニューを見る" };
+  return { title: "夏限定メニューと、涼しげなドリンク", body: "ドリンク5品の開発は8ハニー。SNS投稿用の写真と一緒に頼むと反応が違います。", group: "メニュー・売上", cta: "夏メニューを頼む" };
 }
 
 /** 困りごとタイルの色。テラコッタ系の濃淡＋はちみつ・生成りで、6つが見分けられるように */
@@ -60,10 +71,27 @@ function SimpleOrderTop() {
         </div>
       </div>
 
-      <div className="mb-4 flex items-baseline gap-3">
+      {/* 今月のおすすめ */}
+      {(() => {
+        const pick = seasonalPick(new Date().getMonth() + 1);
+        return (
+          <Link href={`/order/menu?group=${encodeURIComponent(pick.group)}`} className="group mb-8 flex items-center gap-4 rounded-2xl border border-honey-300 bg-honey-50 px-5 py-4 shadow-sm transition-colors hover:bg-honey-100">
+            <Illust name="sparkle" className="h-14 w-14 shrink-0" />
+            <span className="min-w-0 flex-1">
+              <span className="text-[11px] font-black tracking-widest text-honey-700">今月のおすすめ</span>
+              <span className="mt-0.5 block font-display text-lg leading-snug text-hive-900">{pick.title}</span>
+              <span className="mt-1 block text-xs text-hive-500">{pick.body}</span>
+            </span>
+            <span className="hidden shrink-0 rounded-full bg-food-500 px-4 py-2 text-sm font-bold text-white group-hover:bg-food-600 sm:block">{pick.cta} →</span>
+          </Link>
+        );
+      })()}
+
+      <div className="mb-1 flex items-baseline gap-3">
         <h1 className="text-2xl text-hive-900">お品書き</h1>
         <span className="text-xs font-bold tracking-widest text-food-600">困りごとから選ぶ</span>
       </div>
+      <p className="page-sub mb-5">いちばん近い困りごとを押すと、頼めるメニューと値段が出ます。迷ったら下の「ハッチに相談」へ。</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {BRAND.groups.map((g, i) => {
           const tone = GROUP_TONES[g.name] ?? GROUP_TONES["運営"];
@@ -75,19 +103,19 @@ function SimpleOrderTop() {
             >
               <span className={`h-1.5 w-full ${tone.band}`} aria-hidden="true" />
               <span className="flex flex-1 flex-col p-5">
-                <span className="flex items-center justify-between">
-                  <span className={`text-[11px] font-black tracking-widest ${tone.label}`}>{g.name}</span>
-                  <span className={`hex flex h-7 w-7 items-center justify-center text-[11px] font-black text-white ${tone.band} ${g.name === "メニュー・売上" || g.name === "運営" ? "!text-hive-900" : ""}`}>
-                    {String(i + 1).padStart(2, "0")}
+                <span className="flex items-start justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className={`text-[11px] font-black tracking-widest ${tone.label}`}>{String(i + 1).padStart(2, "0")}　{g.name}</span>
+                    <span className="mt-1.5 block font-display text-xl leading-snug text-hive-900">{g.sub}</span>
                   </span>
+                  <Illust name={GROUP_ILLUST[g.name] ?? "empty"} className="h-20 w-20 shrink-0 transition-transform group-hover:-rotate-3 group-hover:scale-105" />
                 </span>
-                <span className="mt-2 font-display text-xl leading-snug text-hive-900">{g.sub}</span>
-                <span className="mt-3 flex flex-wrap gap-1.5">
+                <span className="mt-2 flex flex-wrap gap-1.5">
                   {g.examples.map((e) => (
                     <span key={e} className="rounded-full bg-cream-100 px-2.5 py-1 text-[11px] font-bold text-hive-700">{e}</span>
                   ))}
                 </span>
-                <span className="mt-auto pt-4 text-right text-sm font-bold text-food-600 group-hover:underline">メニューを見る →</span>
+                <span className="mt-auto pt-4 text-right text-sm font-bold text-food-600 group-hover:underline">メニューと値段を見る →</span>
               </span>
             </Link>
           );

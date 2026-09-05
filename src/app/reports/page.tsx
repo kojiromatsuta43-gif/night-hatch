@@ -68,7 +68,7 @@ function ReportsInner() {
   return (
     <div className="max-w-4xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">月次レポート</h1>
+        <div><h1 className="text-2xl">ふりかえり</h1><p className="page-sub">先月なにを頼んで、動画がどれだけ伸びたか。月のはじめに自動で届きます。</p></div>
         <select
           value={month}
           onChange={(e) => setMonth(e.target.value)}

@@ -11,45 +11,51 @@ import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { Mascot, useMascot } from "./MascotProvider";
 import { useMe } from "./AppShell";
+import NavIcon, { type NavIconName } from "./NavIcon";
+import { api } from "@/lib/client";
 
-type Item = { href: string; label: string };
+type Item = { href: string; label: string; icon: NavIconName; sub?: string };
 type Group = { heading: string; items: Item[] };
 
 // デモ運用が終わったら Railway に NEXT_PUBLIC_SHOW_GUIDE=off を入れると「デモの歩き方」が消える
 const SHOW_GUIDE = process.env.NEXT_PUBLIC_SHOW_GUIDE !== "off";
 
+/**
+ * メニューの言葉は「お店の人の言葉」で。業務用語（発注・案件・請求）は使わない。
+ * 画面のパス（href）は変えていないので、ブックマークや通知のリンクはそのまま動く。
+ */
 function groupsFor(role: string | undefined, pointName: string, hasSales: boolean): Group[] {
   if (role === "freelancer") {
-    const go: Item[] = [{ href: "/projects", label: "担当案件" }];
-    if (hasSales) go.push({ href: "/sales", label: "営業リスト" });
-    go.push({ href: "/chat", label: "チャット" });
+    const go: Item[] = [{ href: "/projects", label: "担当している仕事", icon: "tray" }];
+    if (hasSales) go.push({ href: "/sales", label: "営業リスト", icon: "list" });
+    go.push({ href: "/chat", label: "お店とのやりとり", icon: "chat" });
     return [
-      { heading: "さがす", items: [{ href: "/jobs", label: "お仕事をさがす" }] },
+      { heading: "さがす", items: [{ href: "/jobs", label: "お仕事をさがす", icon: "search" }] },
       { heading: "すすめる", items: go },
-      { heading: "みる", items: [{ href: "/", label: "ダッシュボード" }, { href: "/order/reference", label: "お手本ライブラリ" }] },
+      { heading: "みる", items: [{ href: "/", label: "今月のようす", icon: "month" }, { href: "/order/reference", label: "伸びてる店の動画", icon: "video" }] },
     ];
   }
   const see: Item[] = [
-    { href: "/", label: "ダッシュボード" },
-    { href: "/reports", label: "月次レポート" },
-    { href: "/issue", label: "発注書・請求書" },
-    { href: "/points", label: pointName },
+    { href: "/", label: "今月のようす", icon: "month" },
+    { href: "/reports", label: "ふりかえり", icon: "report" },
+    { href: "/issue", label: "お会計", icon: "bill" },
+    { href: "/points", label: "ハニーの壺", icon: "jar" },
   ];
-  if (SHOW_GUIDE) see.push({ href: "/guide", label: "デモの歩き方" });
-  if (role === "admin") see.push({ href: "/admin", label: "管理" });
-  const go: Item[] = [{ href: "/projects", label: "案件一覧" }];
-  if (hasSales) go.push({ href: "/sales", label: "営業リスト" }, { href: "/sales/form", label: "フォーム営業" });
-  go.push({ href: "/chat", label: "チャット" });
+  if (SHOW_GUIDE) see.push({ href: "/guide", label: "デモの歩き方", icon: "guide" });
+  if (role === "admin") see.push({ href: "/admin", label: "管理", icon: "admin" });
+  const go: Item[] = [{ href: "/projects", label: "頼んだもの", icon: "tray" }];
+  if (hasSales) go.push({ href: "/sales", label: "営業リスト", icon: "list" }, { href: "/sales/form", label: "メール＆フォーム営業", icon: "mail" });
+  go.push({ href: "/chat", label: "担当とのやりとり", icon: "chat" });
   return [
     {
-      heading: "つくる",
+      heading: "頼む",
       items: [
-        { href: "/order", label: "つくる・発注" },
-        { href: "/order/reference", label: "お手本から発注" },
-        { href: "/agent", label: "AIエージェント" },
-        { href: "/scripts", label: "保存済み台本" },
-        { href: "/brand-profile", label: "ブランドプロファイル" },
-        { href: "/video-analysis", label: "動画分析" },
+        { href: "/order", label: "お品書きから頼む", icon: "order" },
+        { href: "/order/reference", label: "伸びてる店の動画をまねる", icon: "video" },
+        { href: "/agent", label: "ハッチに相談", icon: "hatch" },
+        { href: "/scripts", label: "台本ノート", icon: "note" },
+        { href: "/brand-profile", label: "うちの店のこと", icon: "shop" },
+        { href: "/video-analysis", label: "動画を診てもらう", icon: "diagnose" },
       ],
     },
     { heading: "すすめる", items: go },
@@ -98,7 +104,7 @@ export default function Sidebar({ role }: { role?: string }) {
     <nav className="space-y-5">
       {groups.map((g) => (
         <div key={g.heading}>
-          <div className="mb-1.5 px-3 text-[11px] font-black tracking-widest text-hive-500">{g.heading}</div>
+          <div className="mb-1.5 flex items-center gap-2 px-3 text-[11px] font-black tracking-widest text-food-600"><span className="h-px w-3 bg-food-300" aria-hidden="true" />{g.heading}</div>
           <div className="space-y-0.5">
             {g.items.map((item) => {
               const active = isActive(pathname, item.href);
@@ -106,11 +112,12 @@ export default function Sidebar({ role }: { role?: string }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`block px-3 py-2 text-sm font-bold transition-colors ${
+                  className={`flex items-center gap-2.5 px-3 py-2 text-sm font-bold transition-colors ${
                     active ? "hex-tab bg-food-500 text-white" : "text-hive-700 hover:bg-food-100 hover:text-hive-900"
                   }`}
                 >
-                  {item.label}
+                  <NavIcon name={item.icon} className={`h-[18px] w-[18px] shrink-0 ${active ? "text-white" : "text-food-500"}`} />
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
@@ -125,7 +132,7 @@ export default function Sidebar({ role }: { role?: string }) {
       {/* デスクトップ（折りたたみ可） */}
       <aside
         className={`hidden shrink-0 overflow-hidden border-food-200 bg-cream-50 transition-all md:block ${
-          collapsed ? "w-0 border-r-0" : "w-60 border-r px-3 py-5"
+          collapsed ? "w-0 border-r-0" : "w-64 border-r px-3 py-5"
         }`}
       >
         {!collapsed && nav}
@@ -135,7 +142,7 @@ export default function Sidebar({ role }: { role?: string }) {
         aria-label={collapsed ? "メニューを開く" : "メニューをたたむ"}
         title={collapsed ? "メニューを開く" : "メニューをたたむ"}
         className="fixed top-14 z-40 hidden h-9 w-9 items-center justify-center rounded-xl border border-food-200 bg-food-500 text-base font-black text-white shadow-sm transition-all hover:bg-food-600 md:flex"
-        style={{ left: collapsed ? 10 : 204 }}
+        style={{ left: collapsed ? 10 : 220 }}
       >
         {collapsed ? "»" : "«"}
       </button>
@@ -164,6 +171,15 @@ export default function Sidebar({ role }: { role?: string }) {
               </button>
             </div>
             {nav}
+            <button
+              onClick={async () => {
+                await api("/api/auth/logout", { method: "POST" });
+                window.location.href = "/sign-in";
+              }}
+              className="mt-6 w-full rounded-full border border-food-200 py-2 text-xs font-bold text-hive-500 hover:bg-food-50"
+            >
+              ログアウト
+            </button>
           </div>
         </div>
       )}

@@ -24,7 +24,8 @@ function ScriptsPageInner() {
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold mb-2">保存済み台本</h1>
+      <h1 className="text-2xl">台本ノート</h1>
+      <p className="page-sub mb-4">ハッチと作った動画の台本を、ここに取っておけます。</p>
       <p className="mb-6 text-sm text-slate-500">AIエージェントで作成した台本の一覧です。</p>
       <div className="mb-4 flex gap-2 text-sm">
         <button onClick={() => setFilter("all")} className={`rounded-full px-4 py-1.5 ${filter === "all" ? "bg-food-500 text-white" : "border border-slate-300 text-slate-600"}`}>すべて ({scripts.length})</button>

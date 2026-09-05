@@ -175,7 +175,7 @@ export default function OrderPage() {
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/order" className="text-sm text-slate-500 hover:text-slate-700">← 発注トップ</Link>
-          <h1 className="text-2xl font-bold">参考アカウントから発注</h1>
+          <h1 className="text-2xl font-bold">伸びてる店の動画をまねる</h1>
         </div>
         <Link href="/order/create" className="text-sm text-food-600 hover:underline">
           参考動画なしでフォームから登録 →

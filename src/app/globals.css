@@ -66,6 +66,18 @@ h1, h2, .font-display {
 /* 白い面はほんのり生成りに寄せる（真っ白のカードが浮かないように） */
 .bg-white { background-color: #FFFDF9; }
 
+/* ── 暖簾: 上部バーの下端をスカラップ（波形）にする ── */
+.noren { position: sticky; }
+.noren::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -10px; height: 10px;
+  background: radial-gradient(circle at 10px -2px, transparent 9px, #9E3D25 10px) 0 0 / 20px 10px repeat-x;
+  pointer-events: none;
+}
+/* 見出しの下に添える1行の説明 */
+.page-sub { color: #8A6F63; font-size: 13px; margin-top: 4px; }
+
 /* ── ハニカム（巣箱）のモチーフ ─────────────────────
    六角形は要所だけ: 上部ナビの選択中タブ、メニューの巣、案件の進捗セル。 */
 .hex { clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); }

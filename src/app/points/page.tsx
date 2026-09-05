@@ -80,10 +80,11 @@ function PointsInner() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-        {mascot.pointName}
+      <h1 className="flex items-center gap-2 text-2xl">
+        ハニーの壺
         <PointMark className="h-7 w-7 text-2xl" />
       </h1>
+      <p className="page-sub mb-6">1{mascot.pointName}＝1,200円（税別）。頼むと壺から減り、月のはじめに契約分が足されます。</p>
       <div className="mb-8 flex items-center gap-5 rounded-xl border border-slate-200 bg-white p-6">
         <PointMark className="h-16 w-16 shrink-0 text-5xl" />
         <div>

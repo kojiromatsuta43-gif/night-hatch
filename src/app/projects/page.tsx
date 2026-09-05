@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Illust from "@/components/Illust";
 import { api } from "@/lib/client";
 import { STATUSES, Status, Project } from "@/lib/data";
 import { PointInline, useMascot } from "@/components/MascotProvider";
@@ -75,7 +76,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-black text-hive-900">{isFreelancer ? "担当案件" : "案件一覧"}</h1>
+        <div><h1 className="text-2xl text-hive-900">{isFreelancer ? "担当している仕事" : "頼んだもの"}</h1><p className="page-sub">{isFreelancer ? "いま手元にある仕事と、修正のお願いです。" : "頼んだものが、いまどこまで進んでいるか。届いたら「確認する」を押してください。"}</p></div>
         <div className="flex rounded-xl border border-food-200 text-sm font-bold">
           <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-food-500 text-white" : "bg-white text-hive-500"}`}>ボード</button>
           <button onClick={() => setView("list")} className={`px-4 py-1.5 ${view === "list" ? "bg-food-500 text-white" : "bg-white text-hive-500"}`}>一覧</button>
@@ -160,8 +161,11 @@ export default function ProjectsPage() {
               );
             })}
             {projects.length === 0 && (
-              <div className="border-2 border-dashed border-hive-500 px-5 py-10 text-center text-sm text-hive-500">
-                まだ案件がありません。{isFreelancer ? "「お仕事をさがす」から受注できます。" : "「つくる」から発注すると、ここに並びます。"}
+              <div className="flex flex-col items-center rounded-2xl border border-dashed border-food-300 bg-white px-5 py-10 text-center">
+                <Illust name="empty" className="h-24 w-24" />
+                <p className="mt-2 font-display text-lg text-hive-900">まだ何も頼んでいません</p>
+                <p className="mt-1 text-sm text-hive-500">{isFreelancer ? "「お仕事をさがす」から受けられます。" : "お品書きから頼むと、ここに並びます。"}</p>
+                {!isFreelancer && <Link href="/order" className="mt-4 rounded-full bg-food-500 px-5 py-2 text-sm font-bold text-white hover:bg-food-600">お品書きを見る</Link>}
               </div>
             )}
           </div>
@@ -205,7 +209,7 @@ export default function ProjectsPage() {
                       </select>
                     </div>
                   ))}
-                  {items.length === 0 && <div className="px-1 py-4 text-center text-xs text-hive-500">案件がありません</div>}
+                  {items.length === 0 && <div className="px-1 py-4 text-center text-xs text-hive-500">なし</div>}
                 </div>
               </div>
             );

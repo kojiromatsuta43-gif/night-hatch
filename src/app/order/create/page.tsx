@@ -216,7 +216,8 @@ function OrderForm() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">案件登録</h1>
+      <h1 className="text-2xl">頼む内容を書く</h1>
+      <p className="page-sub mb-6">3ステップ。分からない欄は空欄でも大丈夫、あとでハッチが聞きます。</p>
 
       <ol className="flex items-center gap-2 mb-8">
         {steps.map((s, i) => (

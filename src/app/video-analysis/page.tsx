@@ -48,7 +48,8 @@ export default function VideoAnalysisPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-2">動画分析</h1>
+      <h1 className="text-2xl">動画を診てもらう</h1>
+      <p className="page-sub mb-4">TikTokのURLを貼ると、伸びている理由と真似できる点をハッチが読み解きます。</p>
       <p className="mb-4 text-sm text-slate-500">
         参考にしたい動画のURLを入れると、シーン分解・フック分析・自社への応用ポイントをAIが提案します。
       </p>

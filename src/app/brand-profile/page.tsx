@@ -32,7 +32,7 @@ export default function BrandProfilePage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">ブランドプロファイル</h1>
+        <div><h1 className="text-2xl">うちの店のこと</h1><p className="page-sub">店の売りや雰囲気を覚えさせておくと、台本や投稿文が「うちの店らしく」なります。</p></div>
         <button onClick={create} className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white hover:bg-food-600">＋ 新規作成</button>
       </div>
       <p className="mb-3 text-sm text-slate-500">台本生成時に参照される「情報の単一情報源」。確定情報はAIが改変しません。用途ごとに複数作れます。</p>

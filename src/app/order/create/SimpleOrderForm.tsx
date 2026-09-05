@@ -322,7 +322,7 @@ export default function SimpleOrderForm() {
   if (!item) {
     return (
       <div className="max-w-3xl">
-        <h1 className="mb-4 text-2xl font-bold text-hive-900">何を頼みますか？</h1>
+        <h1 className="mb-4 text-2xl font-bold text-hive-900">頼む内容を書いてください</h1>
         <MenuPicker />
       </div>
     );
