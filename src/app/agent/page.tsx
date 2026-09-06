@@ -11,6 +11,7 @@ import ClientOnly from "@/components/ClientOnly";
 import PlatformIcon from "@/components/PlatformIcon";
 import { POINTS_BY_CATEGORY } from "@/lib/data";
 import { BRAND } from "@/lib/brand";
+import Illust, { type IllustName } from "@/components/Illust";
 import { retryImage, thumbUrl } from "@/lib/client-img";
 
 // ============================================================
@@ -41,6 +42,7 @@ type BrandProfile = { id: string; name: string };
 
 // クイック操作とプロンプト集は看板ごと（src/lib/brands/*.ts）
 const QUICK_ACTIONS = BRAND.agent.quickActions;
+const QUICK_ILLUST: Record<string, IllustName> = { "伸びてる飲食店の動画": "phone", "メニューを考える": "donburi", "口コミに返信する": "review", "原価率を出す": "jar" };
 const PROMPT_LIBRARY = BRAND.agent.promptLibrary;
 
 const STAGES = ["発注準備", "台本作成", "発注条件", "内容確認", "発注完了"] as const;
@@ -197,17 +199,17 @@ function AgentPageInner() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-2">
+      <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-food-200 bg-white shadow-sm">
+        <div className="flex items-center gap-3 border-b border-food-200 px-4 py-2">
           <Mascot className="h-7 w-7 shrink-0" />
-          <span className="text-sm font-semibold text-hive-900">{mascot.agentTitle}</span>
+          <span className="font-display text-base text-hive-900">ハッチに相談</span>
           <div className="hidden sm:block"><AiUsage refreshKey={usageKey} compact /></div>
           <select
             value={profileId}
             onChange={(e) => setProfileId(e.target.value)}
             className="ml-auto rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600"
           >
-            <option value="">ブランドプロファイルなし</option>
+            <option value="">うちの店のこと: 未設定</option>
             {profiles.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -236,9 +238,9 @@ function AgentPageInner() {
               <Mascot className="mx-auto h-20 w-20 animate-bee-float" />
               <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-food-200 bg-food-50 px-6 py-4">
                 <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-food-200 bg-food-50" />
-                <p className="text-lg font-bold text-hive-900">{mascot.greeting}</p>
-                <p className="mt-1 text-sm text-slate-600">
-                  参考動画さがし・台本作成から、発注の登録まで会話で進められます。
+                <p className="font-display text-xl text-hive-900">{mascot.greeting}</p>
+                <p className="mt-1 text-sm text-hive-500">
+                  「新メニュー考えたい」「口コミに返したい」「伸びてる動画見せて」— 話しかけるだけで、頼むところまで一緒にやります。
                 </p>
               </div>
 
@@ -247,12 +249,12 @@ function AgentPageInner() {
                   <button
                     key={q.label}
                     onClick={() => send(q.prompt)}
-                    className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-food-400 hover:bg-food-50"
+                    className="group flex items-center gap-3 rounded-2xl border border-food-200 bg-white px-4 py-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-food-400 hover:bg-food-50"
                   >
-                    <Mascot className="h-7 w-7 shrink-0" />
+                    <Illust name={QUICK_ILLUST[q.label] ?? "sparkle"} className="h-11 w-11 shrink-0" />
                     <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-hive-900">{q.label}</span>
-                      <span className="block text-xs text-slate-400">{q.hint}</span>
+                      <span className="block text-sm font-bold text-hive-900">{q.label}</span>
+                      <span className="block text-xs text-hive-500">{q.hint}</span>
                     </span>
                     <span className="ml-auto text-sm font-semibold text-food-600 opacity-0 transition-opacity group-hover:opacity-100">→</span>
                   </button>

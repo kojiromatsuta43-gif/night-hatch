@@ -38,6 +38,18 @@
   --color-hive-800: #3A1F1A;
   --color-hive-900: #2B1410;
 
+  /* 灰色（slate）も暖かい色に寄せる。既存画面の text-slate-500 などがそのまま世界観に馴染む */
+  --color-slate-50: #FBF7F0;
+  --color-slate-100: #F3ECE2;
+  --color-slate-200: #E6DACF;
+  --color-slate-300: #D3C3B6;
+  --color-slate-400: #A8958A;
+  --color-slate-500: #8A6F63;
+  --color-slate-600: #6E5348;
+  --color-slate-700: #4A2C25;
+  --color-slate-800: #3A1F1A;
+  --color-slate-900: #2B1410;
+
   --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
 

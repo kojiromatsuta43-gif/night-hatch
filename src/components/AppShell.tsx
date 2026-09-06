@@ -31,7 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [isPublic, refresh, pathname]);
 
   if (isPublic) return <>{children}</>;
-  if (!checked) return <div className="flex min-h-screen items-center justify-center text-slate-400">読み込み中...</div>;
+  if (!checked) return <div className="flex min-h-screen items-center justify-center text-hive-500">じゅんびちゅう…</div>;
   if (!me) return null;
 
   return (
@@ -41,7 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <TopNav role={me.role} name={me.name} points={me.points} plan={me.plan} />
         <div className="flex min-h-[calc(100vh-56px)]">
           <Sidebar role={me.role} />
-          <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 md:px-10">{children}</main>
+          <main className="min-w-0 flex-1 px-4 pb-28 pt-8 sm:px-6 md:px-10 md:pb-10">{children}</main>
         </div>
       </div>
     </MeContext.Provider>

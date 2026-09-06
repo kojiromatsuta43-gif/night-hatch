@@ -10,7 +10,7 @@ function MenuInner() {
   const search = useSearchParams();
   const { mascot } = useMascot();
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <div className="mb-5 flex items-start gap-3">
         <Mascot className="h-12 w-12 shrink-0" />
         <div className="relative rounded-2xl border border-food-200 bg-white px-4 py-3">

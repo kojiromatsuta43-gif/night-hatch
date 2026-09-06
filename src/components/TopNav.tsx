@@ -22,7 +22,7 @@ export default function TopNav({ role, name, points, plan }: { role?: string; na
 
   return (
     <div className="noren sticky top-0 z-40 bg-food-600 text-cream-50">
-      <div className="flex flex-nowrap items-center gap-2 px-3 py-2.5 pl-12 sm:gap-6 sm:px-6 md:pl-6">
+      <div className="flex flex-nowrap items-center gap-2 px-4 py-2.5 sm:gap-6 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           {/* テラコッタのバーの上でもハッチくんが見えるように、クリーム色の座布団を敷く */}
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cream-100">
