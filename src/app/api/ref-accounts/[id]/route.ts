@@ -21,3 +21,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   return NextResponse.json({ ...account, videos });
 }
+
+/** 管理者だけ: 参考アカウントを動画ごと削除する（お手本にふさわしくないアカウントの掃除用） */
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireUser();
+  if (user.role !== "admin") return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const { id } = await params;
+  const db = getDb();
+  const tx = db.transaction(() => {
+    db.prepare("DELETE FROM ref_videos WHERE account_id = ?").run(id);
+    const r = db.prepare("DELETE FROM ref_accounts WHERE id = ?").run(id);
+    return r.changes;
+  });
+  const changes = tx();
+  return NextResponse.json({ ok: true, deleted: changes });
+}
