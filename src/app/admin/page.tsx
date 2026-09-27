@@ -67,10 +67,10 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex flex-wrap gap-2 text-sm">
         {([["users", "ユーザー管理"], ["contracts", "契約管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-food-500 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
+          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-night-500 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
         {/* フォーム営業は営業まわりの画面（/sales/form）にある。管理からも飛べるようにしておく */}
-        <Link href="/sales/form" className="rounded-full border border-food-200 bg-white px-4 py-1.5 font-bold text-hive-900 hover:bg-food-50">フォーム営業 →</Link>
+        <Link href="/sales/form" className="rounded-full border border-night-200 bg-white px-4 py-1.5 font-bold text-hive-900 hover:bg-night-50">フォーム営業 →</Link>
       </div>
 
       {tab === "contracts" && <PlanContractsPanel />}
@@ -81,7 +81,7 @@ export default function AdminPage() {
 
       {tab === "industries" && (
         <div className="space-y-5">
-          <div className="rounded-xl border border-food-200 bg-food-50/50 p-4 text-sm text-hive-900">
+          <div className="rounded-xl border border-night-200 bg-night-50/50 p-4 text-sm text-hive-900">
             ここで並べた業種が、そのまま「参考アカウントから発注」のタブになります。
             参考アカウントが0件の業種は、お客様には「準備中」と表示されます。
           </div>
@@ -99,12 +99,12 @@ export default function AdminPage() {
                   <div key={r.industry_name} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
                     <span>
                       <b>{r.industry_name}</b>
-                      <span className="ml-2 rounded-full bg-food-500 px-2 py-0.5 text-xs font-bold text-white">{r.count}件</span>
+                      <span className="ml-2 rounded-full bg-night-500 px-2 py-0.5 text-xs font-bold text-white">{r.count}件</span>
                       {r.names && <span className="ml-2 text-xs text-slate-500">{r.names}</span>}
                     </span>
                     <button
                       onClick={() => industryAction(() => api("/api/industries/requests", { method: "PATCH", body: JSON.stringify({ industry_name: r.industry_name }) }))}
-                      className="text-xs text-slate-500 hover:text-food-700"
+                      className="text-xs text-slate-500 hover:text-night-700"
                     >
                       対応済みにする
                     </button>
@@ -126,7 +126,7 @@ export default function AdminPage() {
               />
               <button
                 onClick={() => { if (!newIndustry.trim()) return; industryAction(async () => { await api("/api/industries", { method: "POST", body: JSON.stringify({ name: newIndustry.trim() }) }); setNewIndustry(""); }); }}
-                className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white"
               >
                 追加
               </button>
@@ -140,13 +140,13 @@ export default function AdminPage() {
                   <button
                     onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ move: "up" }) }))}
                     disabled={idx === 0}
-                    className="px-1 text-xs text-slate-400 hover:text-food-700 disabled:opacity-20"
+                    className="px-1 text-xs text-slate-400 hover:text-night-700 disabled:opacity-20"
                     title="上へ"
                   >▲</button>
                   <button
                     onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ move: "down" }) }))}
                     disabled={idx === industries.length - 1}
-                    className="px-1 text-xs text-slate-400 hover:text-food-700 disabled:opacity-20"
+                    className="px-1 text-xs text-slate-400 hover:text-night-700 disabled:opacity-20"
                     title="下へ"
                   >▼</button>
                 </div>
@@ -155,16 +155,16 @@ export default function AdminPage() {
                   {i.account_count ? `${i.account_count}件` : "準備中"}
                 </span>
                 {i.requested > 0 && (
-                  <span className="rounded-full bg-food-500 px-2 py-0.5 text-xs font-bold text-white">リクエスト{i.requested}</span>
+                  <span className="rounded-full bg-night-500 px-2 py-0.5 text-xs font-bold text-white">リクエスト{i.requested}</span>
                 )}
                 <div className="ml-auto flex gap-3 text-xs">
                   <button
                     onClick={() => { const name = prompt("業種名を変更", i.name); if (name && name !== i.name) industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ name }) })); }}
-                    className="text-slate-500 hover:text-food-700"
+                    className="text-slate-500 hover:text-night-700"
                   >名前を変える</button>
                   <button
                     onClick={() => industryAction(() => api(`/api/industries/${i.id}`, { method: "PATCH", body: JSON.stringify({ active: !i.active }) }))}
-                    className="text-slate-500 hover:text-food-700"
+                    className="text-slate-500 hover:text-night-700"
                   >{i.active ? "非表示にする" : "表示に戻す"}</button>
                   <button
                     onClick={() => { if (confirm(`「${i.name}」を削除します。よろしいですか？`)) industryAction(() => api(`/api/industries/${i.id}`, { method: "DELETE" })); }}
@@ -228,7 +228,7 @@ export default function AdminPage() {
             <input value={newWord} onChange={(e) => setNewWord(e.target.value)} placeholder="NGワードを入力" className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <button
               onClick={async () => { if (!newWord.trim()) return; await api("/api/admin/ng-words", { method: "POST", body: JSON.stringify({ word: newWord.trim() }) }); setNewWord(""); load(); }}
-              className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white"
             >追加</button>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white">
@@ -246,7 +246,7 @@ export default function AdminPage() {
 
       {tab === "refs" && (
         <div className="max-w-xl space-y-5">
-          <div className="rounded-xl border border-food-200 bg-food-50/60 p-5">
+          <div className="rounded-xl border border-night-200 bg-night-50/60 p-5">
             <h3 className="text-sm font-bold">移行元から参考動画を一括インポート</h3>
             <p className="mt-1 text-xs text-slate-600">
               登録済みアカウントに対応する動画（キャプション・サムネイル・TikTok URL）を移行元CMSから取得します。
@@ -270,7 +270,7 @@ export default function AdminPage() {
                 }
               }}
               disabled={importing}
-              className="mt-3 rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="mt-3 rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
             >
               {importing ? "インポート中...（そのままお待ちください）" : "動画を一括インポート"}
             </button>
@@ -325,7 +325,7 @@ export default function AdminPage() {
                 setRefForm({ name: "", handle: "", industry: "", followers: "", bio: "", videos: "" });
                 load();
               }}
-              className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white"
             >追加</button>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white">

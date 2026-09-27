@@ -149,7 +149,7 @@ export default function FileDrop({
           }
         }}
         className={`mt-2 cursor-pointer rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
-          dragging ? "border-food-500 bg-food-50" : "border-slate-300 bg-slate-50 hover:border-food-400"
+          dragging ? "border-night-500 bg-night-50" : "border-slate-300 bg-slate-50 hover:border-night-400"
         }`}
       >
         <div className="text-sm font-medium text-slate-700">
@@ -158,7 +158,7 @@ export default function FileDrop({
         {progress ? (
           <div className="mx-auto mt-2 max-w-xs">
             <div className="h-2 w-full overflow-hidden rounded bg-slate-200">
-              <div className="h-full bg-food-500 transition-[width]" style={{ width: `${Math.round((progress.sent / progress.total) * 100)}%` }} />
+              <div className="h-full bg-night-500 transition-[width]" style={{ width: `${Math.round((progress.sent / progress.total) * 100)}%` }} />
             </div>
             <div className="mt-1 truncate text-xs text-slate-500">
               {progress.name} — {prettySize(progress.sent)} / {prettySize(progress.total)}（この画面を閉じないでください）
@@ -191,7 +191,7 @@ export default function FileDrop({
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="min-w-0 flex-1 truncate text-food-700 hover:underline"
+                className="min-w-0 flex-1 truncate text-night-700 hover:underline"
               >
                 {f.name}
               </a>

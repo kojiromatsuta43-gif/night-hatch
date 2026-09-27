@@ -69,7 +69,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
       <div className="p-10 text-sm text-rose-600">
         {error || "請求書が見つかりません"}
         <div className="mt-4">
-          <Link href="/issue" className="text-food-700 underline">請求・支払いに戻る</Link>
+          <Link href="/issue" className="text-night-700 underline">請求・支払いに戻る</Link>
         </div>
       </div>
     );
@@ -84,7 +84,7 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       {/* 画面だけに出る操作バー（印刷では消える） */}
       <div className="mx-auto mb-4 flex max-w-[210mm] items-center justify-between px-4 print:hidden">
-        <Link href={`/issue/invoice/${id}`} className="text-sm text-slate-600 hover:text-food-700">
+        <Link href={`/issue/invoice/${id}`} className="text-sm text-slate-600 hover:text-night-700">
           ← 編集に戻る
         </Link>
         <div className="flex items-center gap-3">
@@ -93,14 +93,14 @@ export default function InvoicePrintPage({ params }: { params: Promise<{ id: str
           </span>
           <button
             onClick={() => window.print()}
-            className="rounded-lg bg-food-500 px-4 py-2 text-sm font-semibold text-white hover:bg-food-600"
+            className="rounded-lg bg-night-500 px-4 py-2 text-sm font-semibold text-white hover:bg-night-600"
           >
             印刷 / PDFで保存
           </button>
         </div>
       </div>
 
-      <div className="invoice-sheet mx-auto bg-white text-slate-900 shadow-sm print:shadow-none">
+      <div className="invoice-sheet paper mx-auto bg-white text-slate-900 shadow-sm print:shadow-none">
         <h1 className="text-center text-2xl font-bold tracking-[0.4em]">請求書</h1>
         <p className="mt-1 text-center text-[10px] tracking-widest text-slate-500">
           適格請求書（インボイス）

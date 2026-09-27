@@ -1,23 +1,25 @@
 import { BRAND } from "@/lib/brand";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
+export const viewport: Viewport = { themeColor: "#140F1C" };
+
 export const metadata: Metadata = {
   title: BRAND.name,
-  description: "飲食店の集客・メニュー・SNSを、ハッチと一緒に。",
+  description: BRAND.tagline,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
+    <html lang="ja" style={{ colorScheme: "dark" }}>
       <head>
-        {/* 書体: 本文は Zen Kaku Gothic New、見出しは Shippori Mincho B1（お品書きの雰囲気） */}
+        {/* 書体: 本文は Zen Kaku Gothic New、見出しは Shippori Mincho B1、英字ロゴは Cormorant Garamond */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Shippori+Mincho+B1:wght@700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Shippori+Mincho+B1:wght@700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-cream-100 text-hive-900 antialiased">
+      <body className="bg-ink-950 text-hive-900 antialiased">
         <AppShell>{children}</AppShell>
       </body>
     </html>

@@ -8,8 +8,8 @@ import BeeLogo from "@/components/BeeLogo";
  */
 export default function PayThanksPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-food-50 px-6">
-      <div className="w-full max-w-md rounded-2xl border border-food-200 bg-white px-8 py-10 text-center shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-night-50 px-6">
+      <div className="w-full max-w-md rounded-2xl border border-night-200 bg-white px-8 py-10 text-center shadow-sm">
         <BeeLogo className="mx-auto h-16 w-16" />
         <h1 className="mt-4 text-xl font-bold text-hive-900">お支払いありがとうございました</h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600">

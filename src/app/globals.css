@@ -1,94 +1,183 @@
 @import "tailwindcss";
 
-/* ── FOOD HATCH のブランドカラー ──────────────────────
-   テラコッタ（food）× クリーム地（cream）× 焦げ茶の文字（hive）。
-   はちみつの黄（honey）は「ハニーP」と巣のモチーフにだけ使う差し色。
-   参考: Monte（テラコッタのカフェ）/ Limón（クリーム地に差し色ひとつ）。
-   テラコッタの上の文字は必ず白（text-white）。 */
+/* ── NIGHT HATCH のブランドカラー「夜の帳とシャンパン」 ─────────────
+   地色は真夜中のプラム黒（#0F0C17）、面は #1A1524。主色はワインレッド（night-500 #B23A62・上の文字は白）、
+   差し色はシャンパンゴールド（gold-500 #D4AF6A：線・見出しの飾り・区切り・選択中の印）。
+   はちみつの黄（honey）は「ハニーP」と巣の六角形にだけ使う。
+
+   既存の画面は明るい地の前提で書かれているので、灰色系（slate / hive / cream）と night・状態色の
+   スケールを「反転」してある: 小さい番号ほど暗い面、大きい番号ほど明るい文字。
+   こうすると text-slate-500（補足の文字）や bg-slate-100（チップ）がそのまま暗い地に馴染む。
+   逆に「濃い面に白文字」の前提だった bg-hive-900 などは使わず、ink（暗い面）か night-500（主色）を使う。 */
 @theme {
-  --color-food-50: #FBF1EA;
-  --color-food-100: #F6DFD1;
-  --color-food-200: #EDC3AE;
-  --color-food-300: #E09A7B;
-  --color-food-400: #D2704F;
-  --color-food-500: #B84B30;
-  --color-food-600: #9E3D25;
-  --color-food-700: #7E2F1C;
-  --color-food-800: #5F1D1A;
+  /* 暗い面（反転しない。番号が大きいほど暗い） */
+  --color-ink-600: #2E2640;
+  --color-ink-700: #241D30;
+  --color-ink-800: #1A1524;
+  --color-ink-900: #140F1C;
+  --color-ink-950: #0F0C17;
 
-  --color-cream-50: #FDFBF6;
-  --color-cream-100: #F8F4E9;
-  --color-cream-200: #EFE7D6;
+  /* ワインレッド（反転: 50 が暗いワインの影、500 が主色、800 が明るいローズの文字） */
+  --color-night-50: #26121E;
+  --color-night-100: #351828;
+  --color-night-200: #3F2638;
+  --color-night-300: #6A2A48;
+  --color-night-400: #8C3357;
+  --color-night-500: #B23A62;
+  --color-night-600: #C24A72;
+  --color-night-700: #E58AA8;
+  --color-night-800: #F4C2D2;
 
-  --color-honey-50: #FFFBEB;
-  --color-honey-100: #FFF3C9;
-  --color-honey-200: #FFE79B;
+  /* シャンパンゴールド（反転: 大きい番号ほど明るい） */
+  --color-gold-50: #221C14;
+  --color-gold-100: #2F271A;
+  --color-gold-200: #4A3E27;
+  --color-gold-300: #7A6640;
+  --color-gold-400: #B8975A;
+  --color-gold-500: #D4AF6A;
+  --color-gold-600: #E2C58F;
+  --color-gold-700: #EDD9B0;
+  --color-gold-800: #F6EBD4;
+
+  /* 生成り → 夜の面 */
+  --color-cream-50: #15111D;
+  --color-cream-100: #221C2C;
+  --color-cream-200: #2E2639;
+
+  /* はちみつ（ハニーP専用）。面に使う 50〜200 は暗い蜜色、文字に使う 600〜800 は明るく */
+  --color-honey-50: #251E12;
+  --color-honey-100: #332813;
+  --color-honey-200: #5A4518;
   --color-honey-300: #FFD75F;
   --color-honey-400: #FFC62E;
   --color-honey-500: #F5A800;
-  --color-honey-600: #D08C00;
-  --color-honey-700: #A06A00;
-  --color-honey-800: #7A5100;
+  --color-honey-600: #FFC62E;
+  --color-honey-700: #FFD166;
+  --color-honey-800: #FFE3A0;
 
-  /* 焦げ茶（エスプレッソ）。黒の代わりに文字・濃い面に使う */
-  --color-hive-50: #F8F4E9;
-  --color-hive-200: #E6DACF;
-  --color-hive-500: #8A6F63;
-  --color-hive-700: #4A2C25;
-  --color-hive-800: #3A1F1A;
-  --color-hive-900: #2B1410;
+  /* 文字色（旧・焦げ茶）。900 が本文の明るい文字 */
+  --color-hive-50: #1A1524;
+  --color-hive-200: #3A3148;
+  --color-hive-500: #A89FB2;
+  --color-hive-700: #D8D0CB;
+  --color-hive-800: #E6DFD7;
+  --color-hive-900: #F3EDE2;
 
-  /* 灰色（slate）も暖かい色に寄せる。既存画面の text-slate-500 などがそのまま世界観に馴染む */
-  --color-slate-50: #FBF7F0;
-  --color-slate-100: #F3ECE2;
-  --color-slate-200: #E6DACF;
-  --color-slate-300: #D3C3B6;
-  --color-slate-400: #A8958A;
-  --color-slate-500: #8A6F63;
-  --color-slate-600: #6E5348;
-  --color-slate-700: #4A2C25;
-  --color-slate-800: #3A1F1A;
-  --color-slate-900: #2B1410;
+  /* 灰色（slate）も反転。50 が暗い面、900 が明るい文字 */
+  --color-slate-50: #15111D;
+  --color-slate-100: #1F1A2A;
+  --color-slate-200: #2C2538;
+  --color-slate-300: #4A4060;
+  --color-slate-400: #7A718A;
+  --color-slate-500: #9D94AC;
+  --color-slate-600: #B9B1C4;
+  --color-slate-700: #D2CBD9;
+  --color-slate-800: #E6E0EA;
+  --color-slate-900: #F5F1EA;
+
+  /* 状態色も、面（50〜200）は暗く・文字（600〜900）は明るく */
+  --color-rose-50: #2A131A;
+  --color-rose-100: #3B1922;
+  --color-rose-200: #5A2230;
+  --color-rose-300: #8A3446;
+  --color-rose-400: #E0607A;
+  --color-rose-600: #FB7F95;
+  --color-rose-700: #FDA4AF;
+  --color-rose-800: #FECDD3;
+  --color-emerald-50: #0F261E;
+  --color-emerald-100: #133427;
+  --color-emerald-200: #1D4D3C;
+  --color-emerald-300: #2E7A5C;
+  --color-emerald-600: #3DD9A0;
+  --color-emerald-700: #6EE7B7;
+  --color-emerald-800: #A7F3D0;
+  --color-sky-50: #0F1F2D;
+  --color-sky-100: #132A3D;
+  --color-sky-200: #1C405C;
+  --color-sky-700: #7DD3FC;
+  --color-sky-800: #BAE6FD;
+  --color-amber-50: #261D0F;
+  --color-amber-100: #352812;
+  --color-amber-200: #553F15;
+  --color-amber-300: #7A5A1C;
+  --color-amber-600: #FBBF24;
+  --color-amber-700: #FCD34D;
+  --color-amber-800: #FDE68A;
+  --color-amber-900: #FEF3C7;
+  --color-indigo-50: #161A33;
+  --color-indigo-100: #1E2346;
+  --color-indigo-700: #A5B4FC;
+  --color-violet-100: #281E45;
+  --color-violet-800: #DDD6FE;
 
   --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-latin: "Cormorant Garamond", "Shippori Mincho B1", Georgia, serif;
 }
 
+html { color-scheme: dark; }
 body {
-  background: var(--app-bg, #F8F4E9);
-  color: #2B1410;
+  background: var(--app-bg, #0F0C17);
+  color: #F3EDE2;
   font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
 }
 
-/* ── 食堂の世界観: 見出しは明朝、面はクリーム、角はやわらかく ──
-   見出し（h1/h2）だけ明朝にして「お品書き」の雰囲気を出す。本文はゴシックのまま読みやすく。 */
+/* ── 夜の世界観: 見出しは明朝、面はプラム、線はシャンパンゴールド ──
+   見出し（h1/h2）だけ明朝にしてバーのメニューのような上品さを出す。本文はゴシックのまま読みやすく。 */
 h1, h2, .font-display {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
+/* 英字ロゴ（NIGHT HATCH） */
+.font-latin { font-family: var(--font-latin); font-weight: 600; letter-spacing: 0.22em; }
 
-/* 角丸: 大きい面は 14〜16px、小さい部品は 8px。影はごく薄く。 */
+/* 角丸: 大きい面は 14〜16px、小さい部品は 8px。影は暗い地に合わせて黒く深く */
 @layer utilities {
   [class*="rounded-2xl"], [class*="rounded-3xl"] { border-radius: 16px !important; }
   [class*="rounded-xl"] { border-radius: 14px !important; }
   [class*="rounded-lg"] { border-radius: 10px !important; }
-  [class*="shadow-"]:not([class*="shadow-none"]) { box-shadow: 0 1px 2px rgba(43, 20, 16, 0.06), 0 6px 20px -12px rgba(184, 75, 48, 0.25) !important; }
+  [class*="shadow-"]:not([class*="shadow-none"]) { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 28px -14px rgba(0, 0, 0, 0.8) !important; }
 }
 
-/* 白い面はほんのり生成りに寄せる（真っ白のカードが浮かないように） */
-.bg-white { background-color: #FFFDF9; }
+/* グリッドの子が長い1行の文字（truncate など）で横にはみ出さないように */
+.grid > * { min-width: 0; }
 
-/* ── 暖簾: 上部バーの下端をスカラップ（波形）にする ── */
-.noren { position: sticky; }
-.noren::after {
+/* 白い面は夜の面に（既存画面の bg-white をそのまま使う） */
+.bg-white { background-color: #1A1524; }
+.hover\:bg-white:hover { background-color: #241D30; }
+
+/* ── 上部バー: 深い夜の色に、下端だけ細いシャンパンゴールドの線 ── */
+.gold-rule { position: sticky; }
+.gold-rule::after {
   content: "";
   position: absolute;
-  left: 0; right: 0; bottom: -10px; height: 10px;
-  background: radial-gradient(circle at 10px -2px, transparent 9px, #9E3D25 10px) 0 0 / 20px 10px repeat-x;
+  left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, #B8975A 12%, #D4AF6A 50%, #B8975A 88%, transparent);
   pointer-events: none;
 }
+/* 見出しの飾り: 左右に金の細線（ドリンクメニューの見出し風） */
+.gold-ornament { display: flex; align-items: center; gap: 12px; color: #D4AF6A; }
+.gold-ornament::before, .gold-ornament::after { content: ""; height: 1px; flex: 1; background: linear-gradient(90deg, transparent, #7A6640 40%, #B8975A); }
+.gold-ornament::after { background: linear-gradient(90deg, #B8975A, #7A6640 60%, transparent); }
+/* ドリンクメニューの点線リーダー（品名 …… 値段） */
+.leader { flex: 1; min-width: 1.5rem; border-bottom: 1px dotted #7A6640; transform: translateY(-0.3em); }
 /* 見出しの下に添える1行の説明 */
-.page-sub { color: #8A6F63; font-size: 13px; margin-top: 4px; }
+.page-sub { color: #A89FB2; font-size: 13px; margin-top: 4px; }
+/* ほのかな夜の光（ホームのあいさつなど） */
+.night-glow { background: radial-gradient(120% 140% at 0% 0%, rgba(178, 58, 98, 0.18), transparent 55%), radial-gradient(100% 120% at 100% 100%, rgba(212, 175, 106, 0.10), transparent 60%), #1A1524; }
+
+/* 請求書・印刷物は紙なので、明るい配色に戻す（反転した変数をこの中だけ元に戻す） */
+.paper {
+  --color-slate-50: #F8FAFC; --color-slate-100: #F1F5F9; --color-slate-200: #E2E8F0; --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8; --color-slate-500: #64748B; --color-slate-600: #475569; --color-slate-700: #334155;
+  --color-slate-800: #1E293B; --color-slate-900: #0F172A;
+  --color-hive-500: #6B6072; --color-hive-700: #3A3040; --color-hive-900: #1C1622;
+  --color-night-50: #FBEFF3; --color-night-100: #F6DCE5; --color-night-200: #EBC0CF; --color-night-700: #8C2A4B; --color-night-800: #6A1F39;
+  --color-rose-600: #E11D48; --color-emerald-700: #047857;
+  color: #1C1622;
+  background: #FFFFFF;
+}
+.paper .bg-white { background-color: #FFFFFF; }
 
 /* ── ハニカム（巣箱）のモチーフ ─────────────────────
    六角形は要所だけ: 上部ナビの選択中タブ、メニューの巣、案件の進捗セル。 */

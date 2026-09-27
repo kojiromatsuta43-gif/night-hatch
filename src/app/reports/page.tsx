@@ -72,7 +72,7 @@ function ReportsInner() {
         <select
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="rounded-lg rounded-xl border border-food-200 px-3 py-1.5 text-sm font-bold"
+          className="rounded-lg rounded-xl border border-night-200 px-3 py-1.5 text-sm font-bold"
         >
           {months.map((m) => <option key={m} value={m}>{label(m)}</option>)}
         </select>
@@ -94,7 +94,7 @@ function ReportsInner() {
               ["使った" + mascot.pointName, `${num(report.honey.spent)}pt`],
               ["いまの残高", `${num(report.honey.balance)}pt`],
             ].map(([k, v]) => (
-              <div key={k} className="rounded-xl border border-food-200 bg-white px-4 py-3">
+              <div key={k} className="rounded-xl border border-night-200 bg-white px-4 py-3">
                 <div className="text-xs text-slate-500">{k}</div>
                 <div className="text-2xl font-black text-hive-900">{v}</div>
               </div>
@@ -102,7 +102,7 @@ function ReportsInner() {
           </div>
 
           {report.honey.expiring.length > 0 && (
-            <div className="mt-4 rounded-xl border border-food-400 bg-food-50 px-4 py-3 text-sm text-hive-900">
+            <div className="mt-4 rounded-xl border border-night-400 bg-night-50 px-4 py-3 text-sm text-hive-900">
               <b>まもなく繰越期限を迎える{mascot.pointName}があります。</b>
               <ul className="mt-1 space-y-0.5 text-xs">
                 {report.honey.expiring.map((e, i) => (
@@ -113,7 +113,7 @@ function ReportsInner() {
           )}
 
           {/* 動画の伸び */}
-          <section className="mt-6 rounded-xl border border-food-200 bg-white p-5">
+          <section className="mt-6 rounded-xl border border-night-200 bg-white p-5">
             <h2 className="font-black text-hive-900">動画の伸び</h2>
             {report.videoGrowth ? (
               <>
@@ -123,7 +123,7 @@ function ReportsInner() {
                 <div className="mt-3 space-y-1.5">
                   {report.videoGrowth.videos.slice(0, 5).map((v, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm">
-                      <span className="w-6 shrink-0 text-center font-black text-food-700">{i + 1}</span>
+                      <span className="w-6 shrink-0 text-center font-black text-night-700">{i + 1}</span>
                       <span className="min-w-0 flex-1 truncate">
                         {v.url ? <a href={v.url} target="_blank" rel="noreferrer" className="hover:underline">{v.caption || "（キャプションなし）"}</a> : (v.caption || "（キャプションなし）")}
                       </span>
@@ -141,7 +141,7 @@ function ReportsInner() {
           </section>
 
           {/* 今月の案件 */}
-          <section className="mt-4 rounded-xl border border-food-200 bg-white p-5">
+          <section className="mt-4 rounded-xl border border-night-200 bg-white p-5">
             <h2 className="font-black text-hive-900">
               {label(report.month)}の案件
               <span className="ml-2 text-sm font-normal text-slate-400">発注 {report.production.ordered}件</span>
@@ -151,7 +151,7 @@ function ReportsInner() {
             ) : (
               <div className="mt-2 divide-y divide-slate-100">
                 {report.production.projects.map((pj) => (
-                  <Link key={pj.id} href={`/projects/${pj.id}`} className="flex items-center gap-3 py-2 text-sm hover:bg-food-50">
+                  <Link key={pj.id} href={`/projects/${pj.id}`} className="flex items-center gap-3 py-2 text-sm hover:bg-night-50">
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${pj.status === "完了" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{pj.status}</span>
                     <span className="min-w-0 flex-1 truncate font-medium">{pj.title}</span>
                     <span className="shrink-0 text-xs text-slate-400">{pj.category}</span>
@@ -163,7 +163,7 @@ function ReportsInner() {
           </section>
 
           {/* ハニーPの動き */}
-          <section className="mt-4 rounded-xl border border-food-200 bg-white p-5">
+          <section className="mt-4 rounded-xl border border-night-200 bg-white p-5">
             <h2 className="font-black text-hive-900">{mascot.pointName}の動き</h2>
             <p className="mt-1 text-sm text-slate-500">
               付与 <b className="text-emerald-600">+{num(report.honey.granted)}</b> ／ 利用 <b className="text-rose-500">-{num(report.honey.spent)}</b>
@@ -184,7 +184,7 @@ function ReportsInner() {
           {me?.role === "client" && !report.user.planActive && (
             <p className="mt-4 text-xs text-slate-400">
               月額プランをご契約いただくと、毎月{mascot.pointName}が自動で付与されます。詳しくは
-              <Link href="/points" className="text-food-700 hover:underline">{mascot.pointName}のページ</Link>へ。
+              <Link href="/points" className="text-night-700 hover:underline">{mascot.pointName}のページ</Link>へ。
             </p>
           )}
         </>

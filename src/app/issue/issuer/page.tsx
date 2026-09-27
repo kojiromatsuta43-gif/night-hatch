@@ -28,7 +28,7 @@ const EMPTY: Issuer = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none";
+  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-night-500 focus:outline-none";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -156,7 +156,7 @@ export default function IssuerPage() {
             <button
               key={r}
               onClick={() => set("rounding", r)}
-              className={`rounded-full border px-4 py-1.5 text-sm ${v.rounding === r ? "border-food-500 bg-food-500 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-food-400"}`}
+              className={`rounded-full border px-4 py-1.5 text-sm ${v.rounding === r ? "border-night-500 bg-night-500 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-night-400"}`}
             >
               {r}
             </button>
@@ -165,7 +165,7 @@ export default function IssuerPage() {
       </section>
 
       <div className="flex items-center gap-3">
-        <button onClick={save} className="rounded-lg bg-food-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-food-600">
+        <button onClick={save} className="rounded-lg bg-night-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-night-600">
           保存する
         </button>
         {saved && <span className="text-sm font-medium text-emerald-600">保存しました</span>}

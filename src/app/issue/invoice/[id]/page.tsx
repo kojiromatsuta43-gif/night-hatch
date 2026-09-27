@@ -39,8 +39,8 @@ type Invoice = {
   items: (InvoiceItem & { id: string })[];
 };
 
-const input = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none";
-const cell = "w-full rounded border border-slate-200 px-2 py-1.5 text-sm focus:border-food-500 focus:outline-none";
+const input = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-night-500 focus:outline-none";
+const cell = "w-full rounded border border-slate-200 px-2 py-1.5 text-sm focus:border-night-500 focus:outline-none";
 const yen = (n: number) => `¥${n.toLocaleString()}`;
 
 function emptyItem(): InvoiceItem {
@@ -166,7 +166,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
         {!isNew && (
           <Link
             href={`/issue/invoice/${id}/print`}
-            className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:border-food-400"
+            className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:border-night-400"
           >
             請求書を表示・印刷 →
           </Link>
@@ -288,7 +288,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                       </td>
                       <td className="py-2 pr-2 text-right font-medium tabular-nums">
                         {yen(lineAmount(it))}
-                        {Number(it.tax_rate) === 8 && <span className="ml-1 text-food-600">※</span>}
+                        {Number(it.tax_rate) === 8 && <span className="ml-1 text-night-700">※</span>}
                       </td>
                       <td className="py-2 text-center">
                         <button
@@ -307,7 +307,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
 
             <button
               onClick={() => setItems((p) => [...p, emptyItem()])}
-              className="mt-3 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-600 hover:border-food-400 hover:text-food-700"
+              className="mt-3 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-600 hover:border-night-400 hover:text-night-700"
             >
               ＋ 行を追加
             </button>
@@ -349,9 +349,9 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                 <span className="text-slate-600">消費税合計</span>
                 <span className="font-medium">{yen(totals.taxTotal)}</span>
               </div>
-              <div className="flex items-baseline justify-between border-t-2 border-food-400 pt-2">
+              <div className="flex items-baseline justify-between border-t-2 border-night-400 pt-2">
                 <span className="font-bold">ご請求額</span>
-                <span className="text-2xl font-bold tabular-nums text-food-700">{yen(totals.total)}</span>
+                <span className="text-2xl font-bold tabular-nums text-night-700">{yen(totals.total)}</span>
               </div>
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
@@ -406,7 +406,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                   <div className="flex gap-2">
                     <button
                       onClick={copyPaymentLink}
-                      className="flex-1 rounded-lg bg-food-500 py-2 text-xs font-bold text-white hover:bg-food-600"
+                      className="flex-1 rounded-lg bg-night-500 py-2 text-xs font-bold text-white hover:bg-night-600"
                     >
                       {copied ? "コピーしました" : "リンクをコピー"}
                     </button>
@@ -414,7 +414,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                       href={paymentUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:border-food-400"
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:border-night-400"
                     >
                       開く
                     </a>
@@ -422,7 +422,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                   <button
                     onClick={createPaymentLink}
                     disabled={linkBusy}
-                    className="w-full text-[11px] text-slate-400 hover:text-food-700 disabled:opacity-40"
+                    className="w-full text-[11px] text-slate-400 hover:text-night-700 disabled:opacity-40"
                   >
                     {linkBusy ? "作り直しています..." : "金額を変えたので作り直す"}
                   </button>
@@ -431,7 +431,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
                 <button
                   onClick={createPaymentLink}
                   disabled={linkBusy || totals.total <= 0}
-                  className="w-full rounded-lg bg-food-500 py-2.5 text-xs font-bold text-white hover:bg-food-600 disabled:opacity-40"
+                  className="w-full rounded-lg bg-night-500 py-2.5 text-xs font-bold text-white hover:bg-night-600 disabled:opacity-40"
                 >
                   {linkBusy ? "作成中..." : "お支払いリンクを作る"}
                 </button>
@@ -451,7 +451,7 @@ export default function InvoiceEditorPage({ params }: { params: Promise<{ id: st
           <button
             onClick={save}
             disabled={saving}
-            className="w-full rounded-lg bg-food-500 py-3 text-sm font-bold text-white hover:bg-food-600 disabled:opacity-40"
+            className="w-full rounded-lg bg-night-500 py-3 text-sm font-bold text-white hover:bg-night-600 disabled:opacity-40"
           >
             {saving ? "保存中..." : isNew ? "この内容で作成する" : "保存する"}
           </button>
