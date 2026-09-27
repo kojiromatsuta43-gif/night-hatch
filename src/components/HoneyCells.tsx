@@ -19,12 +19,12 @@ export function fillOf(status: string): number {
 
 function Cell({ level, size }: { level: 0 | 0.5 | 1; size: number }) {
   return (
-    <span className="hex relative block bg-hive-900" style={{ width: size, height: size * 1.15 }}>
+    <span className="hex relative block bg-gold-400" style={{ width: size, height: size * 1.15 }}>
       <span
-        className="hex absolute bg-white"
+        className="hex absolute"
         style={{
           inset: Math.max(2, Math.round(size * 0.09)),
-          background: level === 1 ? "#FFC62E" : level === 0.5 ? "linear-gradient(to top, #FFC62E 55%, #FFFFFF 55%)" : "#FFFFFF",
+          background: level === 1 ? "#FFC62E" : level === 0.5 ? "linear-gradient(to top, #FFC62E 55%, #2A2236 55%)" : "#2A2236",
         }}
       />
     </span>

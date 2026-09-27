@@ -1,178 +1,238 @@
 "use client";
 
 /**
- * FOOD HATCH のスポットイラスト。ハッチと同じ線（焦げ茶 #2B1410）・同じ塗り（クリーム／テラコッタ／はちみつ）で描いた
- * 小さな絵。困りごとタイル・空っぽの画面・ログインなどで使う。viewBox は全部 96×96。
+ * NIGHT HATCH のスポットイラスト（夜のお店セット）。
+ * 暗い地で読めるよう、線は明るいシャンパン色（#EDE3D1 / 2.2）、塗りはプラムの夜色・ワイン・シャンパンゴールド。
+ * ネオンだけは発光色を使う。困りごとタイル・空っぽの画面・ログインなどで使う。viewBox は全部 96×96。
  */
-const O = "#2B1410"; // 線
-const T = "#B84B30"; // テラコッタ
-const TL = "#E09A7B"; // 薄いテラコッタ
-const C = "#FFF1E0"; // クリーム
+const L = "#EDE3D1"; // 線
+const D = "#2A2236"; // 夜のガラス・面
+const W = "#B23A62"; // ワイン
+const WL = "#E58AA8"; // 明るいローズ
+const G = "#D4AF6A"; // シャンパンゴールド
+const GL = "#F6EBD4"; // 淡いシャンパン
 const H = "#FFC62E"; // はちみつ
-const W = "#FFFFFF";
-const S = { stroke: O, strokeWidth: 2.4, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const NEON = "#FF5C9A"; // ネオンピンク
+const CYAN = "#7FE3F0"; // ネオンの水色
+const S = { stroke: L, strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
-export type IllustName = "noren" | "donburi" | "phone" | "banquet" | "apron" | "review" | "sparkle" | "jar" | "empty";
+export type IllustName = "neon" | "champagne" | "phone" | "card" | "nametag" | "review" | "mirrorball" | "bottle" | "glass";
 
-/** 集客: 店先の暖簾と、並ぶお客さん */
-function Noren() {
+/** きらめき（小） */
+function Twinkle({ x, y, r = 5, fill = G }: { x: number; y: number; r?: number; fill?: string }) {
+  const k = r * 0.28;
+  return <path d={`M${x} ${y - r}C${x + k} ${y - k} ${x + k} ${y - k} ${x + r} ${y}C${x + k} ${y + k} ${x + k} ${y + k} ${x} ${y + r}C${x - k} ${y + k} ${x - k} ${y + k} ${x - r} ${y}C${x - k} ${y - k} ${x - k} ${y - k} ${x} ${y - r}z`} fill={fill} />;
+}
+
+/** 集客・指名: 「OPEN」のネオン看板 */
+function Neon() {
   return (
     <g>
-      <rect x="10" y="14" width="76" height="8" rx="2" fill={O} />
-      {[14, 32, 50, 68].map((x) => (
-        <path key={x} d={`M${x} 22h16v34l-8 4-8-4z`} fill={T} {...S} strokeWidth={2} />
-      ))}
-      <text x="48" y="44" textAnchor="middle" fontSize="11" fontWeight="700" fill={C} fontFamily="serif">営業中</text>
-      {/* お客さん3人 */}
-      {[22, 48, 74].map((x, i) => (
-        <g key={x}>
-          <circle cx={x} cy={70 - (i === 1 ? 3 : 0)} r="7" fill={C} {...S} />
-          <path d={`M${x - 10} ${92 - (i === 1 ? 3 : 0)}c0-8 4-13 10-13s10 5 10 13`} fill={i === 1 ? H : TL} {...S} />
-        </g>
-      ))}
+      <path d="M30 6v14M66 6v14" {...S} />
+      <circle cx="30" cy="6" r="2" fill={L} />
+      <circle cx="66" cy="6" r="2" fill={L} />
+      <rect x="10" y="20" width="76" height="42" rx="9" fill={D} {...S} />
+      {/* ネオン管の枠 */}
+      <rect x="16" y="26" width="64" height="30" rx="6" fill="none" stroke={CYAN} strokeWidth="5" opacity="0.18" />
+      <rect x="16" y="26" width="64" height="30" rx="6" fill="none" stroke={CYAN} strokeWidth="1.6" />
+      {/* OPEN（発光） */}
+      <text x="48" y="48" textAnchor="middle" fontSize="17" fontWeight="800" letterSpacing="1.5" fill="none" stroke={NEON} strokeWidth="5" opacity="0.3" fontFamily="Arial, sans-serif">OPEN</text>
+      <text x="48" y="48" textAnchor="middle" fontSize="17" fontWeight="800" letterSpacing="1.5" fill="#FFD6E6" stroke={NEON} strokeWidth="0.9" fontFamily="Arial, sans-serif">OPEN</text>
+      {/* 下のカクテルグラスのネオン */}
+      <path d="M40 70h16l-8 9z" fill="none" stroke={CYAN} strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M48 79v8M43 88h10" fill="none" stroke={CYAN} strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="52" cy="68" r="2" fill={NEON} />
+      <Twinkle x={82} y={72} r={5} />
+      <Twinkle x={14} y={76} r={3.5} fill={GL} />
     </g>
   );
 }
 
-/** メニュー・売上: 湯気の立つ丼と値札 */
-function Donburi() {
+/** イベント・売上: 乾杯するシャンパングラスときらめき */
+function Champagne() {
+  const flute = (tx: number, rot: number, key: string) => (
+    <g key={key} transform={`rotate(${rot} ${tx} 84)`}>
+      <path d={`M${tx - 8} 30h16l-1.6 24a6.4 6.4 0 0 1-12.8 0z`} fill={D} {...S} />
+      <path d={`M${tx - 7.2} 40h14.4l-0.9 14a5.5 5.5 0 0 1-12.6 0z`} fill={G} />
+      <circle cx={tx - 2} cy={48} r="1.1" fill={GL} />
+      <circle cx={tx + 2} cy={44} r="0.9" fill={GL} />
+      <circle cx={tx} cy={52} r="0.8" fill={GL} />
+      <path d={`M${tx - 8} 30h16l-1.6 24a6.4 6.4 0 0 1-12.8 0z`} fill="none" {...S} />
+      <path d={`M${tx} 60.5v20M${tx - 7} 81h14`} fill="none" {...S} />
+    </g>
+  );
   return (
     <g>
-      <path d="M22 50h52c0 18-10 30-26 30S22 68 22 50z" fill={T} {...S} />
-      <ellipse cx="48" cy="50" rx="26" ry="7" fill={C} {...S} />
-      <path d="M30 78h36" {...S} />
-      {/* 具 */}
-      <ellipse cx="40" cy="48" rx="6" ry="3" fill={H} />
-      <ellipse cx="56" cy="47" rx="7" ry="3.5" fill={TL} />
-      {/* 湯気 */}
-      <path d="M38 36c-3-4 3-8 0-12M48 34c-3-4 3-8 0-12M58 36c-3-4 3-8 0-12" fill="none" {...S} strokeWidth={2} opacity="0.7" />
-      {/* 値札 */}
-      <path d="M62 62l18-10 8 14-18 10z" fill={H} {...S} />
-      <circle cx="80" cy="56" r="1.8" fill={O} />
+      {flute(36, -14, "l")}
+      {flute(60, 14, "r")}
+      {/* 乾杯のきらめき */}
+      <Twinkle x={48} y={16} r={9} />
+      <path d="M36 14l-5-5M60 14l5-5M48 3v-2" fill="none" stroke={G} strokeWidth="2" strokeLinecap="round" />
+      <Twinkle x={20} y={24} r={4} fill={GL} />
+      <Twinkle x={78} y={26} r={4.5} fill={WL} />
+      <circle cx="84" cy="44" r="1.6" fill={G} />
+      <circle cx="12" cy="44" r="1.6" fill={G} />
     </g>
   );
 }
 
-/** SNS・動画: 縦長スマホの中に料理、ハートが飛ぶ */
+/** SNS・動画: 縦長スマホの中に夜のお店、ハートが飛ぶ */
 function Phone() {
   return (
     <g>
-      <rect x="30" y="8" width="36" height="80" rx="7" fill={O} />
-      <rect x="34" y="14" width="28" height="68" rx="4" fill={C} />
-      <circle cx="48" cy="52" r="11" fill={T} {...S} strokeWidth={2} />
-      <ellipse cx="48" cy="52" rx="11" ry="3.5" fill={C} />
-      <path d="M44 42c-2-3 2-6 0-9M52 42c-2-3 2-6 0-9" fill="none" {...S} strokeWidth={1.8} opacity="0.7" />
-      <rect x="38" y="70" width="20" height="4" rx="2" fill={TL} />
+      <rect x="28" y="8" width="38" height="80" rx="8" fill={D} {...S} />
+      <rect x="33" y="15" width="28" height="64" rx="4" fill={W} />
+      {/* 画面の中: 月と再生ボタン */}
+      <path d="M52 22a5 5 0 1 0 0 8a4 4 0 1 1 0-8z" fill={GL} />
+      <circle cx="47" cy="48" r="9" fill="none" stroke={GL} strokeWidth="1.8" />
+      <path d="M44.5 43.5l7 4.5-7 4.5z" fill={GL} />
+      <rect x="37" y="66" width="20" height="3.5" rx="1.75" fill={G} />
+      <rect x="37" y="72" width="13" height="3" rx="1.5" fill={WL} opacity="0.8" />
+      <rect x="42" y="10.5" width="10" height="2" rx="1" fill={L} opacity="0.6" />
       {/* ハート */}
-      <path d="M72 28c-3-5-10-2-8 4 2 5 8 9 8 9s6-4 8-9c2-6-5-9-8-4z" fill={T} {...S} strokeWidth={2} />
-      <path d="M80 12c-2-3-6-1-5 2 1 3 5 5 5 5s4-2 5-5c1-3-3-5-5-2z" fill={H} {...S} strokeWidth={1.6} />
-      <path d="M18 34c-2-3-6-1-5 2 1 3 5 5 5 5s4-2 5-5c1-3-3-5-5-2z" fill={H} {...S} strokeWidth={1.6} />
+      <path d="M76 30c-3-5-10-2-8 4 2 5 8 9 8 9s6-4 8-9c2-6-5-9-8-4z" fill={WL} {...S} strokeWidth={1.8} />
+      <path d="M82 14c-2-3-6-1-5 2 1 3 5 5 5 5s4-2 5-5c1-3-3-5-5-2z" fill={G} />
+      <path d="M17 38c-2-3-6-1-5 2 1 3 5 5 5 5s4-2 5-5c1-3-3-5-5-2z" fill={G} />
+      <Twinkle x={16} y={66} r={4} fill={GL} />
     </g>
   );
 }
 
-/** 営業: 乾杯するジョッキと「宴会」の札 */
-function Banquet() {
+/** 営業: 重ねた名刺（法人・貸切のご案内） */
+function Card() {
   return (
     <g>
-      {/* ジョッキ2つ */}
-      <path d="M16 46h22v30a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4z" fill={H} {...S} />
-      <path d="M16 46h22v8H16z" fill={W} {...S} strokeWidth={2} />
-      <path d="M38 54h6a4 4 0 0 1 0 8h-6" fill="none" {...S} />
-      <path d="M58 46h22v30a4 4 0 0 1-4 4H62a4 4 0 0 1-4-4z" fill={H} {...S} />
-      <path d="M58 46h22v8H58z" fill={W} {...S} strokeWidth={2} />
-      <path d="M58 54h-6a4 4 0 0 0 0 8h6" fill="none" {...S} />
-      {/* 泡 */}
-      <circle cx="22" cy="43" r="3" fill={W} {...S} strokeWidth={1.6} />
-      <circle cx="30" cy="40" r="4" fill={W} {...S} strokeWidth={1.6} />
-      <circle cx="72" cy="41" r="4" fill={W} {...S} strokeWidth={1.6} />
-      {/* 札「宴会」 */}
-      <path d="M40 10h16a3 3 0 0 1 3 3v18l-11 6-11-6V13a3 3 0 0 1 3-3z" fill={C} {...S} strokeWidth={2} />
-      <text x="48" y="27" textAnchor="middle" fontSize="11" fontWeight="700" fill={O} fontFamily="serif">宴会</text>
-      <path d="M48 4v6" {...S} />
+      <g transform="rotate(-10 48 50)">
+        <rect x="14" y="26" width="64" height="38" rx="4" fill={G} {...S} />
+      </g>
+      <g transform="rotate(6 48 54)">
+        <rect x="18" y="32" width="64" height="38" rx="4" fill={GL} {...S} />
+        {/* 店のしるし（三日月） */}
+        <path d="M33 42a6 6 0 1 0 0 11a5 5 0 1 1 0-11z" fill={W} />
+        <rect x="44" y="42" width="30" height="3.4" rx="1.7" fill="#3A2A33" />
+        <rect x="44" y="49" width="20" height="2.4" rx="1.2" fill="#8A7A80" />
+        <rect x="26" y="60" width="48" height="2" rx="1" fill={G} />
+        <rect x="26" y="64" width="30" height="2" rx="1" fill="#B8A9AE" />
+      </g>
+      <Twinkle x={82} y={20} r={6} />
+      <Twinkle x={12} y={78} r={3.5} fill={WL} />
     </g>
   );
 }
 
-/** 採用: エプロンをつけた新人スタッフ */
-function Apron() {
+/** キャスト採用: ハンガーのドレスと「体入」の名札 */
+function Nametag() {
   return (
     <g>
-      <circle cx="48" cy="28" r="14" fill={C} {...S} />
-      <path d="M36 22c2-8 22-8 24 0" fill={O} />
-      <circle cx="43" cy="30" r="1.8" fill={O} />
-      <circle cx="53" cy="30" r="1.8" fill={O} />
-      <path d="M44 36c2 2 6 2 8 0" fill="none" {...S} strokeWidth={1.8} />
-      <circle cx="39" cy="34" r="2" fill="#F49A96" opacity="0.8" />
-      <circle cx="57" cy="34" r="2" fill="#F49A96" opacity="0.8" />
-      {/* 体とエプロン */}
-      <path d="M26 88c0-20 8-32 22-32s22 12 22 32z" fill={TL} {...S} />
-      <path d="M36 62h24v22a4 4 0 0 1-4 4H40a4 4 0 0 1-4-4z" fill={W} {...S} />
-      <path d="M36 62l-6-4M60 62l6-4" fill="none" {...S} />
-      <path d="M48 70c-2 3-3 4-3 6a3 3 0 0 0 6 0c0-2-1-3-3-6z" fill={H} {...S} strokeWidth={1.4} />
-      {/* バンダナ */}
-      <path d="M34 20c6 3 22 3 28 0l-2 6c-6 3-18 3-24 0z" fill={T} {...S} strokeWidth={2} />
+      {/* ハンガー */}
+      <path d="M44 16c0-5 8-5 8 0 0 3-4 3.5-4 7" fill="none" {...S} />
+      <path d="M48 23L18 38h60z" fill="none" {...S} />
+      {/* ドレス */}
+      <path d="M36 38h24l-3 10 11 38H28l11-38z" fill={W} {...S} />
+      <path d="M39 48h18" fill="none" stroke={G} strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M44 38l4 6 4-6" fill="none" stroke={L} strokeWidth="1.6" strokeLinejoin="round" />
+      {/* 名札 */}
+      <path d="M66 38v12" stroke={G} strokeWidth="1.6" />
+      <g transform="rotate(8 72 62)">
+        <rect x="56" y="50" width="32" height="24" rx="3" fill={GL} {...S} />
+        <rect x="56" y="50" width="32" height="6" rx="3" fill={G} />
+        <text x="72" y="70" textAnchor="middle" fontSize="11" fontWeight="800" fill="#2A1D22" fontFamily="'Shippori Mincho B1', serif">体入</text>
+      </g>
+      <Twinkle x={16} y={58} r={5} />
+      <Twinkle x={84} y={26} r={3.5} fill={WL} />
     </g>
   );
 }
 
-/** 運営: 口コミの吹き出しと星 */
+/** 運営: 口コミの吹き出しと星、お店からの返信 */
 function Review() {
   return (
     <g>
-      <path d="M14 22h52a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6H36l-12 12V58h-10a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6z" fill={W} {...S} />
+      <path d="M14 20h52a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6H36l-12 12V56h-10a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z" fill={D} {...S} />
       {[24, 36, 48, 60].map((x, i) => (
-        <path key={x} d={`M${x} 34l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z`} fill={i < 3 ? H : C} {...S} strokeWidth={1.6} />
+        <path key={x} d={`M${x} 32l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z`} fill={i < 3 ? G : "none"} stroke={i < 3 ? G : L} strokeWidth={1.4} strokeLinejoin="round" />
       ))}
-      <path d="M64 44h20a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5h-4v8l-8-8h-8a5 5 0 0 1-5-5v-9" fill={T} {...S} />
-      <path d="M70 54h10M70 60h6" fill="none" stroke={C} strokeWidth={2.4} strokeLinecap="round" />
+      <path d="M62 44h22a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5h-4v8l-8-8h-10a5 5 0 0 1-5-5V49a5 5 0 0 1 5-5z" fill={W} {...S} />
+      <path d="M68 54h14M68 60h8" fill="none" stroke={GL} strokeWidth={2.4} strokeLinecap="round" />
     </g>
   );
 }
 
-/** 今日のおすすめ: きらめき */
-function Sparkle() {
+/** おすすめ: ミラーボールと光 */
+function Mirrorball() {
   return (
     <g>
-      <path d="M48 12c2 16 8 22 24 24-16 2-22 8-24 24-2-16-8-22-24-24 16-2 22-8 24-24z" fill={H} {...S} />
-      <path d="M20 60c1 6 3 8 9 9-6 1-8 3-9 9-1-6-3-8-9-9 6-1 8-3 9-9z" fill={T} {...S} strokeWidth={1.8} />
-      <path d="M76 62c1 5 2 6 7 7-5 1-6 2-7 7-1-5-2-6-7-7 5-1 6-2 7-7z" fill={C} {...S} strokeWidth={1.8} />
+      <path d="M48 4v14" {...S} />
+      {/* 光の筋 */}
+      <path d="M30 60L8 86M66 60l22 26M48 68v24" stroke={G} strokeWidth="6" opacity="0.18" strokeLinecap="round" />
+      <path d="M30 60L8 86M66 60l22 26M48 68v24" stroke={G} strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <circle cx="48" cy="42" r="24" fill={D} {...S} />
+      {/* タイル */}
+      <clipPath id="mb-clip"><circle cx="48" cy="42" r="23" /></clipPath>
+      <g clipPath="url(#mb-clip)" stroke="#5A4E6A" strokeWidth="1.1" fill="none">
+        <path d="M24 30h48M24 42h48M24 54h48" />
+        <path d="M36 18c-6 8-6 40 0 48M48 18v48M60 18c6 8 6 40 0 48" />
+      </g>
+      <g clipPath="url(#mb-clip)">
+        <rect x="37" y="31" width="10" height="10" fill={GL} opacity="0.85" />
+        <rect x="49" y="43" width="10" height="10" fill={G} opacity="0.8" />
+        <rect x="27" y="43" width="8" height="10" fill={WL} opacity="0.55" />
+        <rect x="61" y="31" width="8" height="10" fill={WL} opacity="0.45" />
+        <rect x="49" y="19" width="10" height="10" fill={G} opacity="0.45" />
+      </g>
+      <circle cx="48" cy="42" r="24" fill="none" {...S} />
+      <Twinkle x={80} y={18} r={7} />
+      <Twinkle x={16} y={20} r={5} fill={GL} />
+      <Twinkle x={84} y={48} r={3.5} fill={WL} />
     </g>
   );
 }
 
-/** ハニーの壺（大きく出す用） */
-function Jar() {
+/** ハニーP: ボトルキープ（ハニーの入ったボトルに名札） */
+function Bottle() {
   return (
     <g>
-      <rect x="28" y="12" width="40" height="10" rx="4" fill={O} />
-      <path d="M26 24c-5 5-7 14-7 24v16a10 10 0 0 0 10 10h38a10 10 0 0 0 10-10V48c0-10-2-19-7-24z" fill={H} {...S} />
-      <rect x="30" y="20" width="36" height="8" rx="4" fill={H} {...S} />
-      <circle cx="40" cy="48" r="3" fill={O} />
-      <circle cx="56" cy="48" r="3" fill={O} />
-      <path d="M42 57c2 3 10 3 12 0" fill="none" {...S} />
-      <circle cx="33" cy="55" r="2.6" fill="#F49A96" opacity="0.9" />
-      <circle cx="63" cy="55" r="2.6" fill="#F49A96" opacity="0.9" />
-      <path d="M24 40c1-5 2-9 5-13" fill="none" stroke={W} strokeWidth={3} strokeLinecap="round" />
+      <path d="M40 8h16v14c0 4 3 6 6 8 4 3 6 6 6 11v40a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6V41c0-5 2-8 6-11 3-2 6-4 6-8z" fill={D} {...S} />
+      <clipPath id="bt-clip"><path d="M40 8h16v14c0 4 3 6 6 8 4 3 6 6 6 11v40a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6V41c0-5 2-8 6-11 3-2 6-4 6-8z" /></clipPath>
+      <rect x="26" y="44" width="44" height="46" fill={H} clipPath="url(#bt-clip)" />
+      <path d="M40 8h16v14c0 4 3 6 6 8 4 3 6 6 6 11v40a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6V41c0-5 2-8 6-11 3-2 6-4 6-8z" fill="none" {...S} />
+      <rect x="38" y="4" width="20" height="7" rx="2" fill={G} {...S} strokeWidth={1.8} />
+      {/* ラベル（六角形） */}
+      <rect x="33" y="54" width="30" height="22" rx="2" fill={D} stroke={G} strokeWidth="1.6" />
+      <path d="M48 58l6 3.5v7L48 72l-6-3.5v-7z" fill={H} stroke={G} strokeWidth="1.2" />
+      <path d="M33 44c0-2 1-4 3-5" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+      {/* キープの名札 */}
+      <path d="M56 18l14 6" stroke={G} strokeWidth="1.6" />
+      <g transform="rotate(20 78 30)">
+        <path d="M66 22h22v14H66l-4-7z" fill={GL} {...S} strokeWidth={1.8} />
+        <circle cx="67" cy="29" r="1.4" fill={G} />
+        <text x="78.5" y="32.2" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#2A1D22" fontFamily="Georgia, serif">KEEP</text>
+      </g>
     </g>
   );
 }
 
-/** 空っぽの画面: 伏せたお椀と箸 */
-function Empty() {
+/** 空っぽの画面: 空のカクテルグラス */
+function Glass() {
   return (
     <g>
-      <path d="M20 58c0-10 12-18 28-18s28 8 28 18z" fill={C} {...S} />
-      <path d="M16 58h64" {...S} />
-      <path d="M34 66h28" fill="none" {...S} strokeWidth={2} />
-      <path d="M22 78l52-8M22 84l52-8" fill="none" {...S} strokeWidth={2.4} />
-      <path d="M52 30c-2-3 2-6 0-9M60 32c-2-3 2-6 0-9" fill="none" {...S} strokeWidth={1.8} opacity="0.5" />
+      <path d="M22 26h52L48 56z" fill={D} {...S} />
+      <path d="M48 56v26M34 84h28" fill="none" {...S} />
+      {/* ガラスの光 */}
+      <path d="M30 31l10 12" stroke={L} strokeWidth="2" strokeLinecap="round" opacity="0.45" />
+      {/* 縁に残ったオリーブのピック */}
+      <path d="M64 18l-10 20" stroke={G} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="66" cy="15" r="2.6" fill={G} />
+      <Twinkle x={80} y={50} r={5} fill={GL} />
+      <circle cx="16" cy="48" r="1.6" fill={G} />
+      <circle cx="84" cy="30" r="1.4" fill={WL} />
     </g>
   );
 }
 
 const MAP: Record<IllustName, () => React.JSX.Element> = {
-  noren: Noren, donburi: Donburi, phone: Phone, banquet: Banquet, apron: Apron, review: Review, sparkle: Sparkle, jar: Jar, empty: Empty,
+  neon: Neon, champagne: Champagne, phone: Phone, card: Card, nametag: Nametag, review: Review,
+  mirrorball: Mirrorball, bottle: Bottle, glass: Glass,
 };
 
 export default function Illust({ name, className = "h-16 w-16", title }: { name: IllustName; className?: string; title?: string }) {
@@ -186,10 +246,10 @@ export default function Illust({ name, className = "h-16 w-16", title }: { name:
 
 /** 困りごとグループ名 → 絵 */
 export const GROUP_ILLUST: Record<string, IllustName> = {
-  "集客": "noren",
-  "メニュー・売上": "donburi",
+  "キャスト採用": "nametag",
+  "集客・指名": "neon",
   "SNS・動画": "phone",
-  "営業": "banquet",
-  "採用": "apron",
+  "イベント・売上": "champagne",
+  "営業": "card",
   "運営": "review",
 };
