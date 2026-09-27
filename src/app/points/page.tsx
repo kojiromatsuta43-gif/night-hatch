@@ -81,7 +81,7 @@ function PointsInner() {
   };
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl">
       <p className="font-latin text-xs text-gold-500">BOTTLE KEEP</p>
       <h1 className="mt-1 flex items-center gap-2 text-2xl">
         ハニーのボトル
