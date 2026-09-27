@@ -60,7 +60,7 @@ export default function IssuePage() {
             <tr key={d.id} className="border-b border-slate-100 last:border-0">
               <td className="px-4 py-3 font-medium">
                 {editBase ? (
-                  <Link href={`${editBase}/${d.id}`} className="text-hive-900 hover:text-food-700 hover:underline">
+                  <Link href={`${editBase}/${d.id}`} className="text-hive-900 hover:text-night-700 hover:underline">
                     {d.title || "（件名なし）"}
                   </Link>
                 ) : (
@@ -80,8 +80,8 @@ export default function IssuePage() {
               </td>
               {editBase && (
                 <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <Link href={`${editBase}/${d.id}`} className="text-xs text-slate-500 hover:text-food-700">編集</Link>
-                  <Link href={`${editBase}/${d.id}/print`} className="ml-3 text-xs text-slate-500 hover:text-food-700">印刷</Link>
+                  <Link href={`${editBase}/${d.id}`} className="text-xs text-slate-500 hover:text-night-700">編集</Link>
+                  <Link href={`${editBase}/${d.id}/print`} className="ml-3 text-xs text-slate-500 hover:text-night-700">印刷</Link>
                 </td>
               )}
             </tr>
@@ -94,25 +94,25 @@ export default function IssuePage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-2xl">お会計</h1><p className="page-sub">頼んだものの発注書と請求書。補助金の申請にも使えます。</p></div>
+        <div><h1 className="text-2xl">お会計</h1><p className="page-sub">オーダーの発注書と請求書。経費の記録や帳簿づけに使えます。</p></div>
         <div className="flex gap-2 text-sm">
-          <Link href="/issue/issuer" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-food-400">
+          <Link href="/issue/issuer" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-night-400">
             自社情報
           </Link>
-          <Link href="/issue/payment" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-food-400">
+          <Link href="/issue/payment" className="rounded-lg border border-slate-300 px-4 py-1.5 text-slate-600 hover:border-night-400">
             決済の設定
           </Link>
         </div>
       </div>
       <div className="mb-6 flex gap-2 text-sm">
         {([["po", "発注書"], ["inv", "請求書"], ["partners", "取引先"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-food-500 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
+          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-night-500 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
       </div>
 
       {tab === "po" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={addPurchaseOrder} className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white">＋ 発注書作成</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={addPurchaseOrder} className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white">＋ 発注書作成</button></div>
           {docTable(pos, PO_STATUSES, "/api/purchase-orders")}
         </>
       )}
@@ -122,7 +122,7 @@ export default function IssuePage() {
             <p className="text-xs text-slate-500">
               適格請求書（インボイス）に対応しています。作成画面で法定6項目の抜けを自動チェックします。
             </p>
-            <Link href="/issue/invoice/new" className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white">
+            <Link href="/issue/invoice/new" className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white">
               ＋ 請求書作成
             </Link>
           </div>
@@ -131,7 +131,7 @@ export default function IssuePage() {
       )}
       {tab === "partners" && (
         <>
-          <div className="mb-3 flex justify-end"><button onClick={addPartner} className="rounded-lg bg-food-500 px-4 py-2 text-sm font-medium text-white">＋ 取引先登録</button></div>
+          <div className="mb-3 flex justify-end"><button onClick={addPartner} className="rounded-lg bg-night-500 px-4 py-2 text-sm font-medium text-white">＋ 取引先登録</button></div>
           <div className="rounded-xl border border-slate-200 bg-white">
             {partners.length === 0 && <div className="px-4 py-8 text-center text-sm text-slate-400">取引先がありません</div>}
             {partners.map((p) => (

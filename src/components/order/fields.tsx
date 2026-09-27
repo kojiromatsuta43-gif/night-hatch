@@ -2,14 +2,14 @@
 
 /**
  * 発注フォームの部品。看板ごとの質問（src/lib/brands/*.ts）をここで描く。
- * 通常版（BRIDGE）と店舗向けの簡単版（FOOD）の両方から使う。
+ * 通常版（BRIDGE）と店舗向けの簡単版（FOOD / NIGHT）の両方から使う。
  */
 import type { Question } from "@/lib/brand";
 import FileDrop, { UploadedFile } from "@/components/FileDrop";
 import MicButton from "@/components/MicButton";
 
 export const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none";
+  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-night-500 focus:outline-none";
 
 export function CheckGroup({
   label,
@@ -43,8 +43,8 @@ export function CheckGroup({
               onClick={() => onChange(on ? values.filter((v) => v !== opt) : [...values, opt])}
               className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                 on
-                  ? "border-food-500 bg-food-500 text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:border-food-400"
+                  ? "border-night-500 bg-night-500 text-white"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-night-400"
               }`}
             >
               {opt}
@@ -83,8 +83,8 @@ export function RadioGroup({
             onClick={() => onChange(value === opt ? "" : opt)}
             className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
               value === opt
-                ? "border-food-500 bg-food-500 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:border-food-400"
+                ? "border-night-500 bg-night-500 text-white"
+                : "border-slate-300 bg-white text-slate-700 hover:border-night-400"
             }`}
           >
             {opt}
@@ -99,7 +99,7 @@ export function Section({ n, title, children }: { n: number; title: string; chil
   return (
     <section className="space-y-5 border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
       <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-food-100 text-xs font-bold text-food-700">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-night-100 text-xs font-bold text-night-700">
           {n}
         </span>
         {title}

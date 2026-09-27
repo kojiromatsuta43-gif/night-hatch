@@ -5,9 +5,9 @@ import { api } from "@/lib/client";
 import { parseCsv, guessMapping, LEAD_FIELD_LABELS, type LeadField } from "@/lib/csv";
 
 const FIELDS: LeadField[] = ["company", "contact_name", "phone", "email", "address", "prefecture", "industry", "employees", "website", "form_url", "memo"];
-const box = "rounded rounded-xl border border-food-200 bg-white";
-const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white";
-const btnY = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold bg-food-500 text-white hover:bg-food-600";
+const box = "rounded rounded-xl border border-night-200 bg-white";
+const input = "rounded rounded-xl border border-night-200 px-2 py-1 text-sm bg-white";
+const btnY = "rounded rounded-xl border border-night-200 px-3 py-1 text-sm font-bold bg-night-500 text-white hover:bg-night-600";
 
 type FormResult = { added: number; excluded: number; suppressed: number; duplicated: number; noUrl: number; withUrl: number };
 

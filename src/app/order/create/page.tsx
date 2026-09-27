@@ -75,7 +75,7 @@ function OrderForm() {
   const [otherNote, setOtherNote] = useState("");
   const [midCheck, setMidCheck] = useState("");
 
-  // 看板ごとの質問（飲食メニュー・テレアポなど）への答え。見出し→値
+  // 看板ごとの質問（求人・テレアポなど）への答え。見出し→値
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const setAnswer = (key: string, v: unknown) => setAnswers((a) => ({ ...a, [key]: v }));
   // 件数メニュー（テレアポ）の件数
@@ -225,9 +225,9 @@ function OrderForm() {
             <span
               className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
                 i < step
-                  ? "bg-food-500 text-white"
+                  ? "bg-night-500 text-white"
                   : i === step
-                    ? "bg-food-100 text-food-700 ring-2 ring-food-500"
+                    ? "bg-night-100 text-night-700 ring-2 ring-night-500"
                     : "bg-slate-200 text-slate-500"
               }`}
             >
@@ -256,8 +256,8 @@ function OrderForm() {
                         title={`${c.size}／${c.days}`}
                         className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                           category === c.name
-                            ? "border-food-500 bg-food-500 text-white"
-                            : "border-slate-300 bg-white hover:border-food-400"
+                            ? "border-night-500 bg-night-500 text-white"
+                            : "border-slate-300 bg-white hover:border-night-400"
                         }`}
                       >
                         {c.name}
@@ -341,8 +341,8 @@ function OrderForm() {
                 onClick={() => setAssigneeId("")}
                 className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                   assigneeId === ""
-                    ? "border-food-500 bg-food-500 text-white"
-                    : "border-slate-300 bg-white hover:border-food-400"
+                    ? "border-night-500 bg-night-500 text-white"
+                    : "border-slate-300 bg-white hover:border-night-400"
                 }`}
               >
                 おまかせ
@@ -354,8 +354,8 @@ function OrderForm() {
                   onClick={() => setAssigneeId(f.id)}
                   className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                     assigneeId === f.id
-                      ? "border-food-500 bg-food-500 text-white"
-                      : "border-slate-300 bg-white hover:border-food-400"
+                      ? "border-night-500 bg-night-500 text-white"
+                      : "border-slate-300 bg-white hover:border-night-400"
                   }`}
                 >
                   {f.name}
@@ -379,7 +379,7 @@ function OrderForm() {
             </label>
             <div className="block">
               <span className="text-sm font-semibold">消費する{mascot.pointName}</span>
-              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-food-700">
+              <div className="mt-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-night-700">
                 {points || "-"} <PointInline />
               </div>
             </div>
@@ -389,7 +389,7 @@ function OrderForm() {
             <button
               disabled={!step1Ok}
               onClick={() => setStep(1)}
-              className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
+              className="rounded-lg bg-night-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-night-600"
             >
               次へ
             </button>
@@ -442,7 +442,7 @@ function OrderForm() {
 
           {isVideo && (
             <>
-              <div className="rounded-lg bg-food-50 px-4 py-3 text-sm font-semibold text-food-800">
+              <div className="rounded-lg bg-night-50 px-4 py-3 text-sm font-semibold text-night-800">
                 動画編集フォーム（クラウド発注用）
               </div>
 
@@ -608,7 +608,7 @@ function OrderForm() {
             <button
               disabled={!step2Ok}
               onClick={() => setStep(2)}
-              className="rounded-lg bg-food-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
+              className="rounded-lg bg-night-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-night-600"
             >
               次へ
             </button>
@@ -703,7 +703,7 @@ function OrderForm() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="h-4 w-4 accent-food-500"
+                className="h-4 w-4 accent-night-500"
               />
               上記すべてに同意します
             </label>
@@ -716,7 +716,7 @@ function OrderForm() {
             <button
               disabled={!agreed}
               onClick={submit}
-              className="rounded-lg bg-food-500 px-6 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-food-600"
+              className="rounded-lg bg-night-500 px-6 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-night-600"
             >
               案件を登録する
             </button>

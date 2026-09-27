@@ -5,9 +5,9 @@ import { api } from "@/lib/client";
 
 export type Sender = { id: string; label: string; company: string; industry: string; person: string; person_kana: string; email: string; reply_email: string; tel: string; postal: string; address: string; url: string };
 
-const box = "rounded rounded-xl border border-food-200 bg-white";
-const input = "rounded rounded-xl border border-food-200 px-2 py-1 text-sm bg-white w-full";
-const btnY = "rounded rounded-xl border border-food-200 px-3 py-1 text-sm font-bold bg-food-500 text-white hover:bg-food-600 disabled:opacity-50";
+const box = "rounded rounded-xl border border-night-200 bg-white";
+const input = "rounded rounded-xl border border-night-200 px-2 py-1 text-sm bg-white w-full";
+const btnY = "rounded rounded-xl border border-night-200 px-3 py-1 text-sm font-bold bg-night-500 text-white hover:bg-night-600 disabled:opacity-50";
 
 /** フォーム営業キャンペーンの作成・編集フォーム */
 export default function CampaignForm({
@@ -55,7 +55,7 @@ export default function CampaignForm({
   return (
     <div className={`${box} mb-4 p-4 space-y-3`}>
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="text-xs font-bold">キャンペーン名<input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="福岡 飲食 9月" className={input} /></label>
+        <label className="text-xs font-bold">キャンペーン名<input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="新橋 近隣企業 11月" className={input} /></label>
         <label className="text-xs font-bold">送信者（差出人）
           <select value={f.sender_id} onChange={(e) => set("sender_id", e.target.value)} className={input}>
             {senders.map((s) => <option key={s.id} value={s.id}>{s.label}（{s.company} {s.person}）</option>)}

@@ -115,12 +115,12 @@ function CallResultSummary({ p }: { p: Detail }) {
       {target > 0 && (
         <div className="mt-3">
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full bg-food-500" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-night-500" style={{ width: `${pct}%` }} />
           </div>
           <div className="mt-1 text-xs text-slate-500">{pct}% 完了・報告{t.reports}回</div>
         </div>
       )}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg rounded-xl border border-food-200 bg-food-50 px-3 py-2 text-sm">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg rounded-xl border border-night-200 bg-night-50 px-3 py-2 text-sm">
         {p.leadStats && p.leadStats.leads > 0 ? (
           <span>
             営業リスト <b>{p.leadStats.leads}社</b> を紐付け済み — 記録された架電 {p.leadStats.calls}回・つながった {p.leadStats.connected}社・アポ {p.leadStats.appts}社
@@ -128,7 +128,7 @@ function CallResultSummary({ p }: { p: Detail }) {
         ) : (
           <span className="text-slate-600">営業リストはまだ紐付いていません。「営業リスト」で会社を選んで、この案件に紐付けると担当者が架電結果を記録できます。</span>
         )}
-        <Link href={`/sales?project=${p.id}`} className="rounded rounded-xl border border-food-200 bg-food-500 px-3 py-1 text-xs font-bold text-white">
+        <Link href={`/sales?project=${p.id}`} className="rounded rounded-xl border border-night-200 bg-night-500 px-3 py-1 text-xs font-bold text-white">
           営業リストを開く
         </Link>
       </div>
@@ -162,7 +162,7 @@ function DetailList({ raw }: { raw: string | null }) {
               v.every((x) => typeof x === "object" && x !== null && "url" in (x as object)) ? (
                 <span className="flex flex-wrap gap-2">
                   {(v as { name: string; url: string }[]).map((f) => (
-                    <a key={f.url} href={f.url} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs hover:border-food-400">
+                    <a key={f.url} href={f.url} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs hover:border-night-400">
                       📎 {f.name}
                     </a>
                   ))}
@@ -287,11 +287,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       <Link href="/projects" className="text-sm text-slate-500 hover:text-slate-700">← 案件一覧</Link>
 
       {/* 見出し：大きなはちみつセルで進み具合 */}
-      <div className="mt-3 flex flex-wrap items-center gap-6 rounded-2xl border border-food-200 bg-white px-6 py-5">
+      <div className="mt-3 flex flex-wrap items-center gap-6 rounded-2xl border border-night-200 bg-white px-6 py-5">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold text-hive-500">
             {p.category} ・ {p.points}<PointInline /> ・ 納期 {p.deadline}
-            <span className={`ml-2 ${left < 0 ? "text-rose-600" : left <= 5 ? "text-food-700" : ""}`}>
+            <span className={`ml-2 ${left < 0 ? "text-rose-600" : left <= 5 ? "text-night-700" : ""}`}>
               （{left < 0 ? `${-left}日超過` : left === 0 ? "本日まで" : `あと${left}日`}）
             </span>
           </p>
@@ -301,11 +301,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             {elapsed !== null && `（${elapsed}日経過）`}
           </p>
         </div>
-        <HoneyCells status={p.status} size={56} labels />
+        <HoneyCells status={p.status} size={56} labels className="hidden sm:flex" />
+        <HoneyCells status={p.status} size={34} labels className="sm:hidden" />
       </div>
 
       {/* 進行の操作（発注者・管理者）と担当 */}
-      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-food-200 bg-white px-4 py-3">
+      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-night-200 bg-white px-4 py-3">
         <span className="mr-1 text-sm font-black text-hive-900">状態</span>
         {STATUSES.map((s) => {
           const currentIdx = STATUSES.indexOf(p.status as (typeof STATUSES)[number]);
@@ -325,10 +326,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               title={locked ? "状態は前にしか進められません" : undefined}
               className={`border-2 px-3 py-1 text-sm font-bold transition-colors ${
                 p.status === s
-                  ? "border-food-200 bg-food-500 text-white"
+                  ? "border-night-200 bg-night-500 text-white"
                   : locked
                     ? "cursor-not-allowed border-hive-200 bg-white text-hive-200"
-                    : "border-hive-200 bg-white text-hive-500 hover:border-food-200 hover:text-hive-900"
+                    : "border-hive-200 bg-white text-hive-500 hover:border-night-200 hover:text-hive-900"
               }`}
             >
               {s}
@@ -341,14 +342,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <select
               value={p.assignee_id ?? ""}
               onChange={(e) => patch({ assignee_id: e.target.value })}
-              className="rounded-xl border border-food-200 px-2 py-1 text-sm"
+              className="rounded-xl border border-night-200 px-2 py-1 text-sm"
             >
               <option value="">未割当</option>
               {p.assignees.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </label>
         )}
-        <Link href="/chat" className="ml-auto text-sm font-bold text-food-700 hover:underline">
+        <Link href="/chat" className="ml-auto text-sm font-bold text-night-700 hover:underline">
           この案件のチャットを開く →
         </Link>
       </div>
@@ -360,7 +361,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       )}
 
       {/* 発注内容 */}
-      <section className="mt-6 rounded-xl border border-food-200 bg-white p-5">
+      <section className="mt-6 rounded-xl border border-night-200 bg-white p-5">
         <h2 className="mb-3 font-black text-hive-900">発注内容</h2>
         <p className="mb-4 whitespace-pre-wrap text-sm">{p.description}</p>
         <div className="border-t border-slate-100 pt-4">
@@ -387,9 +388,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         <div className="space-y-3">
           {p.deliverables.map((d) => (
-            <div key={d.id} className={`rounded-xl border border-food-200 p-4 ${d.kind === "提出" ? "bg-white" : "bg-food-100"}`}>
+            <div key={d.id} className={`rounded-xl border border-night-200 p-4 ${d.kind === "提出" ? "bg-white" : "bg-night-100"}`}>
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className={`hex-tab px-3 py-0.5 font-black ${d.kind === "提出" ? "bg-hive-900 text-honey-300" : "bg-food-500 text-white"}`}>
+                <span className={`hex-tab px-3 py-0.5 font-black ${d.kind === "提出" ? "bg-ink-600 text-honey-300" : "bg-night-500 text-white"}`}>
                   {d.kind}
                   {d.kind === "提出" && (() => {
                     const nth = p.deliverables.filter((x) => x.kind === "提出").findIndex((x) => x.id === d.id) + 1;
@@ -438,7 +439,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 />
               )}
               {d.url && (
-                <a href={d.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-food-600 hover:underline">
+                <a href={d.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-night-700 hover:underline">
                   🔗 {d.url}
                 </a>
               )}
@@ -459,7 +460,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={`/api/uploads/${d.upload_id}`} alt={d.upload_name ?? ""} className="max-h-64 rounded-lg border border-slate-200" />
                   ) : (
-                    <a href={`/api/uploads/${d.upload_id}`} className="inline-block rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm hover:border-food-400">
+                    <a href={`/api/uploads/${d.upload_id}`} className="inline-block rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm hover:border-night-400">
                       📎 {d.upload_name ?? "ファイル"}
                     </a>
                   )}
@@ -485,7 +486,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                                   const v = videoRefs.current[d.id];
                                   if (v) { v.currentTime = c.at_seconds ?? 0; v.play().catch(() => {}); }
                                 }}
-                                className="shrink-0 rounded bg-hive-900 px-2 py-0.5 text-xs font-bold tabular-nums text-honey-300 hover:bg-hive-800"
+                                className="shrink-0 rounded bg-ink-600 px-2 py-0.5 text-xs font-bold tabular-nums text-honey-300 hover:bg-ink-700"
                                 title="この場面へ移動"
                               >
                                 ▶ {fmtTime(c.at_seconds)}
@@ -512,7 +513,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                               setDraftAt((m) => ({ ...m, [d.id]: Math.round(v.currentTime * 10) / 10 }));
                             }}
                             className={`rounded-full border-2 px-3 py-1 text-xs font-bold ${
-                              draftAt[d.id] != null ? "border-food-200 bg-food-500 text-white" : "border-slate-300 text-slate-500 hover:border-food-200"
+                              draftAt[d.id] != null ? "border-night-200 bg-night-500 text-white" : "border-slate-300 text-slate-500 hover:border-night-200"
                             }`}
                           >
                             {draftAt[d.id] != null ? `⏱ ${fmtTime(draftAt[d.id] ?? 0)} の場面に` : "⏱ 今の場面を指定"}
@@ -528,11 +529,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                           onChange={(e) => setDrafts((m) => ({ ...m, [d.id]: e.target.value }))}
                           onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) addComment(d.id); }}
                           placeholder={isVideo ? "例: テロップをもう少し大きく" : "この提出物へのコメント"}
-                          className="min-w-40 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-food-500 focus:outline-none"
+                          className="min-w-40 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-night-500 focus:outline-none"
                         />
                         <button
                           onClick={() => addComment(d.id)}
-                          className="rounded-lg bg-hive-900 px-3 py-1.5 text-xs font-bold text-honey-300 hover:bg-hive-800"
+                          className="rounded-lg bg-ink-600 px-3 py-1.5 text-xs font-bold text-honey-300 hover:bg-ink-700"
                         >
                           送る
                         </button>
@@ -542,7 +543,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       <div className="mt-2 flex items-center gap-2">
                         <button
                           onClick={() => review(d.id, "検収OK")}
-                          className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600"
+                          className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:brightness-110"
                         >
                           ✓ 検収OK（これで完成）
                         </button>
@@ -570,7 +571,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             まだ担当者が決まっていません。決まりしだい、ここで提出物のやり取りができます。
           </div>
         ) : (
-        <div className="mt-4 rounded-2xl border border-food-200 bg-white p-5">
+        <div className="mt-4 rounded-2xl border border-night-200 bg-white p-5">
           <div className="mb-3 flex items-center gap-2">
             <MicButton onText={(t) => setBody((v) => (v ? v + t : t))} className="order-last ml-auto" />
             {allowedKinds.length > 1 ? (
@@ -578,14 +579,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   key={k}
                   onClick={() => setPickedKind(k)}
-                  className={`rounded-full border px-4 py-1.5 text-sm ${kind === k ? "border-food-500 bg-food-500 text-white" : "border-slate-300 text-slate-600 hover:border-food-400"}`}
+                  className={`rounded-full border px-4 py-1.5 text-sm ${kind === k ? "border-night-500 bg-night-500 text-white" : "border-slate-300 text-slate-600 hover:border-night-400"}`}
                 >
                   {k}
                 </button>
               ))
             ) : (
               <span
-                className={`rounded-full px-3 py-1 text-sm font-bold ${kind === "提出" ? "bg-sky-200 text-sky-800" : "bg-food-200 text-hive-900"}`}
+                className={`rounded-full px-3 py-1 text-sm font-bold ${kind === "提出" ? "bg-sky-200 text-sky-800" : "bg-night-200 text-hive-900"}`}
               >
                 {kind === "提出" ? "制作物を提出する" : "フィードバックを送る"}
               </span>
@@ -601,7 +602,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     min={0}
                     value={v as string}
                     onChange={(e) => (set as (s: string) => void)(e.target.value)}
-                    className="mt-0.5 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-food-500 focus:outline-none"
+                    className="mt-0.5 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-night-500 focus:outline-none"
                   />
                 </label>
               ))}
@@ -616,13 +617,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 ? "本日の架電レポート。アポ先の会社名・日時・担当者、次回の課題など。リストはファイルで添付してください。"
                 : kind === "提出" ? "初稿ができました。ご確認をお願いします。" : "冒頭3秒のテンポをもう少し速くしてください。"
             }
-            className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
+            className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-night-500 focus:outline-none"
           />
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="動画URL（ギガファイル便・YouTube限定公開など）"
-            className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-food-500 focus:outline-none"
+            className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-night-500 focus:outline-none"
           />
           <div className="mt-3">
             <FileDrop label="ファイルを添付" hint="動画・画像・資料など" value={files} onChange={setFiles} />
@@ -631,7 +632,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <button
             onClick={submit}
             disabled={busy}
-            className="mt-3 bg-hive-900 px-6 py-2.5 text-sm font-black text-honey-300 hover:bg-hive-800 disabled:opacity-40"
+            className="mt-3 bg-ink-600 px-6 py-2.5 text-sm font-black text-honey-300 hover:bg-ink-700 disabled:opacity-40"
           >
             {busy ? "送信中..." : `${kind}を送る`}
           </button>
