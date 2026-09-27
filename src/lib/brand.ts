@@ -1,13 +1,13 @@
-import { food } from "./brands/food";
+import { night } from "./brands/night";
 import type { Brand, CatalogItem } from "./brand-types";
 
 export type { Brand, CatalogItem, Question, Quantity } from "./brand-types";
 
 /**
- * FOOD HATCH は飲食店専用（2026-09-05 に BRIDGE HATCH から分離）。
- * 看板の切替は廃止し、常に food を使う。BRIDGE 側の改修は git（remote: bridge）から取り込む。
+ * NIGHT HATCH は夜のお店専用（2026-09-28 に FOOD HATCH から派生）。
+ * 看板の切替はなく、常に night を使う。
  */
-export const BRAND: Brand = food;
+export const BRAND: Brand = night;
 
 export const CATALOG: CatalogItem[] = BRAND.catalog;
 

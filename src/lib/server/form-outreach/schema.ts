@@ -1,5 +1,5 @@
 // フォーム営業（お問い合わせフォーム経由の営業文送信）のテーブルと型。
-// 単体版 form-outreach/ を FOOD HATCH 本体に組み込んだもの。DBは本体の app.db を共用する。
+// 単体版 form-outreach/ を HATCH 本体（FOOD HATCH から NIGHT HATCH へ引き継ぎ）に組み込んだもの。DBは本体の app.db を共用する。
 import path from "path";
 import fs from "fs";
 import { DATA_DIR, getDb } from "../db";

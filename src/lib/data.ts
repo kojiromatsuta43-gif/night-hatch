@@ -1,7 +1,7 @@
 import { BRAND, CATALOG } from "./brand";
 
 /**
- * 制作メニュー。中身は看板（BRIDGE / FOOD）ごとに src/lib/brands/ にある。
+ * 制作メニュー。中身は看板（BRIDGE / FOOD / NIGHT）ごとに src/lib/brands/ にある。
  * 営業資料の一覧と必ず一致させること（食い違うと商談で数字が合わなくなる）。
  */
 export const CATEGORIES: readonly string[] = CATALOG.map((c) => c.name);

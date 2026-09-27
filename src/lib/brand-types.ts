@@ -1,5 +1,5 @@
 /**
- * 看板の型。FOOD HATCH（飲食店専用）。もとは BRIDGE HATCH と同じエンジンで、
+ * 看板の型。NIGHT HATCH（夜のお店専用）。もとは BRIDGE HATCH → FOOD HATCH と同じエンジンで、
  * 名前・制作メニュー・業種タブ・AIの設定だけをここで差し替える。
  */
 
@@ -39,7 +39,7 @@ export type CatalogItem = {
 };
 
 export type Brand = {
-  id: "food";
+  id: "night";
   name: string;
   tagline: string;
   /** 発注トップの大きな入口 */

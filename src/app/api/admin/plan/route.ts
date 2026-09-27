@@ -7,7 +7,7 @@ import { notify } from "@/lib/server/notifications";
 
 /**
  * プラン契約の管理（管理者のみ）。
- * 銀行振込・補助金経由など Stripe を通らない契約は、ここで有効にする。
+ * 銀行振込など Stripe を通らない契約は、ここで有効にする。
  * 有効にした瞬間に今月分のハニーPが付与される（付与済みなら二重にはならない）。
  */
 export async function GET() {

@@ -5,7 +5,7 @@ import crypto from "crypto";
 import refSeed from "./ref-seed.json";
 
 /**
- * 旧 BRIDGE HATCH（看板切替時代）の初期値。FOOD 専用になった今は「掃除する対象」としてだけ持つ。
+ * 旧 BRIDGE HATCH / FOOD HATCH の初期値。NIGHT 専用の今は「掃除する対象」としてだけ持つ。
  * 看板切替前に起動した DB に残っている業種タブ・デモ案件を見分けるために使う。
  */
 const LEGACY_BRIDGE_INDUSTRIES = [
@@ -18,7 +18,17 @@ const LEGACY_BRIDGE_DEMO_PROJECTS: { title: string; category: string }[] = [
   { title: "新商品LPファーストビュー修正", category: "LPファーストビュー" },
   { title: "会社紹介動画編集", category: "動画編集（3分）" },
 ];
-const ALL_BRAND_INDUSTRIES = Array.from(new Set([...LEGACY_BRIDGE_INDUSTRIES, ...BRAND.industries]));
+const LEGACY_FOOD_INDUSTRIES = [
+  "居酒屋", "カフェ", "ラーメン", "焼肉", "寿司・和食", "イタリアン・フレンチ", "中華",
+  "スイーツ・ベーカリー", "定食・食堂", "カレー・エスニック", "テイクアウト・デリバリー", "キッチンカー",
+];
+const ALL_BRAND_INDUSTRIES = Array.from(new Set([...LEGACY_BRIDGE_INDUSTRIES, ...LEGACY_FOOD_INDUSTRIES, ...BRAND.industries]));
+const LEGACY_INDUSTRIES = [...LEGACY_BRIDGE_INDUSTRIES, ...LEGACY_FOOD_INDUSTRIES].filter((n) => !BRAND.industries.includes(n));
+/** 以前の看板で入っていた参考アカウント（開発用の初期データ・FOOD の許諾アカウント）。NIGHT では外す */
+const LEGACY_REF_HANDLES = [
+  "@higakiyakitori", "@dr.norimoto", "@dragonamasora",
+  "@rire_omotesando", "@torikichi_official", "@force_gym", "@sakura_fudosan",
+];
 
 const CATEGORY_JA: Record<string, string> = {
   kaitori: "買取・リユース",
@@ -54,29 +64,25 @@ function syncRefAccounts(db: Database.Database) {
     "UPDATE ref_accounts SET name=?, industry=?, followers=?, icon_url=?, profile_url=?, video_count=? WHERE id=?"
   );
   const contents = (refSeed as { contents: RefSeedAccount[] }).contents;
-  // 飲食店版（FOOD HATCH）には飲食の参考アカウントだけ入れる。
-  // 美容・不動産などの初期データが入っていたら（看板切替前に起動した場合）取り除く。
-  const wanted = (c: RefSeedAccount) => BRAND.id !== "food" || c.category?.[0] === "food_service";
+  // NIGHT HATCH の参考アカウントは管理画面「TikTok取り込み」から入れる（初期データは空）。
+  // 以前の看板（BRIDGE / FOOD）の初期データが残っていたら取り除く。
   const tx = db.transaction(() => {
-    if (BRAND.id === "food") {
-      const drop = [
-        ...contents.filter((c) => !wanted(c)).map((c) => "@" + c.userId),
-        "@dr.norimoto",
-        "@dragonamasora",
-        // 開発用のミニ初期データのうち飲食以外
-        "@rire_omotesando",
-        "@force_gym",
-        "@sakura_fudosan",
-      ];
-      const delVideos = db.prepare("DELETE FROM ref_videos WHERE account_id IN (SELECT id FROM ref_accounts WHERE handle = ?)");
-      const delAccount = db.prepare("DELETE FROM ref_accounts WHERE handle = ?");
-      for (const h of drop) {
-        delVideos.run(h);
-        delAccount.run(h);
-      }
+    const drop = [
+      ...LEGACY_REF_HANDLES,
+      // 以前の ref-seed.json に入っていた、飲食・美容などの初期データ（source が空で、以前の看板の業種のもの）
+      ...(db
+        .prepare(`SELECT handle FROM ref_accounts WHERE source = '' AND industry IN (${LEGACY_INDUSTRIES.map(() => "?").join(",")})`)
+        .all(...LEGACY_INDUSTRIES) as { handle: string }[]).map((r) => r.handle),
+    ];
+    const delStats = db.prepare("DELETE FROM ref_video_stats WHERE video_id IN (SELECT v.id FROM ref_videos v JOIN ref_accounts a ON a.id = v.account_id WHERE a.handle = ?)");
+    const delVideos = db.prepare("DELETE FROM ref_videos WHERE account_id IN (SELECT id FROM ref_accounts WHERE handle = ?)");
+    const delAccount = db.prepare("DELETE FROM ref_accounts WHERE handle = ?");
+    for (const h of drop) {
+      delStats.run(h);
+      delVideos.run(h);
+      delAccount.run(h);
     }
     for (const c of contents) {
-      if (!wanted(c)) continue;
       const handle = "@" + c.userId;
       const industry = CATEGORY_JA[c.category?.[0] ?? ""] ?? "その他";
       const icon = c.userIcon?.url ?? "";
@@ -92,6 +98,20 @@ function syncRefAccounts(db: Database.Database) {
   });
   tx();
 }
+
+/** TikTok取り込みの検索ワード（業態タブと対応）。NIGHT_HATCH_DESIGN.md 9 の案 */
+export const TIKTOK_SEARCH_SEED: [string, string][] = [
+  ["バーテンダー カクテル", "バー"],
+  ["ショットバー", "バー"],
+  ["バー 開店準備", "バー"],
+  ["ガールズバー 求人", "ガールズバー"],
+  ["スナック ママ", "スナック"],
+  ["キャバクラ 体入", "キャバクラ"],
+  ["キャバクラ 求人", "キャバクラ"],
+  ["キャバクラ イベント", "キャバクラ"],
+  ["ラウンジ 求人", "ラウンジ"],
+  ["ナイトワーク 求人", "キャバクラ"],
+];
 
 // デプロイ先では永続ボリュームのパスを DATA_DIR で指定する（例: /data）
 export const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
@@ -351,12 +371,12 @@ function init(db: Database.Database) {
     }
 
     const insertNg = db.prepare("INSERT INTO ng_words (id, word) VALUES (?, ?)");
-    for (const w of ["絶対に儲かる", "必ず痩せる", "日本一", "完治"]) {
+    for (const w of ["絶対に稼げる", "日本一", "ポッキリ", "高校生可", "18歳未満可", "即日高収入保証"]) {
       insertNg.run(crypto.randomUUID(), w);
     }
 
     const insertChat = db.prepare("INSERT INTO chat_messages (id, from_id, to_id, body) VALUES (?, ?, ?, ?)");
-    insertChat.run(crypto.randomUUID(), freelancerId, clientId, "はじめまして、佐藤です。チラシ案件について質問があります。");
+    insertChat.run(crypto.randomUUID(), freelancerId, clientId, "はじめまして、佐藤です。求人原稿の件で、待遇について質問があります。");
     insertChat.run(crypto.randomUUID(), clientId, freelancerId, "ありがとうございます。何でも聞いてください。");
   }
 
@@ -417,6 +437,8 @@ function init(db: Database.Database) {
   // AI利用上限（プラン）と追加購入分
   if (!userCols.includes("plan")) db.exec("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'light'");
   if (!userCols.includes("ai_extra")) db.exec("ALTER TABLE users ADD COLUMN ai_extra INTEGER NOT NULL DEFAULT 0");
+  // デモの発注者はスタンダードプラン（採用と集客の両方を回す、いちばん多い想定）で見せる
+  if (count === 0) db.prepare("UPDATE users SET plan = 'standard' WHERE email = 'client@example.com'").run();
   db.exec(`
   CREATE TABLE IF NOT EXISTS ai_usage (
     id TEXT PRIMARY KEY,
@@ -571,56 +593,8 @@ function init(db: Database.Database) {
     );
   `);
 
-  const licensed = db.prepare("SELECT COUNT(*) AS c FROM ref_accounts WHERE handle = '@higakiyakitori'").get() as { c: number };
-  if (licensed.c === 0) {
-    const insertLicensed = db.prepare(
-      "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio) VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    insertLicensed.run(crypto.randomUUID(), "焼鳥どん 日垣兄弟", "@higakiyakitori", "飲食", 318400, "全席禁煙の全部大歓迎焼鳥屋 / お子様・お一人様歓迎 店舗一覧・ご予約・FC・通販は下記リンク");
-    if (BRAND.id !== "food") {
-      insertLicensed.run(crypto.randomUUID(), "クマ取り名人・則本翔", "@dr.norimoto", "美容クリニック", 421700, "CHINOWA CLINIC院長 / 表参道・原宿 ひたすらクマを消す人！症例一覧・ご予約はInstagramから");
-      insertLicensed.run(crypto.randomUUID(), "ドラゴン細井 / 美容外科医", "@dragonamasora", "美容クリニック", 238100, "渋谷アマソラクリニック院長 / 医学部受験塾MEDUCATE塾長 形成外科・美容外科医");
-    }
-  }
-
-  const refCount = (db.prepare("SELECT COUNT(*) AS c FROM ref_accounts").get() as { c: number }).c;
-  if (refCount === 0) {
-    const insertAccount = db.prepare(
-      "INSERT INTO ref_accounts (id, name, handle, industry, followers, bio) VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    const insertVideo = db.prepare(
-      "INSERT INTO ref_videos (id, account_id, caption, url, hue) VALUES (?, ?, ?, ?, ?)"
-    );
-    const seed: [string, string, string, number, string, [string, number][]][] = [
-      ["ヘアサロン RIRE 表参道", "@rire_omotesando", "美容室", 284000, "表参道の髪質改善サロン / ビフォーアフター動画が人気",
-        [["【衝撃】ブリーチ3回の髪がこうなる…髪質改善ビフォーアフター", 280],
-         ["美容師が絶対にやらないNGヘアケア3選", 310],
-         ["「前髪失敗した…」を3分で直す方法", 340],
-         ["\u00a5300のアレで艶髪になる裏ワザ", 20],
-         ["朝5分でできる巻き髪ルーティン", 50]]],
-      ["炭火焼鳥 とり吉", "@torikichi_official", "飲食", 156000, "全席禁煙の焼鳥屋 / 仕込み動画とまかない飯でバズり中",
-        [["開店前の仕込み、全部見せます【焼鳥屋の朝】", 25],
-         ["まかない対決！新人vs大将", 45],
-         ["焼鳥屋が教える家庭で失敗しない焼き方", 15],
-         ["常連さんしか知らない裏メニュー3選", 0]]],
-      ["パーソナルジム FORCE", "@force_gym", "フィットネス", 198000, "続けられるダイエット / トレーナーの掛け合いが人気",
-        [["【検証】1ヶ月毎日スクワットしたら脚はこうなる", 200],
-         ["ダイエット中に絶対食べていいコンビニ飯5選", 150],
-         ["トレーナーが太っていた頃の話", 260],
-         ["運動ゼロで痩せる方法を聞かれた時の返答", 230]]],
-      ["さくら不動産 中央店", "@sakura_fudosan", "不動産", 92000, "内見動画とお部屋探しの豆知識 / 若手社員が出演",
-        [["家賃5万円で駅徒歩3分の部屋、中はこうなってます", 210],
-         ["不動産屋が教える内見で絶対見るべき3ヶ所", 190],
-         ["やばい物件の見分け方【実例あり】", 250]]],
-    ];
-    for (const [name, handle, industry, followers, bio, videos] of seed) {
-      const accountId = crypto.randomUUID();
-      insertAccount.run(accountId, name, handle, industry, followers, bio);
-      for (const [caption, hue] of videos) {
-        insertVideo.run(crypto.randomUUID(), accountId, caption, "", hue);
-      }
-    }
-  }
+  // 参考アカウント・動画の初期データは入れない（FOOD 時代の飲食店アカウントは syncRefAccounts で掃除する）。
+  // お手本動画は管理画面「TikTok取り込み」から追加する（spec 9: 取り込み後は全件目視）。
 }
 
 /**
@@ -630,13 +604,18 @@ function init(db: Database.Database) {
  */
 function seedIndustries(db: Database.Database) {
   // 看板切替前に入った、別の看板のデモ案件を消す（提出物などが無いものだけ）
-  if (BRAND.id === "food") {
+  {
     const delDemo = db.prepare(
       `DELETE FROM projects WHERE title = ? AND category = ?
          AND id NOT IN (SELECT project_id FROM deliverables)`
     );
     for (const pj of LEGACY_BRIDGE_DEMO_PROJECTS) delDemo.run(pj.title, pj.category);
-    // 飲食版のデモ案件が無ければ、デモクライアントに入れる
+    // FOOD 版のデモ案件（テスト食堂）
+    db.prepare(
+      `DELETE FROM projects WHERE title LIKE 'テスト食堂の%'
+         AND id NOT IN (SELECT project_id FROM deliverables)`
+    ).run();
+    // NIGHT 版のデモ案件が無ければ、デモクライアントに入れる
     const client = db.prepare("SELECT id FROM users WHERE email = 'client@example.com'").get() as { id: string } | undefined;
     if (client) {
       const exists = db.prepare("SELECT COUNT(*) AS c FROM projects WHERE title = ? AND category = ?");
@@ -665,6 +644,14 @@ function seedIndustries(db: Database.Database) {
     const insIndustry = db.prepare("INSERT OR IGNORE INTO industries (id, name, sort_order) VALUES (?, ?, ?)");
     BRAND.industries.forEach((name, i) => insIndustry.run(crypto.randomUUID(), name, (i + 1) * 10));
     db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('industries_seeded_for', ?)").run(BRAND.id);
+  }
+  // TikTok取り込みの検索ワードの初期値（NIGHT_HATCH_DESIGN.md 9）。1回だけ入れる。
+  // 取り込みは APIFY_TOKEN を入れてから管理画面で手動で行う（初回の自動取り込みはしない。scheduler.ts 参照）。
+  const querySeeded = db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_queries_seeded_for'").get() as { value: string } | undefined;
+  if (querySeeded?.value !== BRAND.id) {
+    const insQuery = db.prepare("INSERT OR IGNORE INTO tiktok_queries (id, kind, value, industry) VALUES (?, 'search', ?, ?)");
+    for (const [value, industry] of TIKTOK_SEARCH_SEED) insQuery.run(crypto.randomUUID(), value, industry);
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_queries_seeded_for', ?)").run(BRAND.id);
   }
   // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
   db.prepare(

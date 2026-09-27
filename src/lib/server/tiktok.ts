@@ -390,7 +390,7 @@ export function isClassifying() {
  * 自動取り込みで入ったアカウントを AI で審査し、
  * 「その業種の事業者・店舗・専門家の公式/個人アカウント」だけを残す。
  * 一般ユーザーの体験投稿、まとめ・切り抜き、ニュース、業種違い、芸能人は外す。
- * 残したものには persona（例: 福岡のネイルサロン公式）を付けて一覧に出す。
+ * 残したものには persona（例: 新橋のショットバー公式）を付けて一覧に出す。
  */
 export async function classifyImported(maxAccounts = 600): Promise<{ checked: number; removed: number }> {
   if (!activeProvider()) return { checked: 0, removed: 0 };
@@ -410,10 +410,10 @@ export async function classifyImported(maxAccounts = 600): Promise<{ checked: nu
       .all(maxAccounts) as { id: string; handle: string; name: string; bio: string; industry: string; followers: number; captions: string | null }[];
     if (rows.length === 0) return { checked: 0, removed: 0 };
 
-    const system = `あなたは中小企業向けSNS支援サービスの審査係。TikTokアカウントが、指定された業種の「事業者・店舗・またはその業界で働く専門家（美容師、ネイリスト、トレーナー、営業担当、職人など）」の公式または個人アカウントで、中小企業がお手本にできるものかを判定する。
-残す(keep=true): 店舗・会社・院の公式、オーナーやスタッフ、その業界のプロが自分の仕事や店を発信しているもの。
-外す(keep=false): 一般ユーザーの体験談・レビュー、まとめ・切り抜き・転載、ニュース・メディア、業種と関係ない、芸能人・インフルエンサーのタイアップだけ、海外の投稿者、内容が判断できない。
-keep=true のときは persona に「福岡のネイルサロン公式」「大阪の焼肉店の店主」のように、地域（分かれば）＋業態＋立場を20字以内で書く。`;
+    const system = `あなたは夜のお店（バー・ガールズバー・スナック・キャバクラ・ラウンジ・会員制クラブ）向けSNS支援サービスの審査係。TikTokアカウントが、指定された業態の「店舗・オーナー・ママ・バーテンダー・黒服・キャストなど、そのお店で働く人」の公式または個人アカウントで、夜のお店がお手本にできるものかを判定する。
+残す(keep=true): 店舗・グループの公式、オーナー・ママ・バーテンダー・スタッフ・キャストが自分の仕事やお店を発信しているもの（接客・カクテル・開店準備・イベント・求人など）。
+外す(keep=false): 性的な表現や露出を売りにした投稿、未成年に見える出演者がいるもの、ホストクラブ、性風俗店、スカウト・求人紹介業者、一般客の体験談・レビュー、まとめ・切り抜き・転載・暴露系、ニュース・メディア、業態と関係ない、芸能人・インフルエンサーのタイアップだけ、海外の投稿者、内容が判断できない。迷ったら外す。
+keep=true のときは persona に「新橋のショットバー公式」「銀座のラウンジのママ」のように、地域（分かれば）＋業態＋立場を20字以内で書く。`;
     const schema = {
       type: "object",
       properties: {

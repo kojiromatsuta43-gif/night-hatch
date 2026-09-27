@@ -146,8 +146,10 @@ async function tick() {
       if (elapsed < intervalDays) return;
     } else {
       // 初回は手動の取り込み日を起点にする（入れた直後にもう一度回さない）
+      // 一度も手動で取り込んでいなければ自動では回さない（取り込み後は全件目視するため、最初は管理画面から）
       const lastSync = (db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_last_sync_at'").get() as { value: string } | undefined)?.value;
-      if (lastSync && (Date.now() - new Date(lastSync).getTime()) / 86400000 < intervalDays) return;
+      if (!lastSync) return;
+      if ((Date.now() - new Date(lastSync).getTime()) / 86400000 < intervalDays) return;
     }
     const count = (db.prepare("SELECT COUNT(*) AS c FROM tiktok_queries WHERE active = 1").get() as { c: number }).c;
     if (count === 0) return;

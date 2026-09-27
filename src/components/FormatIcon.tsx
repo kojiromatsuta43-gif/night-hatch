@@ -137,7 +137,7 @@ export default function FormatIcon({ category }: { category: string }) {
       );
     case "テレアポ架電": // 受話器
     case "テレアポ営業":
-    case "宴会・法人向けテレアポ営業":
+    case "貸切・二次会の法人テレアポ":
       return (
         <Frame>
           <path d="M20 8c-3 0-6 2-6 6 0 14 12 26 26 26 4 0 6-3 6-6l-2-6-8 2-3-3-5-5 2-8-6-2z" fill={HIVE} />

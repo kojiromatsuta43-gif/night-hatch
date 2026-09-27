@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/server/auth";
 import { getDb } from "@/lib/server/db";
+import { ensureSalesTables } from "@/lib/server/sales";
 
 export async function GET() {
   const user = await currentUser();
@@ -11,6 +12,8 @@ export async function GET() {
   // 営業リストのメニューは、営業系の案件やリストがある人にだけ見せる
   let hasSales = user.role === "admin";
   if (!hasSales) {
+    // 新しいDB（初回起動）では営業リストの表がまだ無いので先に作る
+    ensureSalesTables();
     const own = db.prepare("SELECT 1 FROM sales_leads WHERE user_id = ? LIMIT 1").get(user.id);
     const proj = db
       .prepare(

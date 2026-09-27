@@ -17,7 +17,7 @@ export const MASCOT: MascotTheme = {
   name: "ハッチ",
   pointName: "ハニーP",
   pointEmoji: "🍯",
-  greeting: "こんにちは、ハッチです！",
+  greeting: "おはようございます、ハッチです！",
   thinking: "ハッチが考えています",
   agentTitle: "ハッチのAIエージェント",
   talkTo: "ハッチに話しかける",

@@ -106,13 +106,13 @@ export function PlatformIcon({ p, className = "h-4 w-4" }: { p: Platform; classN
 /** メニュー名 → 向いている媒体 */
 export function platformsFor(category: string): Platform[] {
   const c = category;
-  if (/ショート動画|台本作成（ショート）|採用向けショート/.test(c)) return ["tiktok", "instagram", "youtube"];
+  if (/ショート動画|台本作成（ショート）|キャスト紹介動画/.test(c)) return ["tiktok", "instagram", "youtube"];
   if (/TikTok/.test(c)) return ["tiktok"];
   if (/Instagram|カルーセル|投稿文/.test(c)) return ["instagram"];
   if (/動画編集（3分）|台本作成（長尺）|サムネイル/.test(c)) return ["youtube"];
   if (/LINE/.test(c)) return ["line"];
   if (/MEO|Googleマップ|口コミ/.test(c)) return ["google"];
-  if (/HP|LP|ホームページ|SEO|グルメサイト|デリバリー/.test(c)) return ["web"];
+  if (/HP|LP|ホームページ|SEO|ポータル/.test(c)) return ["web"];
   if (/テレアポ|架電/.test(c)) return ["phone"];
   if (/チラシ|パンフ|ポスター/.test(c)) return ["flyer"];
   if (/求人|採用|リクルート/.test(c)) return ["recruit"];

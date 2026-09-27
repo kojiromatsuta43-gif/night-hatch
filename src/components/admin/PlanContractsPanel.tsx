@@ -20,7 +20,7 @@ type Row = {
 
 /**
  * 契約管理。
- * 銀行振込・補助金経由など Stripe を通らない契約はここで「契約中」にする。
+ * 銀行振込など Stripe を通らない契約はここで「契約中」にする。
  * 契約中のお客様には毎月自動でハニーPが付与され、繰越期限で失効する。
  */
 export default function PlanContractsPanel() {
@@ -56,7 +56,7 @@ export default function PlanContractsPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-food-200 bg-food-50/50 p-4 text-sm text-hive-900">
+      <div className="rounded-xl border border-night-200 bg-night-50/50 p-4 text-sm text-hive-900">
         「契約中」にすると、その場で今月分のハニーPが付与され、以降は毎月自動で付与されます。
         繰越期限（ライト3ヶ月・スタンダード6ヶ月・プレミアム12ヶ月）を過ぎた分は自動で失効します。
         カード決済（Stripe）で申し込んだお客様は自動で契約中になります。
