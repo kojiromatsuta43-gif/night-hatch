@@ -24,7 +24,7 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 ### 2. プロジェクト作成
 
 1. 「New Project」→「Deploy from GitHub repo」
-2. `create-works` を選択
+2. `night-hatch` を選択
 3. Railwayが自動でNext.jsを検出し、ビルドが始まります
 
 ### 3. 永続ボリュームを追加（重要）
@@ -48,14 +48,13 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 | `CHAT_VIDEO_KEEP_DAYS` | 任意（既定 30） | チャットに添付した動画を残す日数。過ぎたものは1日1回自動削除（納品ファイルは対象外） |
 | `MAX_UPLOAD_MB` | 任意（既定 2048） | 素材・納品ファイルの1ファイル上限。8MBずつ分割して受け取るのでメモリは食わない。ボリュームの空きが300MBを切ると受け付けない |
 | `ANTHROPIC_MODEL` / `GEMINI_MODEL` | 任意 | 用途に関係なく一括でモデル名を上書きしたいとき（裏方は除く）。通常は管理画面から設定する |
-| `NEXT_PUBLIC_APP_BRAND` | `bridge` または `food` | 看板の切替（未設定なら BRIDGE HATCH） |
 | `APIFY_TOKEN` | Apify の API トークン | TikTok 参考動画の自動取り込みを使う場合 |
 | `TIKTOK_AUTO_SYNC` | `on`（既定）/ `off` | 毎日の自動取り込みを止めたいとき |
 | `TIKTOK_SYNC_HOUR` | `4`（既定・日本時間） | 自動取り込みの時刻 |
 | `TIKTOK_SYNC_INTERVAL_DAYS` | `7`（既定） | 自動取り込みの間隔（日） |
 | `TIKTOK_RESULTS_PER_QUERY` | `20`（既定） | 設定1件あたりの取り込み本数 |
 
-`PORT` はRailwayが自動で設定するため、こちらで指定する必要はありません。
+`PORT` は **`3000` を明示して入れてください**（NIGHT HATCH のサービスでは `PORT=3000` が必要。Dockerfile の EXPOSE 3000 と合わせる）。
 
 ### 5. 公開URLを発行
 
@@ -87,24 +86,22 @@ https://railway.com → GitHubアカウントでサインアップ（そのま�
 - **ログを見たい**：Railwayの「Deployments」→ 該当デプロイ →「View Logs」
 - **停止したい**：「Settings」→「Danger」→ サービスを削除、または一時停止
 
-## FOOD HATCH（飲食店版）を別サービスとして立てる
+## NIGHT HATCH を立てる（新リポジトリ・新サービス）
 
-BRIDGE HATCH と FOOD HATCH は同じコードで、`NEXT_PUBLIC_APP_BRAND` の値だけで看板・制作メニュー・業種タブ・AIの口調が切り替わります。
-飲食店版は **同じリポジトリから2つ目のサービス** を作ります（DBもボリュームも別になるので、顧客データは混ざりません）。
+NIGHT HATCH は FOOD HATCH のコピーから作った **別リポジトリ・別サービス** です（看板の切替変数は使いません。コードは常に NIGHT）。
 
-1. Railway のプロジェクト画面で「+ New」→「GitHub Repo」→ 同じ `create-works` リポジトリを選ぶ
-2. できたサービスの名前を `food-hatch` に変える（Settings → Service Name）
+1. GitHub に新リポジトリ `kojiromatsuta43-gif/night-hatch` を作って push
+2. Railway で「+ New」→「GitHub Repo」→ `night-hatch` を選ぶ。サービス名を `night-hatch` に
 3. 手順3と同じく Volume を追加（Mount path `/data`）
 4. Variables に以下を入れて **Deploy** を押す
-   - `NEXT_PUBLIC_APP_BRAND` = `food` ← これが看板の切替
-   - `DATA_DIR` = `/data`、`HOSTNAME` = `0.0.0.0`
-   - `GEMINI_API_KEY`（BRIDGE 側と同じ値でよい）
-   - Stripe を使うなら `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`（同じ Stripe アカウントでよい。Webhook は FOOD 側のURLでもう1本登録する）
+   - `PORT` = `3000`（必須）、`DATA_DIR` = `/data`、`HOSTNAME` = `0.0.0.0`
+   - `GEMINI_API_KEY` / `ANTHROPIC_API_KEY`（FOOD 側と同じ値でよい）
+   - Stripe を使うなら `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`（Webhook は NIGHT 側のURLでもう1本登録する）
    - `APP_PUBLIC_URL` = 手順5で発行したURL
-5. Settings → Networking → Generate Domain（`food-hatch-production.up.railway.app` のようなURL）
+   - お手本動画を取り込むなら `APIFY_TOKEN`
+5. Settings → Networking → Generate Domain（`night-hatch-production.up.railway.app` のようなURL）
 
-`NEXT_PUBLIC_` 付きの変数はビルド時に埋め込まれるので、値を変えたら必ず再デプロイしてください。
-制作メニューの中身は `src/lib/brands/food.ts`（飲食）と `src/lib/brands/bridge.ts`（BRIDGE）にあり、単価や質問項目はここを直せば両方の画面に反映されます。
+制作メニューの中身は `src/lib/brands/night.ts`、プランと値段は `src/lib/points.ts` にあり、ここを直せば全画面に反映されます。
 
 ## TikTok 参考動画の自動取り込み（Apify）
 

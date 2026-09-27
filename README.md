@@ -1,95 +1,94 @@
-# FOOD HATCH
+# NIGHT HATCH
 
-飲食店専用の発注・管理プラットフォーム（2026-09-05 に BRIDGE HATCH から分離）。
-リポジトリ: `kojiromatsuta43-gif/food-hatch`。共通の仕組みの改修は BRIDGE 側で先に入れ、`git fetch bridge && git merge bridge/main` で取り込む。
-本番: https://food-hatch-production.up.railway.app（Railway service `food-hatch`）
+**夜のお店の採用と集客を、ハッチと一緒に。**
 
-制作案件の発注・管理プラットフォーム。参考動画からの発注、AIによる台本生成、案件進行管理、書類発行までを1つにまとめたデモアプリです。
+バー・ガールズバー・スナック・キャバクラ・ラウンジ・会員制クラブ専用の、制作の発注・管理プラットフォームです。
+お店の人は「困りごと」からメニューを選んで頼むだけ。求人原稿・体入動画・ショート動画・Googleマップ整備・イベント告知・料金システム表・法人の貸切営業などを、ハニーP（ポイント）で発注できます。
 
-## セットアップ
+- 事業設計: `NIGHT_HATCH_DESIGN.md`（2026-09-28 初版。プロジェクトの資料側にあります）
+- リポジトリ: `kojiromatsuta43-gif/night-hatch`（新規）
+- 本番: Railway service `night-hatch`（Variables に `PORT=3000` が必要。手順は `DEPLOY.md`）
+
+## BRIDGE / FOOD との関係
+
+| | BRIDGE HATCH | FOOD HATCH | NIGHT HATCH |
+|---|---|---|---|
+| 対象 | 中小企業 | 飲食店 | 夜のお店（接待あり・なし両方） |
+| 料金 | 補助金前提のプランあり | 同左 | **補助金なしの月額サブスクのみ** |
+| デザイン | 黒×黄・角なし太線 | 暖簾とテラコッタ | 夜の帳とシャンパン（ダーク・ワイン×シャンパンゴールド） |
+
+- 仕組み（ハニーP・メニュー発注・台本AI・案件管理・フォーム営業・請求書など）は FOOD HATCH（コミット 0dc172b）から派生
+- キャラクター「ハッチ」とハニーP（1ハニーP＝1,200円・税別）は3つで共通。ハッチは白シャツの襟・黒ベスト・金の蝶ネクタイ・額の三日月の夜仕様
+- 看板の切替機能はありません。コードは常に NIGHT（`src/lib/brand.ts` → `src/lib/brands/night.ts`）
+
+## コンプライアンス（このルールを外すと事業が成り立たない）
+
+画面・同意事項・AI（ハッチ）のプロンプトの3か所に入れてあります。
+
+1. **補助金の話は一切しない** — 風営法第2条の営業は補助金の対象外。画面にも補助金の記載はありません
+2. **18歳未満の出演・採用に関わる制作はしない**。求人には必ず「18歳未満・高校生不可」と、職業安定法の的確表示
+3. **性的な表現・露出を売りにした制作はしない**（SNSの規約違反によるアカウント停止も避ける）
+4. **色恋営業（恋愛感情に乗じた来店・注文の要求）・料金を誤認させる表現・客引き・スカウトの文面は作らない**（2025年改正風営法）。「お礼・来店案内の定型文」はお礼とイベント案内だけ
+5. 風営法の許可（接待ありは1号許可）・深夜酒類提供飲食店の届出を受けている店舗に限る（発注フォームで必ず聞く）
+6. 出演者本人の同意は店側で取る／反社会的勢力と関係がない
+7. 修正2回まで無料、集客・採用の結果は保証しない
+
+ホストクラブ・性風俗関連特殊営業は当面扱いません。お手本動画（TikTok取り込み）は、取り込み後に**全件目視**で性的な表現・未成年に見える出演・まとめ系を削除してください（AI審査だけでは残ります）。
+
+## どこに何があるか
+
+| 変えたいもの | ファイル |
+|---|---|
+| メニュー・ハニーP・ヒアリング項目・同意事項・AIの設定 | `src/lib/brands/night.ts` |
+| 月額プラン（ライト3万/25P・スタンダード12万/120P・プレミアム25万/250P） | `src/lib/points.ts` |
+| 今月のおすすめ（12ヶ月） | `src/lib/seasonal.ts` |
+| 配色（ダークテーマのトークン） | `src/app/globals.css` |
+| ハッチ・イラスト | `src/components/BeeLogo.tsx`、`src/components/Illust.tsx` |
+| TikTok検索語の初期値 | `src/lib/server/db.ts` の `TIKTOK_SEARCH_SEED` |
+
+### 配色のしくみ
+
+既存の画面は明るい地の前提で書かれているため、`slate-*` / `hive-*` / `cream-*` / `night-*`（旧 `food-*`）と状態色のスケールを**反転**しています（小さい番号＝暗い面、大きい番号＝明るい文字）。
+新しく書くときは「暗い面 = `ink-*`」「主色ボタン = `bg-night-500 text-white`」「線・飾り = `gold-*`」「ハニーP = `honey-*`」を使ってください。`bg-slate-900` のような「濃い面に白文字」の書き方は反転で明るい面になるので使いません。
+請求書の印刷シートは `.paper` クラスで明るい配色に戻しています。
+
+## 開発
 
 ```bash
-npm install
-cp .env.local.example .env.local   # APIキーを記入（下記参照）
-npm run dev
+npm install          # better-sqlite3 は同梱の prebuild を使う
+npm run dev          # http://localhost:3000
 ```
 
-http://localhost:3000 → デモアカウントでログイン
+`data/app.db` は初回起動時に自動生成・シードされます（消すと作り直し）。デモアカウントのパスワードはすべて `demo1234`。
 
 | アカウント | ロール | 用途 |
 |---|---|---|
-| client@example.com | client | 発注者。案件登録・AIエージェント |
-| creator@example.com | freelancer | フリーランス側 |
-| admin@example.com | admin | 管理画面（ユーザー / NGワード / チャット監視 / 参考動画インポート） |
+| client@example.com | client | デモのお店（テストラウンジ・スタンダードプラン） |
+| creator@example.com | freelancer | 制作者 |
+| admin@example.com | admin | 管理画面（ユーザー / 契約 / NGワード / チャット監視 / 参考アカウント / TikTok取り込み / AI設定） |
 
-## APIキー
+AI機能は `GEMINI_API_KEY` または `ANTHROPIC_API_KEY` を `.env.local` に入れると動きます（未設定でもアプリは起動）。
 
-`.env.local` に以下のいずれかを設定します（キー未設定でもアプリは起動し、AI機能のみ無効になります）。
+## お手本動画（TikTok取り込み）
 
-| 変数 | 用途 | 取得先 |
-|---|---|---|
-| `GEMINI_API_KEY` | AIエージェント・ブランドプロファイル抽出・動画分析 | https://aistudio.google.com/apikey （無料枠あり） |
-| `ANTHROPIC_API_KEY` | 同上（設定時は会話・台本・抽出が Claude Sonnet 5 に。用途別の割り当ては管理画面「AI設定」） | https://platform.claude.com/ |
+初期状態ではお手本動画は0件です（FOOD の飲食店アカウントは入れていません）。画面には「お手本動画は管理画面の『TikTok取り込み』から追加できます」と出ます。
 
-プロバイダの切り替えは `src/lib/server/llm.ts` の `activeProvider()` に集約されています。
+1. Railway に `APIFY_TOKEN` を入れる（クラウドの作業環境からは取得できません）
+2. 管理画面 → TikTok取り込み。検索語の初期値（「キャバクラ 体入」「ショットバー」など10件）が業態つきで入っています
+3. 「今すぐ全部取り込む」→ 「AIでお手本を審査」→ **全件目視**して不適切なものを削除
+4. 1回目を手動で取り込んだあとは、週1回自動で更新されます（手動で1度も取り込んでいなければ自動では動きません）
 
 ## 技術構成
 
-- **Next.js 16**（App Router / Turbopack）、TypeScript、Tailwind CSS v4
-- **better-sqlite3** — DBファイルは `data/app.db`（Git管理外。初回起動時に自動生成・シード）
-- **認証** — Cookieセッション（scrypt でパスワードハッシュ）。`src/lib/server/auth.ts`
-- **AI** — Gemini / Claude を切り替え可能な抽象レイヤ（`src/lib/server/llm.ts`）
+- Next.js 16（App Router / Turbopack）、TypeScript、Tailwind CSS v4（`@theme` トークン）
+- better-sqlite3（`DATA_DIR`、既定 `data/`）
+- 認証は Cookie セッション（scrypt）。AI は Gemini / Claude を切り替え可能（`src/lib/server/llm.ts`）
+- 書体: 本文 Zen Kaku Gothic New、見出し Shippori Mincho B1、英字ロゴ Cormorant Garamond（Google Fonts）
 
-## ディレクトリ
+## デプロイ
 
-```
-src/
-├── app/
-│   ├── api/              APIルート（projects, agent, ref-accounts, admin など）
-│   ├── order/            案件登録: 参考アカウント一覧 → 動画選択
-│   ├── order/create/     発注ウィザード（3ステップ）
-│   ├── projects/         案件一覧（カンバン / テーブル）
-│   ├── agent/            AIエージェント（会話型台本生成）
-│   ├── brand-profile/    ブランドプロファイル（AI抽出付き）
-│   ├── video-analysis/   参考動画のAI分析
-│   ├── issue/            発注書・請求書・取引先
-│   ├── admin/            管理画面
-│   └── guide/            デモの歩き方
-├── components/           AppShell（認証ガード）, Sidebar
-└── lib/server/           db.ts（スキーマ・シード）, auth.ts, llm.ts
-```
+`DEPLOY.md` を参照。要点:
 
-## 看板の切替（BRIDGE HATCH / FOOD HATCH）
-
-同じコードで2つのサービスを動かします。`NEXT_PUBLIC_APP_BRAND=food` で飲食店版（FOOD HATCH）になり、
-名前・制作メニュー・業種タブ・AIエージェントの口調とプロンプト集が切り替わります。
-定義は `src/lib/brands/bridge.ts` と `src/lib/brands/food.ts`、共通の型は `src/lib/brand-types.ts`。
-メニューに `questions` を書くと発注フォームの詳細ヒアリングに自動で出ます。`quantity` を書くと件数×単価のメニュー（テレアポ営業）になります。
-
-## TikTok 参考動画の自動取り込み
-
-`APIFY_TOKEN` を設定すると、管理画面「TikTok取り込み」から @ハンドル／検索ワード／#タグ を登録して動画と再生数を取り込めます（`src/lib/server/tiktok.ts`）。
-毎日の自動更新は `src/instrumentation.ts` → `src/lib/server/scheduler.ts`。再生数の履歴は `ref_video_stats`、「今週伸びた動画」は `/api/ref-videos/trending`。
-
-## 主な機能
-
-- **参考動画からの発注** — 87アカウント・約1,400本のTikTok動画から選び、発注フォームに引き継ぎ。TikTok公式埋め込みで再生可能
-- **AIエージェント** — 会話で台本生成（フック / 本編 / CTA構成）。NGワード自動チェック、ブランドプロファイル参照
-- **ブランドプロファイル** — 資料テキストからAIが「確定情報 / スタンス / NG事項」を構造化抽出。以降の生成でこの情報を保持
-- **案件管理** — 未公開 → 募集中 → 制作待ち → フィードバック → 完了 のカンバン
-- **ポイント** — 案件登録時に消費、購入はモック（Stripe差し替え前提）
-- **管理画面** — ユーザー一覧、NGワード管理、チャット監視（NGワード検出をハイライト）、参考動画の一括インポート
-
-## 参考動画データについて
-
-`data/app.db` はGit管理外のため、クローン直後は参考アカウントに動画が入っていません。
-
-管理画面（admin でログイン）→「参考アカウント」タブ →「動画を一括インポート」で取り込めます。取得元は `SOURCE_CMS_BASE` 環境変数で変更可能です（`src/app/api/admin/import-videos/route.ts`）。
-
-個別に追加する場合は、同じ画面でTikTokのURLを貼るだけでキャプションとサムネイルが自動取得されます（oEmbed）。
-
-## 既知の制約 / 未実装
-
-- Stripeはテスト環境で運用中（本番切替時は Railway の STRIPE_* をライブ用に差し替え）
-- トレンド動画検索は自社DB（約1,400本）を対象。外部トレンドデータは未接続
-- SQLiteをファイルで持つため、Vercel等のサーバーレス環境には非対応。デプロイ先はRailway / Fly.io / VPS等（永続ボリュームが必要）を想定
+- 新しい GitHub リポジトリ `kojiromatsuta43-gif/night-hatch` に push
+- Railway に新サービス `night-hatch`（Dockerfile ビルド）、Volume を `/data` にマウント
+- Variables: `PORT=3000`（必須）、`DATA_DIR=/data`、`HOSTNAME=0.0.0.0`、AIキー、Stripe、`APP_PUBLIC_URL`、`APIFY_TOKEN`
