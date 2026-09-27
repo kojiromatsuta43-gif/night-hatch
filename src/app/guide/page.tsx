@@ -9,14 +9,14 @@ const STEPS = [
     n: 1,
     title: "参考動画から発注する",
     href: "/order",
-    body: "「このアカウントみたいに作りたい」から始める発注フロー。業界を選び、参考アカウント → 動画を選ぶと、発注フォームに内容が引き継がれます。",
-    highlight: "87アカウント・1,415本の実データを収録",
+    body: "「このアカウントみたいに作りたい」から始める発注フロー。業態を選び、参考アカウント → 動画を選ぶと、発注フォームに内容が引き継がれます。",
+    highlight: "お手本動画は管理画面の「TikTok取り込み」から追加",
   },
   {
     n: 2,
     title: "AIエージェントで台本を作る",
     href: "/agent",
-    body: "「美容クリニックのクマ取り施術を訴求する30秒のTikTok台本を作って」のように話しかけると、フック・本編・CTAまで構成された台本が出力されます。",
+    body: "「体入募集の30秒TikTok台本を作って。ラウンジで、終電上がりOKを伝えたい」のように話しかけると、フック・本編・CTAまで構成された台本が出力されます。",
     highlight: "NGワード自動チェック付き",
   },
   {
@@ -29,7 +29,7 @@ const STEPS = [
     n: 4,
     title: "ブランドプロファイルを登録する",
     href: "/brand-profile",
-    body: "会社概要のテキストを貼ると、AIが「確定情報 / スタンス / NG事項」に自動で振り分け。以降の台本生成でこの情報が守られます。",
+    body: "お店の紹介文や求人原稿を貼ると、AIが「確定情報 / スタンス / NG事項」に自動で振り分け。以降の台本生成でこの情報が守られます。",
     highlight: "AIが数値・固有名詞を改変しません",
   },
   {
@@ -51,14 +51,14 @@ const OTHERS = [
 export default function GuidePage() {
   return (
     <div className="max-w-3xl">
-      <div className="mb-8 rounded-2xl bg-gradient-to-br from-night-400 to-night-500 px-7 py-8 text-hive-900">
+      <div className="mb-8 rounded-2xl bg-gradient-to-br from-night-400 to-night-500 px-7 py-8 text-white">
         <div className="text-sm font-medium opacity-80">デモのご案内</div>
-        <h1 className="mt-1 flex items-center gap-3 text-3xl font-bold">
+        <h1 className="font-latin mt-1 flex items-center gap-3 text-3xl font-bold">
           <Mascot className="h-11 w-11" />
           {BRAND.name}
         </h1>
         <p className="mt-3 text-sm leading-relaxed opacity-90">
-          制作案件の発注・管理プラットフォームのデモ版です。<br />
+          夜のお店（バー・スナック・キャバクラ・ラウンジなど）の採用と集客を支える、制作の発注・管理プラットフォームのデモ版です。<br />
           参考動画からの発注、AIによる台本生成、案件進行管理、書類発行までを1つにまとめています。
         </p>
       </div>

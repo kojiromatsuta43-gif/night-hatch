@@ -74,7 +74,7 @@ export default function CampaignForm({
         <div className="text-[11px] font-normal text-slate-500">使える差し込み: {"{{会社名}} {{代表者}} {{業種}} {{都道府県}} {{自社名}} {{担当者}} {{自社メール}} {{自社電話}} {{自社URL}} {{AI冒頭}}"}</div>
         <textarea value={f.template_text} onChange={(e) => set("template_text", e.target.value)} rows={14} className={`${input} font-mono text-xs`} />
       </label>
-      <label className="block text-xs font-bold">AIへの追加指示（任意）<input value={f.ai_instruction} onChange={(e) => set("ai_instruction", e.target.value)} placeholder="例: 採用課題に寄せる／飲食店向けに集客の話をする" className={input} /></label>
+      <label className="block text-xs font-bold">AIへの追加指示（任意）<input value={f.ai_instruction} onChange={(e) => set("ai_instruction", e.target.value)} placeholder="例: 採用課題に寄せる／近隣企業向けに貸切・二次会の話をする" className={input} /></label>
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="text-xs font-bold">1日の上限件数<input type="number" value={f.daily_limit} onChange={(e) => set("daily_limit", Number(e.target.value))} className={input} /></label>
         <label className="text-xs font-bold">送信時間帯（時）
