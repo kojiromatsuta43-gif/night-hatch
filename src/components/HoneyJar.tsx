@@ -45,7 +45,7 @@ export default function HoneyJar({
       <rect x="12" y={y} width="24" height={48 - y} fill="#FFC62E" clipPath={`url(#${clipId})`} />
       {/* ラベル */}
       <rect x="16" y="27" width="16" height="9" rx="1.2" fill="#1A1524" stroke={GOLD} strokeWidth="0.9" opacity="0.92" />
-      <text x="24" y="33.6" textAnchor="middle" fontSize="5.6" fontWeight="700" fill={GOLD} fontFamily="Cormorant Garamond, serif">HONEY</text>
+      <text x="24" y="33.6" textAnchor="middle" fontSize="4.4" fontWeight="700" fill={GOLD} fontFamily="Georgia, serif">HONEY</text>
       <path d={body} fill="none" stroke={GOLD} strokeWidth="2" strokeLinejoin="round" />
       {/* ガラスの光 */}
       <path d="M16.5 23c0-1.8 0.6-3 1.8-3.9" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity="0.55" />

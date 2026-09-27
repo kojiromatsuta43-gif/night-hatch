@@ -16,7 +16,7 @@ export default function PlatformIcon({
       return (
         <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
           <path
-            fill={c("#111")}
+            fill={c("#F3EDE2")}
             d="M16.5 2h-3v13.2a2.6 2.6 0 1 1-2.2-2.57V9.5a5.8 5.8 0 1 0 5.2 5.77V8.9a6.6 6.6 0 0 0 4 1.35V7.06A3.75 3.75 0 0 1 16.5 2Z"
           />
         </svg>

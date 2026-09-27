@@ -40,8 +40,8 @@ export default function SignInPage() {
         </div>
         <div className="relative my-10 md:my-0">
           <p className="font-latin text-xs text-gold-500">FOR BARS, LOUNGES &amp; CLUBS</p>
-          <p className="mt-2 font-display text-3xl leading-snug md:text-4xl">
-            夜のお店の採用と集客、<br />ハッチに任せてください。
+          <p className="mt-2 font-display text-[28px] leading-snug md:text-4xl">
+            夜のお店の採用と集客、<br className="hidden md:block" />ハッチに任せてください。
           </p>
           <div className="mt-4 h-px w-24 bg-gradient-to-r from-gold-500 to-transparent" aria-hidden="true" />
           <p className="mt-4 max-w-md text-sm leading-relaxed text-hive-700">

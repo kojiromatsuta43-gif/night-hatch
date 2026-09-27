@@ -120,6 +120,8 @@ body {
   color: #F3EDE2;
   font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
 }
+/* 見出し・短い文は文節で折り返す（「採用し／たい」のような切れ方を防ぐ）。対応していないブラウザでは通常の折り返し */
+h1, h2, h3, .font-display, a, button { word-break: auto-phrase; }
 
 /* ── 夜の世界観: 見出しは明朝、面はプラム、線はシャンパンゴールド ──
    見出し（h1/h2）だけ明朝にしてバーのメニューのような上品さを出す。本文はゴシックのまま読みやすく。 */

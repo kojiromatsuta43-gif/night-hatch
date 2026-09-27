@@ -146,7 +146,38 @@ function PointsInner() {
         定価は 1<PointInline />＝{yen(POINT_UNIT_PRICE)}（税別）。スタンダード以上は増量分が付き、1<PointInline />が実質1,000円になります。
         ショート動画は台本5<PointInline />＋編集10<PointInline />＝15<PointInline />で1本です。最低契約期間は6ヶ月（解約は1ヶ月前にご連絡）。
       </p>
-      <div className="mb-2 overflow-x-auto rounded-xl border border-gold-200 bg-white">
+      {/* スマホ: プランをカードで */}
+      <div className="mb-2 space-y-2 sm:hidden">
+        {PLANS.map((pl) => {
+          const mine = me?.plan === pl.id;
+          return (
+            <div key={pl.id} className={`rounded-xl border px-4 py-3 ${mine ? "border-night-400 bg-night-50" : "border-gold-200 bg-white"}`}>
+              <div className="flex items-center gap-2">
+                <span className="font-display text-base font-bold">{pl.name}</span>
+                {pl.id === "standard" && <span className="text-gold-500">★</span>}
+                {mine && <span className="rounded bg-night-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{planActive ? "契約中" : "ご利用中"}</span>}
+                <span className="ml-auto font-bold tabular-nums">{yen(pl.monthly)}<span className="text-[11px] font-normal text-hive-500">／月</span></span>
+              </div>
+              <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-hive-500">
+                <span>毎月 <b className="text-honey-600">{pl.points}</b><PointInline />{pl.bonus > 0 && `（+${pl.bonus}%）`}</span>
+                <span>1<PointInline />{yen(Math.round(pl.monthly / pl.points))}</span>
+                <span>繰越{pl.carryMonths}ヶ月</span>
+                <span>初期費用 {pl.initial > 0 ? yen(pl.initial) : "なし"}</span>
+              </div>
+              {me?.role === "client" && !(mine && planActive) && (
+                <button
+                  onClick={() => subscribe(pl.id)}
+                  disabled={planBusy !== ""}
+                  className="mt-2 w-full rounded-lg border border-gold-300 py-1.5 text-xs font-bold text-gold-600 disabled:opacity-40"
+                >
+                  {planBusy === pl.id ? "移動中..." : "このプランを申込む"}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mb-2 hidden overflow-x-auto rounded-xl border border-gold-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
