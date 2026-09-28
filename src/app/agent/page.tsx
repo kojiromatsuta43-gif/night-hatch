@@ -5,7 +5,7 @@ import Link from "next/link";
 import { marked } from "marked";
 import { api } from "@/lib/client";
 import AiUsage from "@/components/AiUsage";
-import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
+import { HatchPair, Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import MicButton from "@/components/MicButton";
 import ClientOnly from "@/components/ClientOnly";
 import PlatformIcon from "@/components/PlatformIcon";
@@ -243,7 +243,7 @@ function AgentPageInner() {
         <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6">
           {messages.length === 0 && (
             <div className="mx-auto mt-2 max-w-2xl text-center sm:mt-8">
-              <Mascot className="mx-auto h-20 w-20 animate-bee-float" />
+              <span className="flex justify-center"><HatchPair className="h-20 w-20" /></span>
               <div className="relative mx-auto mt-4 inline-block rounded-2xl border border-night-200 bg-night-50 px-6 py-4">
                 <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-night-200 bg-night-50" />
                 <p className="font-display text-xl text-hive-900">{mascot.greeting}</p>

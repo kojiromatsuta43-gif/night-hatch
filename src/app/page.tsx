@@ -12,7 +12,7 @@ import { api } from "@/lib/client";
 import { useMe } from "@/components/AppShell";
 import { BRAND } from "@/lib/brand";
 import { Project } from "@/lib/data";
-import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
+import { HatchPair, Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import HoneyCells from "@/components/HoneyCells";
 import AdminDashboard from "@/components/AdminDashboard";
 import { seasonalPick } from "@/lib/seasonal";
@@ -76,7 +76,7 @@ export default function Home() {
     return (
       <div className="max-w-5xl space-y-8">
         <div className="flex items-end gap-4">
-          <Mascot className="h-16 w-16 shrink-0 animate-bee-float" />
+          <HatchPair className="h-16 w-16" />
           <div className="relative flex-1 rounded-2xl border border-gold-200 bg-white px-5 py-4 shadow-sm">
             <span className="absolute -left-2 bottom-5 h-4 w-4 rotate-45 border-b border-l border-gold-200 bg-white" aria-hidden="true" />
             <p className="font-display text-lg text-hive-900">{greeting(name)}</p>
@@ -112,7 +112,7 @@ export default function Home() {
       {/* あいさつ＋今夜やること */}
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="flex items-end gap-4">
-          <Mascot className="h-20 w-20 shrink-0 animate-bee-float" />
+          <HatchPair className="h-20 w-20" />
           <div className="night-glow relative flex-1 rounded-2xl border border-gold-200 px-5 py-4 shadow-sm">
             <span className="absolute -left-2 bottom-6 h-4 w-4 rotate-45 border-b border-l border-gold-200 bg-white" aria-hidden="true" />
             <p className="font-display text-lg leading-snug text-hive-900">{greeting(name)}</p>

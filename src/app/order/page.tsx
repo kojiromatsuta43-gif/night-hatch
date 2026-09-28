@@ -4,7 +4,7 @@ import { PlatformRow } from "@/components/PlatformIcons";
 import BeeGirl from "@/components/BeeGirl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Mascot, PointInline, PointMark, useMascot } from "@/components/MascotProvider";
+import { HatchPair, Mascot, PointInline, PointMark, useMascot } from "@/components/MascotProvider";
 import { useMe } from "@/components/AppShell";
 import { api } from "@/lib/client";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
@@ -51,7 +51,7 @@ function SimpleOrderTop() {
     <div className="max-w-4xl">
       {/* あいさつ: ハッチくんと吹き出し */}
       <div className="mb-8 flex items-end gap-4">
-        <Mascot className="h-20 w-20 shrink-0 animate-bee-float" />
+        <HatchPair className="h-20 w-20" />
         <div className="relative flex-1 rounded-2xl border border-gold-200 bg-white px-5 py-4 shadow-sm">
           <span className="absolute -left-2 bottom-5 h-4 w-4 rotate-45 border-b border-l border-gold-200 bg-white" aria-hidden="true" />
           <p className="font-display text-lg text-hive-900">おはようございます、{me?.name ?? "ゲスト"}さん。今夜はお店の何を良くしますか？</p>
@@ -334,10 +334,10 @@ function FullOrderTop() {
           >
             迷ったら{mascot.consult} →
           </Link>
-          {/* 右の余白: ハッチ嬢（ここだけ） */}
-          <span className="hidden shrink-0 flex-col items-center lg:flex" title="ハッチ嬢">
+          {/* 右の余白: ドレスのハッチ */}
+          <span className="hidden shrink-0 flex-col items-center lg:flex" title="ドレスのハッチ">
             <BeeGirl className="h-10 w-10 animate-bee-float [animation-delay:0.6s]" />
-            <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ハッチ嬢</span>
+            <span className="-mt-0.5 text-[10px] font-bold tracking-wider text-hive-500">ドレスのハッチ</span>
           </span>
         </div>
         <Link href="/order/reference" className="group flex flex-col justify-center gap-1 rounded-2xl border border-night-200 bg-night-500 px-5 py-2.5 transition-colors hover:bg-night-600">
