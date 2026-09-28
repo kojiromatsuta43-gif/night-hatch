@@ -46,7 +46,7 @@ export default function SignInPage() {
           </p>
           <div className="mt-4 h-px w-24 bg-gradient-to-r from-gold-500 to-transparent" aria-hidden="true" />
           <p className="mt-4 max-w-md text-sm leading-relaxed text-hive-700">
-            キャスト採用・新規集客・SNSとショート動画・イベント・法人の貸切営業・口コミ返信。バー、スナック、キャバクラ、ラウンジの「やらなきゃ」を、メニューから選ぶだけで頼めます。
+            キャスト採用・新規集客・SNSとショート動画・イベント・法人の貸切営業・口コミ返信。バー、スナック、キャバクラ、ラウンジ、ホストクラブの「やらなきゃ」を、メニューから選ぶだけで頼めます。
           </p>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
             {([["nametag", "キャストを採用する"], ["neon", "新規のお客さまを呼ぶ"], ["champagne", "イベントで売上をつくる"]] as const).map(([n, t]) => (

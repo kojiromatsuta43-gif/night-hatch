@@ -36,7 +36,7 @@ export default function ProjectsPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
   const [projects, setProjects] = useState<(Project & { revise_count?: number; await_count?: number })[]>([]);
-  const [view, setView] = useState<"list" | "board">("board");
+  const [view, setView] = useState<"simple" | "list" | "board">("simple");
   const isFreelancer = me?.role === "freelancer";
 
   const load = useCallback(() => {
@@ -76,13 +76,22 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-2xl text-hive-900">{isFreelancer ? "担当している仕事" : "オーダー"}</h1><p className="page-sub">{isFreelancer ? "いま手元にある仕事と、修正のお願いです。" : "オーダーが、いまどこまで進んでいるか。届いたら「確認する」を押してください。"}</p></div>
-        <div className="flex rounded-xl border border-night-200 text-sm font-bold">
-          <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-night-500 text-white" : "bg-white text-hive-500"}`}>ボード</button>
-          <button onClick={() => setView("list")} className={`px-4 py-1.5 ${view === "list" ? "bg-night-500 text-white" : "bg-white text-hive-500"}`}>一覧</button>
-        </div>
+        <div><h1 className="text-2xl text-hive-900">{isFreelancer ? "担当している仕事" : "オーダー"}</h1><p className="page-sub">{isFreelancer ? "いま手元にある仕事と、修正のお願いです。" : "頼んだものが、いまどうなっているか。"}</p></div>
+        {!isFreelancer && view === "simple" && (
+          <Link href="/order" className="rounded-full bg-night-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-night-600">＋ 新しく頼む</Link>
+        )}
+        {(isAdmin || isFreelancer) && (
+          <div className="flex rounded-xl border border-night-200 text-sm font-bold">
+            <button onClick={() => setView("simple")} className={`px-4 py-1.5 ${view === "simple" ? "bg-night-500 text-white" : "bg-white text-hive-500"}`}>かんたん</button>
+            <button onClick={() => setView("board")} className={`px-4 py-1.5 ${view === "board" ? "bg-night-500 text-white" : "bg-white text-hive-500"}`}>ボード（管理）</button>
+            <button onClick={() => setView("list")} className={`px-4 py-1.5 ${view === "list" ? "bg-night-500 text-white" : "bg-white text-hive-500"}`}>一覧</button>
+          </div>
+        )}
       </div>
 
+      {view === "simple" && <SimpleOrders projects={projects} isFreelancer={isFreelancer} />}
+
+      {view !== "simple" && (<>
       {/* 今日やること */}
       <div className="grid gap-3 md:grid-cols-3">
         <div className={`flex flex-col gap-1 rounded-2xl border border-night-200 px-5 py-4 ${todo.review.length > 0 ? "bg-night-500 text-white" : "bg-white text-hive-900"}`}>
@@ -216,7 +225,141 @@ export default function ProjectsPage() {
           })}
         </div>
       )}
+      </>)}
       <p className="text-xs text-hive-500">{mascot.pointName}の数字は、その案件で使った分です。</p>
+    </div>
+  );
+}
+
+/* ───────────── かんたん表示（お店向け） ─────────────
+   夜のお店の人が、開いて3秒で「自分がやることがあるか」「いつ届くか」だけ分かるようにする。
+   ステータスの専門用語・プルダウン・列の多いボードは出さない。 */
+
+const STEPS: string[] = ["担当さがし", "制作中", "確認", "完成"];
+const stepOf = (s: Status) => (s === "募集中" ? 0 : s === "制作待ち" ? 1 : s === "フィードバック" ? 2 : s === "完了" ? 3 : -1);
+
+function Steps({ status }: { status: Status }) {
+  const cur = stepOf(status);
+  return (
+    <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label={`いまは「${cur >= 0 ? STEPS[cur] : "下書き"}」`}>
+      {STEPS.map((label, i) => (
+        <li key={label} className="min-w-0">
+          <span className={`block h-1.5 rounded-full ${i <= cur ? "bg-night-500" : "bg-hive-200"}`} />
+          <span className={`mt-1 block truncate text-[11px] ${i === cur ? "font-black text-hive-900" : "text-hive-500"}`}>{label}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function whenText(p: Project) {
+  const d = daysUntil(p.deadline);
+  if (d < 0) return `予定の${md(p.deadline)}を過ぎています。担当に確認中です`;
+  if (d === 0) return "今日届く予定";
+  if (d === 1) return "明日届く予定";
+  return `${md(p.deadline)}ごろ届く予定`;
+}
+
+function SimpleOrders({ projects, isFreelancer }: { projects: (Project & { await_count?: number })[]; isFreelancer: boolean }) {
+  const review = projects.filter((p) => p.status === "フィードバック");
+  const making = projects
+    .filter((p) => p.status === "募集中" || p.status === "制作待ち")
+    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+  const drafts = projects.filter((p) => p.status === "未公開");
+  const done = projects.filter((p) => p.status === "完了").sort((a, b) => b.deadline.localeCompare(a.deadline));
+  const [showDone, setShowDone] = useState(false);
+
+  if (projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center rounded-2xl border border-dashed border-night-300 bg-white px-5 py-12 text-center">
+        <Illust name="glass" className="h-24 w-24" />
+        <p className="mt-2 font-display text-lg text-hive-900">まだ何も頼んでいません</p>
+        <p className="mt-1 text-sm text-hive-500">{isFreelancer ? "「お仕事をさがす」から受けられます。" : "頼むと、ここで進み具合が見られます。"}</p>
+        {!isFreelancer && <Link href="/order" className="mt-5 rounded-full bg-night-500 px-6 py-3 text-base font-bold text-white hover:bg-night-600">TikTok動画を頼む</Link>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* 1. あなたの番 */}
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-black text-hive-900">
+          {isFreelancer ? "お店の返事待ち" : "あなたの番です"}
+          <span className={`rounded-full px-2.5 py-0.5 text-sm ${review.length > 0 ? "bg-night-500 text-white" : "bg-hive-200 text-hive-500"}`}>{review.length}</span>
+        </h2>
+        {review.length === 0 ? (
+          <p className="rounded-2xl border border-night-200 bg-white px-5 py-4 text-sm text-hive-500">
+            {isFreelancer ? "返事を待っているものはありません。" : "いま、やることはありません。できあがったらここに出ます。"}
+          </p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {review.map((p) => (
+              <Link key={p.id} href={`/projects/${p.id}`} className="group flex flex-col rounded-2xl bg-night-500 p-5 text-white shadow-sm transition-colors hover:bg-night-600">
+                <span className="text-xs font-bold text-white/80">{isFreelancer ? "初稿を出しました" : "できあがりが届きました"}</span>
+                <span className="mt-1 font-display text-xl leading-snug">{p.title}</span>
+                <span className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white py-3 text-base font-black text-night-700 group-hover:bg-night-50">
+                  {isFreelancer ? "やりとりを見る →" : "見て、OKか直してほしい所を返す →"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 2. 作っています */}
+      {making.length > 0 && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-black text-hive-900">
+            作っています <span className="rounded-full bg-hive-200 px-2.5 py-0.5 text-sm text-hive-700">{making.length}</span>
+          </h2>
+          <p className="-mt-2 mb-3 text-xs text-hive-500">待つだけでOKです。届いたらお知らせします。</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {making.map((p) => (
+              <Link key={p.id} href={`/projects/${p.id}`} className="block rounded-2xl border border-night-200 bg-white p-5 transition-colors hover:bg-night-50">
+                <span className="block font-bold leading-snug text-hive-900">{p.title}</span>
+                <span className={`mt-1 block text-sm ${daysUntil(p.deadline) < 0 ? "font-bold text-rose-600" : "text-gold-600"}`}>{whenText(p)}</span>
+                <Steps status={p.status} />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3. 下書き */}
+      {drafts.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-black text-hive-900">書きかけ</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            {drafts.map((p) => (
+              <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-night-300 bg-white px-5 py-4 hover:bg-night-50">
+                <span className="min-w-0 truncate font-bold text-hive-900">{p.title}</span>
+                <span className="shrink-0 text-sm font-bold text-gold-500">続きを書く →</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. できあがったもの（たたんでおく） */}
+      {done.length > 0 && (
+        <section>
+          <button onClick={() => setShowDone((v) => !v)} className="flex w-full items-center justify-between rounded-2xl border border-gold-200 bg-white px-5 py-4 text-left hover:bg-night-50">
+            <span className="text-lg font-black text-hive-900">できあがったもの <span className="ml-1 text-sm font-bold text-hive-500">{done.length}件</span></span>
+            <span className="text-sm font-bold text-gold-500">{showDone ? "とじる ▲" : "見る ▼"}</span>
+          </button>
+          {showDone && (
+            <div className="mt-2 space-y-2">
+              {done.map((p) => (
+                <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between gap-3 rounded-xl border border-hive-200 bg-white px-5 py-3 hover:bg-night-50">
+                  <span className="min-w-0 truncate text-sm font-bold text-hive-900">{p.title}</span>
+                  <span className="shrink-0 text-xs text-hive-500">{md(p.deadline)} 完成</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

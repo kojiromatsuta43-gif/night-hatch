@@ -131,6 +131,15 @@ export const TIKTOK_STORE_SEED: ["search" | "hashtag", string, string][] = [
   ["search", "オーセンティックバー", "バー"],
 ];
 
+/** 3回目の初期値（2026-09-28）: ホストクラブを対象に加えたときの、店舗・グループ公式を拾う検索語 */
+export const TIKTOK_HOST_SEED: ["search" | "hashtag", string, string][] = [
+  ["search", "ホストクラブ 公式", "ホストクラブ"],
+  ["search", "歌舞伎町 ホストクラブ 公式", "ホストクラブ"],
+  ["search", "ホストクラブ 店内紹介", "ホストクラブ"],
+  ["search", "ホストクラブ グループ 公式", "ホストクラブ"],
+  ["search", "ホスト 求人 公式", "ホストクラブ"],
+];
+
 // デプロイ先では永続ボリュームのパスを DATA_DIR で指定する（例: /data）
 export const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
@@ -677,6 +686,16 @@ function seedIndustries(db: Database.Database) {
     const insStore = db.prepare("INSERT OR IGNORE INTO tiktok_queries (id, kind, value, industry) VALUES (?, ?, ?, ?)");
     for (const [kind, value, industry] of TIKTOK_STORE_SEED) insStore.run(crypto.randomUUID(), kind, value, industry);
     db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_store_queries_v1', '1')").run();
+  }
+  // ホストクラブを対象に追加（2026-09-28）。既存の本番DBにも業種タブと検索語を1回だけ足す
+  const hostSeeded = db.prepare("SELECT value FROM app_meta WHERE key = 'host_club_v1'").get() as { value: string } | undefined;
+  if (!hostSeeded && BRAND.industries.includes("ホストクラブ")) {
+    db.prepare(
+      "INSERT OR IGNORE INTO industries (id, name, sort_order) VALUES (?, 'ホストクラブ', (SELECT COALESCE(MAX(sort_order), 0) + 10 FROM industries))"
+    ).run(crypto.randomUUID());
+    const insHost = db.prepare("INSERT OR IGNORE INTO tiktok_queries (id, kind, value, industry) VALUES (?, ?, ?, ?)");
+    for (const [kind, value, industry] of TIKTOK_HOST_SEED) insHost.run(crypto.randomUUID(), kind, value, industry);
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('host_club_v1', '1')").run();
   }
   // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
   db.prepare(
