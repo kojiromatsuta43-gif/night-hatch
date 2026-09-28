@@ -18,19 +18,7 @@ export default function StoreCover({
   big?: boolean;
 }) {
   const g = genreStyle(genre);
-  if (photo) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={`/api/site/photos/${photo}`}
-        alt={alt}
-        loading={eager ? "eager" : "lazy"}
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-    );
-  }
-  return (
+  const art = (
     <div
       className="deco-rays absolute inset-0 flex items-center justify-center overflow-hidden"
       style={{ background: `radial-gradient(120% 95% at 18% 8%, ${g.to} 0%, ${g.from} 62%, #0F0C17 100%)` }}
@@ -42,5 +30,20 @@ export default function StoreCover({
       <Illust name={g.illust} className={big ? "h-40 w-40 opacity-95 sm:h-52 sm:w-52" : "h-[46%] w-[46%] max-h-36 opacity-95"} />
       {!big && <span className="absolute bottom-4 right-5 font-latin text-[10px] text-gold-400/80">{g.en}</span>}
     </div>
+  );
+  if (!photo) return art;
+  // 写真・サムネイルが読めなかったときは下の絵が見える（代替テキストは出さない）
+  return (
+    <>
+      {art}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photo.startsWith("thumb:") ? `/api/site/thumbs/${photo.slice(6)}` : `/api/site/photos/${photo}`}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover text-transparent"
+      />
+    </>
   );
 }

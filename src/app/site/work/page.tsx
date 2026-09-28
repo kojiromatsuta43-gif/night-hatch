@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import StoreList from "@/components/site/StoreList";
-import { pageMeta, siteContext } from "@/lib/server/site";
+import { demoVisible, pageMeta, siteContext } from "@/lib/server/site";
 import { publicAreas, publicListings } from "@/lib/server/listings";
 import { GENRES } from "@/lib/listing";
 
@@ -19,6 +19,7 @@ export default async function Page({ searchParams }: { searchParams: Search }) {
   const sp = await searchParams;
   const genre = GENRES.includes(one(sp.genre)) ? one(sp.genre) : "";
   const area = one(sp.area).slice(0, 40);
-  const stores = publicListings({ genre, area, hiring: true });
-  return <StoreList kind="work" base={base} stores={stores} areas={publicAreas()} genre={genre} area={area} />;
+  const demo = await demoVisible();
+  const stores = publicListings({ demo, genre, area, hiring: true });
+  return <StoreList kind="work" base={base} stores={stores} areas={publicAreas(demo)} genre={genre} area={area} />;
 }

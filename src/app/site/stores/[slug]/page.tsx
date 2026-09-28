@@ -5,17 +5,18 @@ import StoreCover from "@/components/site/StoreCover";
 import VideoGrid from "@/components/site/VideoGrid";
 import LineCta from "@/components/site/LineCta";
 import { currentUser } from "@/lib/server/auth";
-import { pageMeta, siteContext } from "@/lib/server/site";
-import { listingBySlug, videosForListing } from "@/lib/server/listings";
+import { demoVisible, pageMeta, siteContext } from "@/lib/server/site";
+import { isDemoListing, listingBySlug, videosForListing } from "@/lib/server/listings";
 import { genreStyle, listingStatus, mapsUrl, splitBenefits, splitPriceLine, type Listing } from "@/lib/listing";
 
 type Params = Promise<{ slug: string }>;
 
-async function load(slug: string): Promise<{ l: Listing; preview: boolean } | null> {
+async function load(slug: string): Promise<{ l: Listing; preview: boolean; demo: boolean } | null> {
   const user = await currentUser().catch(() => null);
-  const l = listingBySlug(slug, user ? { userId: user.id, role: user.role } : undefined);
+  const l = listingBySlug(slug, user ? { userId: user.id, role: user.role } : undefined, await demoVisible());
   if (!l) return null;
-  return { l, preview: listingStatus(l) !== "live" };
+  const demo = isDemoListing(l);
+  return { l, preview: !demo && listingStatus(l) !== "live", demo };
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     image: l.photos[0] ? `/api/site/photos/${l.photos[0]}` : null,
     type: "article",
   });
-  return preview ? { ...meta, robots: { index: false, follow: false } } : meta;
+  return preview || r.demo ? { ...meta, robots: { index: false, follow: false } } : meta;
 }
 
 /** お店のページ。上から「動画 → お店の情報・料金 → 求人（#work）」。予約も応募もお店の公式LINEへ */
@@ -40,7 +41,8 @@ export default async function StorePage({ params }: { params: Params }) {
   const { base } = await siteContext();
   const r = await load(slug);
   if (!r) notFound();
-  const { l, preview } = r;
+  const { l, preview, demo } = r;
+  const tiktokUrl = `https://www.tiktok.com/${l.tiktok_handle}`;
   const videos = videosForListing(l);
   const prices = l.price_system.split("\n").map((s) => s.trim()).filter(Boolean).map(splitPriceLine);
   const benefits = splitBenefits(l.recruit_benefits);
@@ -71,6 +73,11 @@ export default async function StorePage({ params }: { params: Params }) {
           <h1 className="mt-1 font-display text-[30px] leading-tight text-hive-900 sm:text-5xl">{l.store_name}</h1>
           {l.catch_copy && <p className="mt-2 text-[15px] text-hive-700 sm:text-lg">{l.catch_copy}</p>}
           <div className="mt-4 flex flex-wrap gap-2">
+            {demo && (
+              <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-[14px] font-bold text-white ring-1 ring-white/20 hover:bg-[#161616]">
+                TikTokで {l.tiktok_handle} を見る ↗
+              </a>
+            )}
             {hasLine && (
               <LineCta slug={l.slug} kind="drink" href={l.line_url} track={!preview}>
                 公式LINEで予約・問い合わせ
@@ -194,6 +201,7 @@ export default async function StorePage({ params }: { params: Params }) {
               </ul>
             )}
             {l.recruit_message && <p className="mt-4 whitespace-pre-line text-[14px] leading-relaxed text-hive-800">{l.recruit_message}</p>}
+            {demo && <p className="mt-3 text-[14px] text-hive-800">プロフィールに「募集」の記載があるお店です。条件はお店の公式アカウントでご確認ください。</p>}
             <p className="mt-4 text-[12px] font-bold text-hive-500">18歳未満（高校生を含む）の方は応募できません。</p>
             {hasLine && (
               <LineCta slug={l.slug} kind="work" href={l.line_url} track={!preview} className="mt-4 w-full sm:w-auto">

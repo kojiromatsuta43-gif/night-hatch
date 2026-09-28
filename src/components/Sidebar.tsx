@@ -13,6 +13,7 @@ import { BRAND } from "@/lib/brand";
 import { Mascot } from "./MascotProvider";
 import { useMe } from "./AppShell";
 import NavIcon, { type NavIconName } from "./NavIcon";
+import TikTokGlyph from "./TikTokGlyph";
 import { api } from "@/lib/client";
 
 type Item = { href: string; label: string; icon: NavIconName; sub?: string };
@@ -37,7 +38,6 @@ function menusFor(role: string | undefined, hasSales: boolean): { primary: Item[
     };
   }
   const more: Item[] = [
-    { href: "/order/reference", label: "伸びてるお店の動画をまねる", icon: "video" },
     { href: "/scripts", label: "台本ノート", icon: "note" },
     { href: "/brand-profile", label: "うちの店のこと", icon: "shop" },
     { href: "/listing", label: "HPの掲載（Night HATCH）", icon: "shop" },
@@ -120,6 +120,23 @@ export default function Sidebar({ role }: { role?: string }) {
     </div>
   );
 
+  // TikTok のお手本動画への入口。「もっと」の中に隠さず、いつも見えるバナーにする
+  const refActive = pathname.startsWith("/order/reference");
+  const tiktokBanner = (
+    <Link
+      href="/order/reference"
+      className={`group relative flex items-center gap-3 overflow-hidden rounded-xl border bg-[#0b0b10] px-3 py-3 text-white transition-colors ${refActive ? "border-[#25F4EE]" : "border-white/10 hover:border-[#25F4EE]/60"}`}
+    >
+      <span className="pointer-events-none absolute -right-6 -top-8 h-20 w-20 rounded-full bg-[#FE2C55]/25 blur-2xl" aria-hidden="true" />
+      <TikTokGlyph className="h-10 w-10 shrink-0" />
+      <span className="relative min-w-0">
+        <span className="block text-[10px] font-bold tracking-widest text-[#25F4EE]">TikTok</span>
+        <span className="block text-[13px] font-bold leading-snug">{role === "freelancer" ? "伸びてるお店の動画" : "伸びてる夜のお店の動画をまねる"}</span>
+      </span>
+      <span className="relative ml-auto text-sm text-white/70 group-hover:translate-x-0.5 group-hover:text-white" aria-hidden="true">→</span>
+    </Link>
+  );
+
   const moreNav = (
     <div className="space-y-0.5">
       {more.map((item) => {
@@ -145,6 +162,7 @@ export default function Sidebar({ role }: { role?: string }) {
       {/* デスクトップ: 左のレール */}
       <aside className="hidden w-64 shrink-0 border-r border-gold-200/60 bg-ink-900 px-3 py-5 md:block">
         {primaryNav(true)}
+        <div className="mt-4">{tiktokBanner}</div>
         <button
           type="button"
           onClick={() => setShowMore((v) => !v)}
@@ -193,6 +211,7 @@ export default function Sidebar({ role }: { role?: string }) {
               <button onClick={() => setOpen(false)} aria-label="閉じる" className="rounded-full px-2 py-1 text-hive-500 hover:text-hive-900">✕</button>
             </div>
             {primaryNav(false)}
+            <div className="mt-3">{tiktokBanner}</div>
             <div className="my-4 h-px bg-gold-200" />
             {moreNav}
             <button onClick={logout} className="mt-6 w-full rounded-full border border-night-200 py-2.5 text-xs font-bold text-hive-500 hover:bg-night-50">

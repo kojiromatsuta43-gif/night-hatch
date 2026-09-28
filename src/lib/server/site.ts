@@ -7,6 +7,8 @@
  * そのときの画面内リンクは /site を付けない形にする（base = ""）。
  */
 import { headers } from "next/headers";
+import { currentUser } from "./auth";
+import { siteDemoOn } from "./listings";
 
 export function siteHosts(): string[] {
   return (process.env.SITE_HOST ?? "")
@@ -66,4 +68,11 @@ export function pageMeta(
       ...(image ? { images: [{ url: image }] } : {}),
     },
   };
+}
+
+/** 社内確認用のデモ表示を出すか（管理画面で ON ＋ ログインしている人だけ） */
+export async function demoVisible(): Promise<boolean> {
+  if (!siteDemoOn()) return false;
+  const u = await currentUser().catch(() => null);
+  return Boolean(u);
 }

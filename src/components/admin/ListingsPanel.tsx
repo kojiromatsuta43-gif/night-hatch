@@ -20,10 +20,26 @@ export default function ListingsPanel() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [demo, setDemo] = useState(false);
 
   const load = useCallback(() => {
-    api<Row[]>("/api/admin/listings").then(setRows).catch((e) => setErr(e.message));
+    api<{ rows: Row[]; demo: boolean }>("/api/admin/listings")
+      .then((r) => {
+        setRows(r.rows);
+        setDemo(r.demo);
+      })
+      .catch((e) => setErr(e.message));
   }, []);
+
+  const toggleDemo = async () => {
+    setErr("");
+    try {
+      const r = await api<{ demo: boolean }>("/api/admin/listings", { method: "PATCH", body: JSON.stringify({ demo: !demo }) });
+      setDemo(r.demo);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "切り替えできませんでした");
+    }
+  };
   useEffect(load, [load]);
 
   const patch = async (id: string, body: { admin_published?: boolean; slug?: string }) => {
@@ -48,6 +64,15 @@ export default function ListingsPanel() {
         公開サイト（<a href="/site" target="_blank" rel="noreferrer" className="font-bold text-gold-600 hover:underline">/site</a>）に載るお店です。
         お店が「HPの掲載」で同意すると <b>確認待ち</b> になります。許可・届出、料金の書き方、写真・動画（露出・未成年に見える出演がないか）を見てから「公開する」を押してください。
         {review > 0 && <span className="ml-2 rounded-full bg-gold-400 px-2 py-0.5 text-xs font-black text-ink-900">確認待ち {review} 件</span>}
+      </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#25F4EE]/40 bg-[#0b0b10] p-4 text-sm text-white">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">社内確認用のデモ表示 {demo ? <span className="ml-1 rounded-full bg-[#25F4EE] px-2 py-0.5 text-xs text-black">ON</span> : <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs">OFF</span>}</p>
+          <p className="mt-1 text-xs text-white/70">ON にすると、取り込んだ TikTok のお手本アカウントを「お店」としてサイトに並べます。見られるのはログインしている人だけ。料金・求人・LINE は出しません。事業を始めるときに OFF にしてください。</p>
+        </div>
+        <button onClick={toggleDemo} className={`rounded-full px-4 py-2 text-xs font-bold ${demo ? "border border-white/40 text-white hover:bg-white/10" : "bg-[#25F4EE] text-black hover:opacity-90"}`}>
+          {demo ? "OFF にする" : "ON にする"}
+        </button>
       </div>
       {err && <p className="text-sm font-bold text-rose-500">{err}</p>}
       <div className="space-y-2">

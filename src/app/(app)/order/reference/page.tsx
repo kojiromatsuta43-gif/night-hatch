@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMe } from "@/components/AppShell";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import TikTokGlyph from "@/components/TikTokGlyph";
 import Illust from "@/components/Illust";
 import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
@@ -174,18 +175,24 @@ export default function OrderPage() {
   return (
     <div className="max-w-5xl">
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/order" className="text-sm text-slate-500 hover:text-slate-700">← 発注トップ</Link>
-          <h1 className="text-2xl font-bold">伸びてる夜のお店の動画をまねる</h1>
-        </div>
+        <Link href="/order" className="text-sm text-slate-500 hover:text-slate-700">← 発注トップ</Link>
         <Link href="/order/create" className="text-sm text-night-700 hover:underline">
           参考動画なしでフォームから登録 →
         </Link>
       </div>
-      <p className="mb-6 text-sm text-slate-500">
-        お手本のアカウントを選ぶ → 真似したい動画を選ぶ → 台本作成か動画編集の発注に進みます。
-      </p>
-
+      {/* バナー: ひと目で「TikTokのお手本」と分かるように */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-[#0b0b10] px-5 py-5 text-white sm:px-7 sm:py-6">
+        <span className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#25F4EE]/15 blur-3xl" aria-hidden="true" />
+        <span className="pointer-events-none absolute -bottom-20 right-24 h-56 w-56 rounded-full bg-[#FE2C55]/20 blur-3xl" aria-hidden="true" />
+        <div className="relative flex items-center gap-4 sm:gap-6">
+          <TikTokGlyph className="h-14 w-14 shrink-0 sm:h-16 sm:w-16" />
+          <div className="min-w-0">
+            <p className="font-latin text-[11px] font-bold tracking-[0.2em] text-[#25F4EE]">TIKTOK</p>
+            <h1 className="mt-0.5 font-display text-xl leading-tight [word-break:auto-phrase] sm:text-3xl">伸びてる夜のお店の動画をまねる</h1>
+            <p className="mt-1.5 text-xs leading-relaxed text-white/80 sm:text-sm">お手本のアカウントを選ぶ → 真似したい動画を選ぶ → 「動画の編集」か「台本作成＋動画の編集」を頼むだけ。</p>
+          </div>
+        </div>
+      </div>
 
       {!selected ? (
         <>

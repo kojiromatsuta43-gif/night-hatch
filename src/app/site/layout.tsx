@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
-import { siteContext } from "@/lib/server/site";
+import { demoVisible, siteContext } from "@/lib/server/site";
 import { SITE_NAME, SITE_SUB } from "@/lib/listing";
 
 /**
@@ -22,9 +22,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const { base } = await siteContext();
+  const demo = await demoVisible();
   return (
     <div className="site-root min-h-screen">
       <SiteHeader base={base} />
+      {demo && (
+        <p className="border-b border-[#25F4EE]/30 bg-[#0b0b10] px-4 py-2 text-center text-[12px] text-white/85">
+          <b className="text-[#25F4EE]">社内確認用のデモ表示中</b>
+          ：お店は取り込んだ TikTok のお手本アカウントです（掲載店ではありません）。ログインしている人にだけ見えています。
+        </p>
+      )}
       <main>{children}</main>
       <SiteFooter base={base} />
     </div>

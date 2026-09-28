@@ -36,6 +36,82 @@ function isPublic(l: Listing) {
   return listingStatus(l) === "live";
 }
 
+// ─────────────── 社内確認用のデモ表示 ───────────────
+// 管理画面「サイト掲載」で ON にすると、取り込んだ TikTok のお手本アカウントを「お店」としてサイトに並べる。
+// 見られるのはログインしている人だけ（外の人・検索エンジンには出さない）。料金・求人・LINE は作らない（実在のお店なので）。
+// 事業を始めるときに OFF にする。
+
+export function siteDemoOn(): boolean {
+  const r = getDb().prepare("SELECT value FROM app_meta WHERE key = 'site_demo'").get() as { value: string } | undefined;
+  return r?.value === "1";
+}
+
+export function setSiteDemo(on: boolean) {
+  getDb().prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('site_demo', ?)").run(on ? "1" : "0");
+}
+
+export const DEMO_SLUG_PREFIX = "demo-tt-";
+
+type RefAccountRow = { id: string; handle: string; name: string; industry: string; bio: string; persona: string; followers: number; created_at: string; top_video: string | null };
+
+function demoListingFrom(a: RefAccountRow): Listing {
+  const h = a.handle.replace(/^@/, "");
+  const persona = a.persona || "";
+  // 「六本木のラウンジ公式」→ エリア「六本木」
+  const area = persona.includes("の") ? persona.split("の")[0].slice(0, 12) : "";
+  const hiring = /募集|求人|体入|採用/.test(`${a.bio}`) ? 1 : 0;
+  return {
+    id: `demo-${a.id}`,
+    user_id: null,
+    slug: `${DEMO_SLUG_PREFIX}${h.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`,
+    store_name: a.name || a.handle,
+    genre: a.industry,
+    prefecture: "",
+    area,
+    access: "",
+    address: "",
+    hours: "",
+    holidays: "",
+    catch_copy: persona,
+    description: a.bio,
+    price_system: "",
+    recruit_hiring: hiring,
+    recruit_trial_wage: "",
+    recruit_wage: "",
+    recruit_benefits: "",
+    recruit_hours: "",
+    recruit_message: "",
+    line_url: "",
+    phone: "",
+    tiktok_handle: a.handle.startsWith("@") ? a.handle : `@${a.handle}`,
+    tiktok_urls: [],
+    // 写真の代わりに、いちばん再生された動画のサムネイルを表紙にする（StoreCover が "thumb:" を見分ける）
+    photos: a.top_video ? [`thumb:${a.top_video}`] : [],
+    store_opt_in: 0,
+    agreed_at: null,
+    admin_published: 0,
+    published_at: a.created_at,
+    created_at: a.created_at,
+    updated_at: a.created_at,
+  };
+}
+
+function demoListings(): Listing[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT a.id, a.handle, a.name, a.industry, a.bio, a.persona, a.followers, a.created_at,
+              (SELECT v.id FROM ref_videos v WHERE v.account_id = a.id AND v.url <> '' ORDER BY v.views DESC LIMIT 1) AS top_video
+         FROM ref_accounts a
+        WHERE a.source = 'apify' AND a.classified_at <> ''
+          AND EXISTS (SELECT 1 FROM ref_videos v WHERE v.account_id = a.id AND v.url <> '')
+        ORDER BY a.followers DESC`
+    )
+    .all() as RefAccountRow[];
+  return rows.map(demoListingFrom);
+}
+
+export const isDemoListing = (l: Pick<Listing, "id">) => l.id.startsWith("demo-");
+
 // ─────────────── お店側 ───────────────
 
 function newSlug(db: ReturnType<typeof getDb>, handle: string): string {
@@ -212,7 +288,7 @@ function ensureTikTokImport(l: Listing) {
 
 // ─────────────── 公開サイト ───────────────
 
-export type PublicFilter = { genre?: string; area?: string; hiring?: boolean };
+export type PublicFilter = { genre?: string; area?: string; hiring?: boolean; demo?: boolean };
 
 export function publicListings(f: PublicFilter = {}): Listing[] {
   const db = getDb();
@@ -230,21 +306,31 @@ export function publicListings(f: PublicFilter = {}): Listing[] {
   const rows = db
     .prepare(`SELECT l.* FROM listings l WHERE ${where.join(" AND ")} ORDER BY COALESCE(l.published_at, l.updated_at) DESC`)
     .all(...args) as Row[];
-  return rows.map(toListing);
+  const real = rows.map(toListing);
+  if (!f.demo) return real;
+  const demo = demoListings().filter(
+    (l) => (!f.genre || l.genre === f.genre) && (!f.area || l.area === f.area) && (!f.hiring || l.recruit_hiring)
+  );
+  return [...real, ...demo];
 }
 
 /** 公開中のお店があるエリア（件数つき）。検索の選択肢に使う */
-export function publicAreas(): { area: string; count: number }[] {
-  return getDb()
+export function publicAreas(demo = false): { area: string; count: number }[] {
+  const real = getDb()
     .prepare(`SELECT l.area AS area, COUNT(*) AS count FROM listings l WHERE ${PUBLIC_WHERE} AND l.area <> '' GROUP BY l.area ORDER BY count DESC, l.area`)
     .all() as { area: string; count: number }[];
+  if (!demo) return real;
+  const m = new Map(real.map((r) => [r.area, r.count]));
+  for (const l of demoListings()) if (l.area) m.set(l.area, (m.get(l.area) ?? 0) + 1);
+  return Array.from(m, ([area, count]) => ({ area, count })).sort((a, b) => b.count - a.count || a.area.localeCompare(b.area)).slice(0, 30);
 }
 
 /**
  * slug で1件。公開中でなければ null。
  * previewUserId を渡すと、そのお店の持ち主（または管理者）には公開前でも返す（プレビュー用）。
  */
-export function listingBySlug(slug: string, preview?: { userId: string; role: string }): Listing | null {
+export function listingBySlug(slug: string, preview?: { userId: string; role: string }, demo = false): Listing | null {
+  if (slug.startsWith(DEMO_SLUG_PREFIX)) return demo ? demoListings().find((l) => l.slug === slug) ?? null : null;
   const row = getDb().prepare("SELECT * FROM listings WHERE slug = ?").get(slug) as Row | undefined;
   if (!row) return null;
   const l = toListing(row);
@@ -293,9 +379,9 @@ export function videosForListing(l: Listing): SiteVideo[] {
 }
 
 /** トップの「今週の動画」: 公開中のお店の動画から、ここ1週間の投稿を優先して再生数順 */
-export function weeklyVideos(limit = 8): (SiteVideo & { store: Pick<Listing, "slug" | "store_name" | "genre" | "area"> })[] {
+export function weeklyVideos(limit = 8, demo = false): (SiteVideo & { store: Pick<Listing, "slug" | "store_name" | "genre" | "area"> })[] {
   const db = getDb();
-  const stores = publicListings();
+  const stores = publicListings({ demo });
   const byHandle = new Map(stores.filter((s) => s.tiktok_handle).map((s) => [s.tiktok_handle.toLowerCase(), s]));
   const out: (SiteVideo & { store: Pick<Listing, "slug" | "store_name" | "genre" | "area"> })[] = [];
   if (byHandle.size > 0) {
@@ -327,7 +413,13 @@ export function weeklyVideos(limit = 8): (SiteVideo & { store: Pick<Listing, "sl
 }
 
 /** 公開中のお店の取り込み動画か（サムネイルを誰にでも出してよいか） */
-export function isPublicRefVideo(refVideoId: string): boolean {
+export function isPublicRefVideo(refVideoId: string, demo = false): boolean {
+  if (demo) {
+    const hit = getDb()
+      .prepare("SELECT 1 FROM ref_videos v JOIN ref_accounts a ON a.id = v.account_id WHERE v.id = ? AND a.source = 'apify' AND a.classified_at <> ''")
+      .get(refVideoId);
+    if (hit) return true;
+  }
   const row = getDb()
     .prepare(
       `SELECT 1 FROM ref_videos v JOIN ref_accounts a ON a.id = v.account_id

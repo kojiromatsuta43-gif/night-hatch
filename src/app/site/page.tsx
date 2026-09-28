@@ -5,7 +5,7 @@ import BeeGirl from "@/components/BeeGirl";
 import StoreCard from "@/components/site/StoreCard";
 import VideoGrid from "@/components/site/VideoGrid";
 import EmptyStores from "@/components/site/EmptyStores";
-import { pageMeta, siteContext } from "@/lib/server/site";
+import { demoVisible, pageMeta, siteContext } from "@/lib/server/site";
 import { publicAreas, publicListings, weeklyVideos } from "@/lib/server/listings";
 import { GENRES, SITE_NAME, SITE_SUB, genreStyle } from "@/lib/listing";
 
@@ -21,9 +21,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /** 公開サイトのトップ。2つの入口（飲みに行く／働く）、エリア×業態の検索、今週の動画、新着のお店 */
 export default async function SiteTop() {
   const { base } = await siteContext();
-  const stores = publicListings();
-  const areas = publicAreas();
-  const videos = weeklyVideos(8);
+  const demo = await demoVisible();
+  const stores = publicListings({ demo });
+  const areas = publicAreas(demo);
+  const videos = weeklyVideos(12, demo);
   const hiring = stores.filter((s) => s.recruit_hiring).length;
 
   return (
