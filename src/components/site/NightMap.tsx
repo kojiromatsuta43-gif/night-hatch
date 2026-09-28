@@ -158,13 +158,13 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
         </div>
       </div>
 
-      <div ref={boxRef} className="relative overflow-hidden rounded-2xl border border-gold-300/50 bg-[#07060d]">
+      <div ref={boxRef} className="relative overflow-hidden rounded-2xl border border-gold-300/60 bg-[#121733]">
         <svg viewBox={vb.join(" ")} preserveAspectRatio="xMidYMid meet" className="block aspect-[4/5] max-h-[72vh] w-full select-none sm:aspect-[16/10]" role="img" aria-label="夜の日本地図">
           <defs>
             <radialGradient id="nm-sky" cx="50%" cy="40%" r="75%">
-              <stop offset="0" stopColor="#1a1430" />
-              <stop offset="0.6" stopColor="#0c0a17" />
-              <stop offset="1" stopColor="#05040a" />
+              <stop offset="0" stopColor="#2a3563" />
+              <stop offset="0.6" stopColor="#1b2247" />
+              <stop offset="1" stopColor="#121733" />
             </radialGradient>
             <radialGradient id="nm-glow">
               <stop offset="0" stopColor="#FFE3A3" stopOpacity="1" />
@@ -173,8 +173,8 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
               <stop offset="1" stopColor="#E0457B" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="nm-land" cx="50%" cy="50%" r="70%">
-              <stop offset="0" stopColor="#231c3a" />
-              <stop offset="1" stopColor="#15112a" />
+              <stop offset="0" stopColor="#5b4a86" />
+              <stop offset="1" stopColor="#433668" />
             </radialGradient>
           </defs>
           <rect x={JAPAN_VIEW[0] - 600} y={JAPAN_VIEW[1] - 600} width={JAPAN_VIEW[2] + 1200} height={JAPAN_VIEW[3] + 1200} fill="url(#nm-sky)" />
@@ -183,26 +183,26 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
               <circle key={i} cx={s.x} cy={s.y} r={s.s * u} fill="#fff" style={{ animationDelay: `${s.d}s` }} />
             ))}
           </g>
-          <path d={JAPAN_PATH} fill="url(#nm-land)" stroke="#D4AF6A" strokeOpacity="0.45" strokeWidth={1} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+          <path d={JAPAN_PATH} fill="url(#nm-land)" stroke="#F2D59B" strokeOpacity="0.9" strokeWidth={1.4} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
           {/* 小さな街あかり（まだお店が無いところ） */}
           {dim.map((d) => (
-            <circle key={d.key} cx={d.x} cy={d.y} r={2.2 * u} fill="#F2D59B" opacity="0.35" />
+            <circle key={d.key} cx={d.x} cy={d.y} r={3 * u} fill="#FFE9B8" opacity="0.7" />
           ))}
           {/* 押したところのフラッシュ */}
           {flash && <circle key={flash.key} cx={flash.x} cy={flash.y} r={4 * u} fill="url(#nm-glow)" className="nm-flash" />}
           {/* お店のある場所の光 */}
           {lights.map((l) => {
             const r = radius(l.n, l.big);
-            const fs = (l.big ? 15 : 13) * u;
+            const fs = (l.big ? 17 : 15) * u;
             return (
               <g key={l.key} className="cursor-pointer" onClick={l.onClick} role="button" aria-label={`${l.label} ${l.n}件`}>
                 <circle cx={l.x} cy={l.y} r={r * 2.2} fill="url(#nm-glow)" className="nm-pulse" />
                 <circle cx={l.x} cy={l.y} r={r * 0.32} fill="#FFF4D6" />
                 <circle cx={l.x} cy={l.y} r={r * 2.4} fill="transparent" />
-                <text x={l.x} y={l.y - r * 0.9} textAnchor="middle" fontSize={fs} fontWeight={800} fill="#fff" stroke="#07060d" strokeWidth={fs * 0.28} paintOrder="stroke" style={{ letterSpacing: "0.04em" }}>
+                <text x={l.x} y={l.y - r * 0.9} textAnchor="middle" fontSize={fs} fontWeight={800} fill="#fff" stroke="#121733" strokeWidth={fs * 0.3} paintOrder="stroke" style={{ letterSpacing: "0.04em" }}>
                   {l.label}
                 </text>
-                <text x={l.x} y={l.y + r * 0.9 + fs * 0.9} textAnchor="middle" fontSize={fs * 0.85} fontWeight={800} fill="#F2B84B" stroke="#07060d" strokeWidth={fs * 0.24} paintOrder="stroke">
+                <text x={l.x} y={l.y + r * 0.9 + fs * 0.9} textAnchor="middle" fontSize={fs * 0.85} fontWeight={800} fill="#FFD27A" stroke="#121733" strokeWidth={fs * 0.26} paintOrder="stroke">
                   {l.n}店{l.big ? " ›" : ""}
                 </text>
               </g>
@@ -211,7 +211,7 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
         </svg>
 
         {view === "japan" && (
-          <p className="pointer-events-none absolute left-4 top-4 max-w-[60%] text-[12px] leading-relaxed text-white/75 sm:text-[13px]">
+          <p className="pointer-events-none absolute left-4 top-4 max-w-[60%] rounded-lg bg-black/35 px-3 py-2 text-[12px] leading-relaxed text-white sm:text-[13px]">
             光っているところを押すと、その地域に寄れます。<br />
             いま {total} 店
           </p>
