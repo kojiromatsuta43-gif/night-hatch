@@ -97,6 +97,18 @@ export default async function SiteTop() {
               <button type="submit" formAction={`${base}/work`} className="self-end rounded-full border border-gold-400 px-6 py-2.5 text-[14px] font-bold text-gold-600 hover:bg-gold-50">働く店をさがす</button>
             </div>
           </form>
+          <Link
+            href={`${base}/map`}
+            className="group mt-4 flex items-center gap-4 overflow-hidden rounded-2xl border border-gold-300/60 bg-[radial-gradient(120%_140%_at_85%_20%,#3a1f4a_0%,#15101f_55%,#08070d_100%)] p-5 transition-colors hover:border-gold-500"
+          >
+            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle,#FFE3A3_0%,#F2B84B_35%,rgba(224,69,123,0.35)_65%,transparent_72%)]" aria-hidden="true" />
+            <span className="min-w-0">
+              <span className="kicker">Area Map</span>
+              <span className="block font-display text-xl text-hive-900">夜の日本地図から、街を選ぶ</span>
+              <span className="block text-[13px] text-hive-700">首都圏は歌舞伎町・六本木・銀座まで寄れます</span>
+            </span>
+            <span className="ml-auto text-gold-600 transition-transform group-hover:translate-x-1">→</span>
+          </Link>
           <ul className="no-scrollbar -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
             {GENRES.map((g) => (
               <li key={g} className="shrink-0">

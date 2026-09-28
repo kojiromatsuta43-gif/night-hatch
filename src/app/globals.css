@@ -288,3 +288,14 @@ h1, h2, .font-display {
 /* 横スクロールのバーを隠す（チップ列） */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ─── 公開サイト「地域から選ぶ」夜の地図 ─── */
+.nm-stars circle { animation: nm-twinkle 5s ease-in-out infinite; opacity: 0.4; }
+@keyframes nm-twinkle { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.8; } }
+.nm-pulse { transform-box: fill-box; transform-origin: center; animation: nm-pulse 2.8s ease-in-out infinite; }
+@keyframes nm-pulse { 0%, 100% { transform: scale(0.88); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.nm-flash { transform-box: fill-box; transform-origin: center; animation: nm-flash 0.9s ease-out forwards; pointer-events: none; }
+@keyframes nm-flash { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(45); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .nm-stars circle, .nm-pulse, .nm-flash { animation: none; }
+}

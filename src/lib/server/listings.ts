@@ -6,6 +6,7 @@
  */
 import crypto from "crypto";
 import { getDb } from "./db";
+import { canonicalArea, findArea } from "../nightAreas";
 import {
   GENRES, MAX_PHOTOS, MAX_TIKTOK_URLS, PREFECTURES, isLineUrl, isValidSlug, listingStatus, normalizeHandle, tiktokVideoId,
   type Listing,
@@ -57,8 +58,8 @@ type RefAccountRow = { id: string; handle: string; name: string; industry: strin
 function demoListingFrom(a: RefAccountRow): Listing {
   const h = a.handle.replace(/^@/, "");
   const persona = a.persona || "";
-  // 「六本木のラウンジ公式」→ エリア「六本木」
-  const area = persona.includes("の") ? persona.split("の")[0].slice(0, 12) : "";
+  // 「六本木のラウンジ公式」→ エリア「六本木」。辞書（nightAreas.ts）で当て、無ければ「の」の前
+  const area = findArea(persona, a.name, a.bio)?.name ?? (persona.includes("の") ? persona.split("の")[0].slice(0, 12) : "");
   const hiring = /募集|求人|体入|採用/.test(`${a.bio}`) ? 1 : 0;
   return {
     id: `demo-${a.id}`,
@@ -298,31 +299,37 @@ export function publicListings(f: PublicFilter = {}): Listing[] {
     where.push("l.genre = ?");
     args.push(f.genre);
   }
-  if (f.area) {
-    where.push("(l.area = ? OR l.prefecture = ?)");
-    args.push(f.area, f.area);
-  }
   if (f.hiring) where.push("l.recruit_hiring = 1");
   const rows = db
     .prepare(`SELECT l.* FROM listings l WHERE ${where.join(" AND ")} ORDER BY COALESCE(l.published_at, l.updated_at) DESC`)
     .all(...args) as Row[];
-  const real = rows.map(toListing);
+  // エリアは自由入力なので、辞書で正式名にそろえてから比べる（「札幌すすきの」も「すすきの」で当たる）
+  const inArea = (l: Listing) => !f.area || l.area === f.area || l.prefecture === f.area || canonicalArea(l.area) === f.area;
+  const real = rows.map(toListing).filter(inArea);
   if (!f.demo) return real;
-  const demo = demoListings().filter(
-    (l) => (!f.genre || l.genre === f.genre) && (!f.area || l.area === f.area) && (!f.hiring || l.recruit_hiring)
-  );
+  const demo = demoListings().filter((l) => (!f.genre || l.genre === f.genre) && inArea(l) && (!f.hiring || l.recruit_hiring));
   return [...real, ...demo];
+}
+
+/** 地図用: エリアごとの件数（飲みに行く＝全店、働く＝求人中） */
+export function areaStats(demo = false): { area: string; drink: number; work: number }[] {
+  const m = new Map<string, { drink: number; work: number }>();
+  for (const l of publicListings({ demo })) {
+    const a = canonicalArea(l.area);
+    if (!a) continue;
+    const c = m.get(a) ?? { drink: 0, work: 0 };
+    c.drink++;
+    if (l.recruit_hiring) c.work++;
+    m.set(a, c);
+  }
+  return Array.from(m, ([area, c]) => ({ area, ...c }));
 }
 
 /** 公開中のお店があるエリア（件数つき）。検索の選択肢に使う */
 export function publicAreas(demo = false): { area: string; count: number }[] {
-  const real = getDb()
-    .prepare(`SELECT l.area AS area, COUNT(*) AS count FROM listings l WHERE ${PUBLIC_WHERE} AND l.area <> '' GROUP BY l.area ORDER BY count DESC, l.area`)
-    .all() as { area: string; count: number }[];
-  if (!demo) return real;
-  const m = new Map(real.map((r) => [r.area, r.count]));
-  for (const l of demoListings()) if (l.area) m.set(l.area, (m.get(l.area) ?? 0) + 1);
-  return Array.from(m, ([area, count]) => ({ area, count })).sort((a, b) => b.count - a.count || a.area.localeCompare(b.area)).slice(0, 30);
+  return areaStats(demo)
+    .map((a) => ({ area: a.area, count: a.drink }))
+    .sort((a, b) => b.count - a.count || a.area.localeCompare(b.area));
 }
 
 /**
