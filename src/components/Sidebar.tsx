@@ -40,6 +40,7 @@ function menusFor(role: string | undefined, hasSales: boolean): { primary: Item[
     { href: "/order/reference", label: "伸びてるお店の動画をまねる", icon: "video" },
     { href: "/scripts", label: "台本ノート", icon: "note" },
     { href: "/brand-profile", label: "うちの店のこと", icon: "shop" },
+    { href: "/listing", label: "HPの掲載（Night HATCH）", icon: "shop" },
     { href: "/video-analysis", label: "動画を診てもらう", icon: "diagnose" },
     { href: "/chat", label: "担当とのやりとり", icon: "chat" },
     { href: "/reports", label: "ふりかえり", icon: "report" },

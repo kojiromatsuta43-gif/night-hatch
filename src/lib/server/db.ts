@@ -620,6 +620,54 @@ function init(db: Database.Database) {
     );
   `);
 
+  // ─── 公開サイト「Night HATCH -ナイト・ハッチ-」の掲載情報 ───
+  // 契約店（client）1店につき1行。公開されるのは store_opt_in・admin_published・line_url の3つがそろったときだけ。
+  // photos は uploads.id の配列（JSON）、tiktok_urls は手入力の TikTok 動画URLの配列（JSON）。
+  // user_id が NULL の行は開発用のデモ掲載（ユーザーに紐づかない）。
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS listings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT UNIQUE,
+      slug TEXT NOT NULL UNIQUE,
+      store_name TEXT NOT NULL DEFAULT '',
+      genre TEXT NOT NULL DEFAULT '',
+      prefecture TEXT NOT NULL DEFAULT '東京都',
+      area TEXT NOT NULL DEFAULT '',
+      access TEXT NOT NULL DEFAULT '',
+      address TEXT NOT NULL DEFAULT '',
+      hours TEXT NOT NULL DEFAULT '',
+      holidays TEXT NOT NULL DEFAULT '',
+      catch_copy TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      price_system TEXT NOT NULL DEFAULT '',
+      recruit_hiring INTEGER NOT NULL DEFAULT 0,
+      recruit_trial_wage TEXT NOT NULL DEFAULT '',
+      recruit_wage TEXT NOT NULL DEFAULT '',
+      recruit_benefits TEXT NOT NULL DEFAULT '',
+      recruit_hours TEXT NOT NULL DEFAULT '',
+      recruit_message TEXT NOT NULL DEFAULT '',
+      line_url TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL DEFAULT '',
+      tiktok_handle TEXT NOT NULL DEFAULT '',
+      tiktok_urls TEXT NOT NULL DEFAULT '[]',
+      photos TEXT NOT NULL DEFAULT '[]',
+      store_opt_in INTEGER NOT NULL DEFAULT 0,
+      agreed_at TEXT,
+      admin_published INTEGER NOT NULL DEFAULT 0,
+      published_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    -- 公式LINEボタンのクリック数（個人情報・IPは持たない）。kind は 'drink'（飲みに行く）か 'work'（働く）
+    CREATE TABLE IF NOT EXISTS listing_clicks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      listing_id TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_listing_clicks ON listing_clicks (listing_id, created_at);
+  `);
+
   // 参考アカウント・動画の初期データは入れない（FOOD 時代の飲食店アカウントは syncRefAccounts で掃除する）。
   // お手本動画は管理画面「TikTok取り込み」から追加する（spec 9: 取り込み後は全件目視）。
 }
@@ -708,6 +756,69 @@ function seedIndustries(db: Database.Database) {
 
 }
 
+/**
+ * 公開サイトの掲載のデモ。1回だけ入れる。
+ *  - デモのお店（client@example.com）に「テストラウンジ」（六本木のラウンジ）。お店の同意は済み・運営の公開は未
+ *  - 開発環境（NODE_ENV !== 'production'）では、それを公開にし、架空のお店を2つ足してサイトを見られるようにする
+ */
+function seedListings(db: Database.Database) {
+  const done = db.prepare("SELECT value FROM app_meta WHERE key = 'listings_seeded_v1'").get();
+  if (done) return;
+  const dev = process.env.NODE_ENV !== "production";
+  const client = db.prepare("SELECT id FROM users WHERE email = 'client@example.com'").get() as { id: string } | undefined;
+  const ins = db.prepare(
+    `INSERT OR IGNORE INTO listings (id, user_id, slug, store_name, genre, prefecture, area, access, address, hours, holidays,
+       catch_copy, description, price_system, recruit_hiring, recruit_trial_wage, recruit_wage, recruit_benefits, recruit_hours,
+       recruit_message, line_url, tiktok_handle, store_opt_in, agreed_at, admin_published, published_at)
+     VALUES (@id, @user_id, @slug, @store_name, @genre, '東京都', @area, @access, @address, @hours, @holidays,
+       @catch_copy, @description, @price_system, @recruit_hiring, @recruit_trial_wage, @recruit_wage, @recruit_benefits, @recruit_hours,
+       @recruit_message, @line_url, @tiktok_handle, 1, datetime('now'), @admin_published, CASE WHEN @admin_published = 1 THEN datetime('now') END)`
+  );
+  const tx = db.transaction(() => {
+    if (client) {
+      ins.run({
+        id: crypto.randomUUID(), user_id: client.id, slug: "test-lounge", store_name: "テストラウンジ", genre: "ラウンジ",
+        area: "六本木", access: "六本木駅 3番出口から徒歩2分", address: "",
+        hours: "20:00〜翌1:00（L.O. 0:30）", holidays: "日曜・祝日",
+        catch_copy: "六本木の夜に、静かな一杯と会話を。",
+        description: "落ち着いた照明とソファ席の、大人のためのラウンジです（デモ用の架空のお店です）。\nおひとりさまも、接待のあとの二次会も。キャストとゆっくりお話ししながら、ウイスキーやシャンパンをお楽しみください。",
+        price_system: "セット料金（60分）: 8,000円\n延長（30分）: 4,000円\n指名料: 2,000円\n同伴料: 3,000円\nTAX・サービス料: 20%\nカード手数料: なし\n※ボトルの料金は店内のメニューでご確認いただけます",
+        recruit_hiring: 1, recruit_trial_wage: "体入時給 4,000円", recruit_wage: "時給 3,500円〜（経験・能力により優遇）",
+        recruit_benefits: "日払いOK・終電上がりOK・ヘアメイク無料・衣装貸出・ノルマなし",
+        recruit_hours: "20:00〜翌1:00のうち週1日・3時間〜",
+        recruit_message: "未経験から始めた先輩がほとんどです。まずは体入で、お店の雰囲気を見に来てください。",
+        line_url: "https://lin.ee/test-lounge-demo", tiktok_handle: "", admin_published: dev ? 1 : 0,
+      });
+    }
+    if (dev) {
+      ins.run({
+        id: crypto.randomUUID(), user_id: null, slug: "demo-bar-shinbashi", store_name: "バー月あかり（デモ）", genre: "バー",
+        area: "新橋", access: "JR新橋駅 烏森口から徒歩3分", address: "東京都港区新橋2丁目",
+        hours: "18:00〜翌2:00", holidays: "不定休",
+        catch_copy: "仕事帰りに一杯だけ。カウンター8席のショットバー。",
+        description: "（開発用の架空のお店です）\nバーテンダーがその日の気分に合わせてカクテルをおつくりします。ウイスキーは常時80種類。",
+        price_system: "チャージ: 500円\nカクテル: 900円〜\nウイスキー: 800円〜\nサービス料: なし",
+        recruit_hiring: 1, recruit_trial_wage: "", recruit_wage: "時給 1,500円〜",
+        recruit_benefits: "まかないあり・交通費支給・未経験歓迎", recruit_hours: "18:00〜24:00のうち週2日〜",
+        recruit_message: "バーテンダー見習いを募集しています。", line_url: "https://lin.ee/demo-bar", tiktok_handle: "", admin_published: 1,
+      });
+      ins.run({
+        id: crypto.randomUUID(), user_id: null, slug: "demo-club-kabukicho", store_name: "CLUB ルミエール（デモ）", genre: "キャバクラ",
+        area: "歌舞伎町", access: "西武新宿駅から徒歩4分", address: "東京都新宿区歌舞伎町1丁目",
+        hours: "20:00〜翌1:00", holidays: "日曜",
+        catch_copy: "明朗会計の、歌舞伎町のキャバクラ。",
+        description: "（開発用の架空のお店です）\n料金はすべて店内・このページに掲示しています。初めての方も安心してどうぞ。",
+        price_system: "セット料金（60分）: 6,000円（20:00〜21:00は5,000円）\n延長（30分）: 3,500円\n指名料: 2,000円\n場内指名: 1,000円\nTAX・サービス料: 25%",
+        recruit_hiring: 1, recruit_trial_wage: "体入時給 5,000円", recruit_wage: "時給 4,000円〜",
+        recruit_benefits: "日払い・送りあり・ヘアメイク無料・ノルマなし・WワークOK", recruit_hours: "20:00〜翌1:00 週1日〜",
+        recruit_message: "", line_url: "https://lin.ee/demo-club", tiktok_handle: "", admin_published: 1,
+      });
+    }
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('listings_seeded_v1', '1')").run();
+  });
+  tx();
+}
+
 export function getDb(): Database.Database {
   if (!global.__db) {
     const fs = require("fs") as typeof import("fs");
@@ -716,6 +827,7 @@ export function getDb(): Database.Database {
     init(global.__db);
     syncRefAccounts(global.__db);
     seedIndustries(global.__db);
+    seedListings(global.__db);
   }
   return global.__db;
 }

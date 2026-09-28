@@ -153,6 +153,36 @@ export function getThumbnail(videoId: string): Promise<Buffer | null> {
   return queueThumbnail(videoId);
 }
 
+// ── 公開サイト: お店が手入力した TikTok 動画URLのサムネイル（ref_videos に無いもの） ──
+const extPath = (tiktokId: string) => path.join(THUMB_DIR, `ext-${tiktokId}.jpg`);
+
+export function readCachedExternalThumb(tiktokId: string): Buffer | null {
+  try {
+    return fs.readFileSync(extPath(tiktokId));
+  } catch {
+    return null;
+  }
+}
+
+/** oEmbed でサムネイルを取って縮小保存する（裏で。待たない） */
+export function queueExternalThumb(tiktokId: string, videoUrl: string): Promise<Buffer | null> {
+  if (!/^\d+$/.test(tiktokId)) return Promise.resolve(null);
+  if (fs.existsSync(extPath(tiktokId))) return Promise.resolve(readCachedExternalThumb(tiktokId));
+  return enqueue(`x:${tiktokId}`, async () => {
+    ensureThumbDir();
+    const fresh = await freshThumbUrl(videoUrl);
+    const buf = fresh ? await download(fresh) : null;
+    if (!buf) return null;
+    const small = await shrink(buf, 480);
+    try {
+      fs.writeFileSync(extPath(tiktokId), small);
+    } catch {
+      // 保存に失敗しても画像は返す
+    }
+    return small;
+  });
+}
+
 // ── アカウントのアイコン ──
 export function readCachedIcon(accountId: string): Buffer | null {
   try {

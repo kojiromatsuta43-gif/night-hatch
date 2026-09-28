@@ -1,7 +1,6 @@
 import { BRAND } from "@/lib/brand";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import AppShell from "@/components/AppShell";
 
 export const viewport: Viewport = { themeColor: "#140F1C" };
 
@@ -20,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Shippori+Mincho+B1:wght@700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-ink-950 text-hive-900 antialiased">
-        <AppShell>{children}</AppShell>
+        {children}
       </body>
     </html>
   );

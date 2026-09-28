@@ -1,5 +1,6 @@
 "use client";
 
+import ListingsPanel from "@/components/admin/ListingsPanel";
 import Link from "next/link";
 
 import { useCallback, useEffect, useState } from "react";
@@ -22,7 +23,7 @@ type IndustryRequest = { industry_name: string; count: number; last_at: string; 
 export default function AdminPage() {
   const { mascot } = useMascot();
   const { me } = useMe();
-  const [tab, setTab] = useState<"users" | "contracts" | "ng" | "chats" | "refs" | "industries" | "tiktok" | "ai" | "companydb">("users");
+  const [tab, setTab] = useState<"users" | "contracts" | "ng" | "chats" | "refs" | "industries" | "tiktok" | "ai" | "companydb" | "listings">("users");
   const [users, setUsers] = useState<User[]>([]);
   const [ngWords, setNgWords] = useState<NgWord[]>([]);
   const [monitor, setMonitor] = useState<{ messages: MonitorMessage[]; ngWords: string[] }>({ messages: [], ngWords: [] });
@@ -66,7 +67,7 @@ export default function AdminPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">管理</h1>
       <div className="mb-6 flex flex-wrap gap-2 text-sm">
-        {([["users", "ユーザー管理"], ["contracts", "契約管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
+        {([["users", "ユーザー管理"], ["contracts", "契約管理"], ["ng", "NGワード"], ["chats", "チャット監視"], ["refs", "参考アカウント"], ["tiktok", "TikTok取り込み"], ["listings", "サイト掲載"], ["industries", "業種タブ"], ["ai", "AI設定"], ["companydb", "企業DB"]] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 ${tab === k ? "bg-night-500 text-white" : "border border-slate-300 text-slate-600"}`}>{label}</button>
         ))}
         {/* フォーム営業は営業まわりの画面（/sales/form）にある。管理からも飛べるようにしておく */}
@@ -76,6 +77,7 @@ export default function AdminPage() {
       {tab === "contracts" && <PlanContractsPanel />}
       {tab === "ai" && <AiSettingsPanel />}
       {tab === "companydb" && <CompanyDbPanel />}
+      {tab === "listings" && <ListingsPanel />}
 
       {tab === "tiktok" && <TikTokSyncPanel industries={industries.filter((i) => i.active).map((i) => i.name)} />}
 

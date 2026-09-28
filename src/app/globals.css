@@ -259,3 +259,32 @@ h1, h2, .font-display {
 }
 .honey-drop { animation: honey-drop 1.8s ease-in infinite; }
 @media (prefers-reduced-motion: reduce) { .honey-drop { animation: none; opacity: 1; } }
+
+/* ============================================================
+   公開サイト Night HATCH（/site）
+   ============================================================ */
+/* 写真が無いお店の飾り: 放射状の細い光（アール・デコ風） */
+.deco-rays::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: repeating-conic-gradient(from 0deg at 50% 60%, rgba(212, 175, 106, 0.07) 0deg 2deg, transparent 2deg 12deg);
+  pointer-events: none;
+}
+/* トップの夜空（ほのかな光と星） */
+.site-hero {
+  background:
+    radial-gradient(90% 70% at 15% 0%, rgba(178, 58, 98, 0.32), transparent 60%),
+    radial-gradient(70% 60% at 100% 20%, rgba(212, 175, 106, 0.16), transparent 60%),
+    radial-gradient(1px 1px at 20% 30%, rgba(246, 235, 212, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 70% 18%, rgba(246, 235, 212, 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 85% 55%, rgba(246, 235, 212, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 40% 70%, rgba(246, 235, 212, 0.45), transparent 60%),
+    radial-gradient(1px 1px at 8% 80%, rgba(246, 235, 212, 0.5), transparent 60%),
+    #0F0C17;
+}
+/* 見出しの小さな英字ラベル（雑誌の章タイトル風） */
+.kicker { font-family: var(--font-latin); font-weight: 600; letter-spacing: 0.3em; font-size: 11px; color: #D4AF6A; text-transform: uppercase; }
+/* 横スクロールのバーを隠す（チップ列） */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

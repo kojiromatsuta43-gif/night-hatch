@@ -405,6 +405,8 @@ export async function classifyImported(maxAccounts = 600): Promise<{ checked: nu
                    SELECT caption FROM ref_videos v WHERE v.account_id = a.id ORDER BY views DESC LIMIT 3)) AS captions
            FROM ref_accounts a
           WHERE a.source = 'apify' AND a.classified_at = ''
+            -- 公開サイトに掲載しているお店の自店アカウントは審査で消さない（サイトの動画が消えるため）
+            AND lower(a.handle) NOT IN (SELECT lower(tiktok_handle) FROM listings WHERE tiktok_handle <> '')
           ORDER BY a.created_at LIMIT ?`
       )
       .all(maxAccounts) as { id: string; handle: string; name: string; bio: string; industry: string; followers: number; captions: string | null }[];
