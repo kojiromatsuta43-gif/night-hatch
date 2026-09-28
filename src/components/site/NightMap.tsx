@@ -133,6 +133,22 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
 
   const pickedStat = picked ? byArea.get(picked) : null;
 
+  // 名前が重なる近いエリア（歌舞伎町と新宿など）は、お店が多い方だけ名前を出す（少ない方は光だけ。下の一覧から選べる）
+  const fsOf = (l: Light) => (l.big ? 17 : 15) * u;
+  const shown = new Set<string>();
+  const boxes: [number, number, number, number][] = [];
+  for (const l of lights.slice().sort((a, b) => Number(!!b.big) - Number(!!a.big) || b.n - a.n)) {
+    const r = radius(l.n, l.big);
+    const fs = fsOf(l);
+    const w = Math.max(l.label.length * fs * 1.05, fs * 3);
+    const box: [number, number, number, number] = [l.x - w / 2, l.y - r * 0.9 - fs * 1.05, w, r * 1.8 + fs * 2.1];
+    const hit = boxes.some((b) => box[0] < b[0] + b[2] && b[0] < box[0] + box[2] && box[1] < b[1] + b[3] && b[1] < box[1] + box[3]);
+    if (!hit) {
+      shown.add(l.key);
+      boxes.push(box);
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* 飲みに行く／働く */}
@@ -193,21 +209,31 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
           {/* お店のある場所の光 */}
           {lights.map((l) => {
             const r = radius(l.n, l.big);
-            const fs = (l.big ? 17 : 15) * u;
             return (
               <g key={l.key} className="cursor-pointer" onClick={l.onClick} role="button" aria-label={`${l.label} ${l.n}件`}>
                 <circle cx={l.x} cy={l.y} r={r * 2.2} fill="url(#nm-glow)" className="nm-pulse" />
                 <circle cx={l.x} cy={l.y} r={r * 0.32} fill="#FFF4D6" />
-                <circle cx={l.x} cy={l.y} r={r * 2.4} fill="transparent" />
-                <text x={l.x} y={l.y - r * 0.9} textAnchor="middle" fontSize={fs} fontWeight={800} fill="#fff" stroke="#121733" strokeWidth={fs * 0.3} paintOrder="stroke" style={{ letterSpacing: "0.04em" }}>
-                  {l.label}
-                </text>
-                <text x={l.x} y={l.y + r * 0.9 + fs * 0.9} textAnchor="middle" fontSize={fs * 0.85} fontWeight={800} fill="#FFD27A" stroke="#121733" strokeWidth={fs * 0.26} paintOrder="stroke">
-                  {l.n}店{l.big ? " ›" : ""}
-                </text>
+                <circle cx={l.x} cy={l.y} r={r * 1.6} fill="transparent" />
               </g>
             );
           })}
+          {/* 名前と件数は光の上に（ほかの光に隠れないよう後から描く） */}
+          {lights
+            .filter((l) => shown.has(l.key))
+            .map((l) => {
+              const r = radius(l.n, l.big);
+              const fs = fsOf(l);
+              return (
+                <g key={`t-${l.key}`} className="cursor-pointer" onClick={l.onClick} aria-hidden="true">
+                  <text x={l.x} y={l.y - r * 0.9} textAnchor="middle" fontSize={fs} fontWeight={800} fill="#fff" stroke="#121733" strokeWidth={fs * 0.3} paintOrder="stroke" style={{ letterSpacing: "0.04em" }}>
+                    {l.label}
+                  </text>
+                  <text x={l.x} y={l.y + r * 0.9 + fs * 0.9} textAnchor="middle" fontSize={fs * 0.85} fontWeight={800} fill="#FFD27A" stroke="#121733" strokeWidth={fs * 0.26} paintOrder="stroke">
+                    {l.n}店{l.big ? " ›" : ""}
+                  </text>
+                </g>
+              );
+            })}
         </svg>
 
         {view === "japan" && (
