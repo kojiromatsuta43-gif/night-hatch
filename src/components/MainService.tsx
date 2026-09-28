@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Illust from "@/components/Illust";
 import { PointInline } from "@/components/MascotProvider";
-import { PlatformRow } from "@/components/PlatformIcons";
 import { useMe } from "@/components/AppShell";
 import { DEFAULT_SET_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 
@@ -20,21 +18,23 @@ export default function MainService({ showRefLink = true }: { showRefLink?: bool
   const href = (c: string) => `/order/create?category=${encodeURIComponent(c)}`;
 
   return (
-    <section className="night-glow overflow-hidden rounded-2xl border border-gold-300 shadow-sm">
-      <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center">
-        {/* 左: 見出し */}
-        <div className="flex items-center gap-4 lg:w-[38%] lg:shrink-0">
-          <Illust name="phone" className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
+    <section className="overflow-hidden rounded-2xl border border-gold-300 shadow-sm">
+      {/* バナー: ひと目で「TikTok動画をつくるサービス」と分かるように */}
+      <div className="relative overflow-hidden bg-[#0b0b10] px-5 py-6 text-white sm:px-7 sm:py-7">
+        <span className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#25F4EE]/15 blur-3xl" aria-hidden="true" />
+        <span className="pointer-events-none absolute -bottom-20 right-24 h-56 w-56 rounded-full bg-[#FE2C55]/20 blur-3xl" aria-hidden="true" />
+        <div className="relative flex items-center gap-4 sm:gap-6">
+          <TikTokGlyph className="h-16 w-16 shrink-0 sm:h-20 sm:w-20" />
           <div className="min-w-0">
-            <p className="font-latin text-[11px] font-bold tracking-[0.2em] text-gold-500">MAIN SERVICE</p>
-            <h2 className="mt-1 text-xl leading-snug text-hive-900 [word-break:auto-phrase] sm:text-2xl">TikTokのショート動画を、撮って送るだけ。</h2>
-            <p className="mt-1.5 text-xs leading-relaxed text-hive-500">伸びている夜のお店の動画をお手本に、編集までこちらで仕上げます。</p>
-            <span className="mt-2 flex h-5 items-center text-hive-700 [&_span]:gap-2"><PlatformRow category={DEFAULT_VIDEO_CATEGORY} className="h-5 w-5" /></span>
+            <p className="font-latin text-[11px] font-bold tracking-[0.2em] text-[#25F4EE]">MAIN SERVICE</p>
+            <h2 className="mt-0.5 font-display text-2xl leading-tight [word-break:auto-phrase] sm:text-4xl">TikTok動画、つくります。</h2>
+            <p className="mt-1.5 text-xs leading-relaxed text-white/80 sm:text-sm">求人も集客も。スマホで撮って送るだけで、伸びている夜のお店と同じ形に仕上げます。</p>
           </div>
         </div>
-
-        {/* 右: 2択 */}
-        <div className="grid flex-1 gap-3 sm:grid-cols-2">
+      </div>
+      <div className="night-glow flex flex-col gap-5 p-5 sm:p-6">
+        {/* 2択 */}
+        <div className="grid gap-3 sm:grid-cols-2">
           <Link href={href(DEFAULT_VIDEO_CATEGORY)} className="group flex flex-col rounded-xl border border-gold-200 bg-white p-4 transition-colors hover:border-gold-400 hover:bg-night-50">
             <span className="text-[11px] font-black tracking-widest text-gold-500">素材がある</span>
             <span className="mt-1 font-display text-lg text-hive-900">動画の編集</span>
@@ -57,9 +57,23 @@ export default function MainService({ showRefLink = true }: { showRefLink?: bool
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gold-200 px-5 py-3 text-xs sm:px-6">
-        {showRefLink ? <Link href="/order/reference" className="font-bold text-gold-500 hover:underline">▶ 伸びている夜のお店の動画から、お手本を選ぶ →</Link> : <span className="text-hive-500">どちらも TikTok・Instagramリール・YouTubeショートで使えます</span>}
+        {showRefLink ? <Link href="/order/reference" className="font-bold text-gold-500 hover:underline">▶ 伸びている夜のお店の動画から、お手本を選ぶ →</Link> : <span className="text-hive-500">できた動画は Instagramリール・YouTubeショートにもそのまま使えます</span>}
         {left !== null && <span className="text-hive-500">いまの残高で、編集なら あと約{left}本／台本つきなら あと約{leftSet}本</span>}
       </div>
     </section>
+  );
+}
+
+/** TikTok のロゴ風マーク（シアンと赤をずらして重ねる） */
+function TikTokGlyph({ className = "" }: { className?: string }) {
+  const d = "M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z";
+  return (
+    <span className={`grid place-items-center rounded-2xl bg-black ring-1 ring-white/10 ${className}`} role="img" aria-label="TikTok">
+      <svg viewBox="-2 -2 28 28" className="h-3/5 w-3/5 overflow-visible">
+        <path d={d} fill="#25F4EE" transform="translate(-0.9 -0.9)" />
+        <path d={d} fill="#FE2C55" transform="translate(0.9 0.9)" />
+        <path d={d} fill="#FFFFFF" />
+      </svg>
+    </span>
   );
 }

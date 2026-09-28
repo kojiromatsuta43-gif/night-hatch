@@ -110,6 +110,9 @@ export default function Home() {
         <div className="mt-3 h-px w-full bg-gradient-to-r from-gold-400 via-gold-200 to-transparent" aria-hidden="true" />
       </header>
 
+      {/* メインサービス: TikTokショート動画の編集（2択）。一番上のバナーとして出す */}
+      <MainService />
+
       {/* あいさつ＋今夜やること */}
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="flex items-end gap-4">
@@ -149,9 +152,6 @@ export default function Home() {
           )}
         </Link>
       </section>
-
-      {/* メインサービス: TikTokショート動画の編集（2択） */}
-      <MainService />
 
       {/* 今月のおすすめ */}
       <Link href={`/order/menu?group=${encodeURIComponent(pick.group)}`} className="group flex items-center gap-4 rounded-2xl border border-gold-300 bg-gold-50 px-5 py-4 shadow-sm transition-colors hover:bg-gold-100">
