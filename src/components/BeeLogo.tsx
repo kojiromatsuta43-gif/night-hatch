@@ -6,7 +6,7 @@ import { useId } from "react";
  * NIGHT HATCH のマスコット「ハッチ」— 黒服（ボーイ）仕様（2026-09-28 作り直し）。
  * はちみつ色の顔、オールバック、黒のスーツに白シャツと蝶ネクタイ、耳にインカム。
  * 暗い地で沈まないよう、全体に生成りの縁（ハロー）を敷いている。
- * 相方はドレスのハッチ（BeeGirl.tsx）。2人並べるときは HatchPair を使う。
+ * 相方はドレスのハッチ（BeeGirl.tsx）。2人は並べず、画面ごとに出る場所を分ける。
  */
 export default function BeeLogo({ className = "h-8 w-8" }: { className?: string }) {
   const clip = `kb-${useId().replace(/:/g, "")}`;

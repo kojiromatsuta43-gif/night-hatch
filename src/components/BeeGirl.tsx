@@ -3,78 +3,86 @@
 import { useId } from "react";
 
 /**
- * ドレスのハッチ（2026-09-28 作り直し）。ゆるく巻いたロングヘア、ワインのAラインドレス、
- * 金の星の髪飾りとネックレス。黒服のハッチ（BeeLogo.tsx）の相方。
+ * ドレスのハッチ（2026-09-28 作り直し・清楚きれい系）。茶髪のロングに センター分けの前髪、
+ * 淡いピンクのAラインドレス、パールの髪飾りとネックレス。体の輪郭線はドレスに重ねない。
+ * 黒服のハッチ（BeeLogo.tsx）の相方。2人は並べず、画面ごとに出る場所を分けている
+ * （ドレス: ログイン・メニュー／黒服: ロゴ・ホーム・ハッチに相談）。
  */
 export default function BeeGirl({ className = "h-8 w-8" }: { className?: string }) {
   const uid = useId().replace(/:/g, "");
-  const clip = `db-${uid}`;
   const grad = `dg-${uid}`;
+  const hair = `hg-${uid}`;
   return (
     <svg viewBox="0 0 64 64" className={className} role="img" aria-label="ドレスのハッチ">
 
   <defs>
-    <clipPath id={clip}><rect x="17" y="14" width="30" height="40" rx="15"/></clipPath>
     <linearGradient id={grad} x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stopColor="#D84A7E"/><stop offset="1" stopColor="#9A2753"/>
+      <stop offset="0" stopColor="#FBE3EA"/><stop offset="1" stopColor="#EDB9C9"/>
+    </linearGradient>
+    <linearGradient id={hair} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stopColor="#9A6240"/><stop offset="1" stopColor="#7A4A30"/>
     </linearGradient>
   </defs>
   {/* halo */}
   <g fill="#F6EFE2" stroke="#F6EFE2" strokeLinejoin="round" strokeWidth="4">
-    <ellipse cx="11.5" cy="29" rx="10" ry="6.5" transform="rotate(-20 11.5 29)"/>
-    <ellipse cx="52.5" cy="29" rx="10" ry="6.5" transform="rotate(20 52.5 29)"/>
-    <path d="M32 11 C20 11 14 19 14 29 C14 36 12 41 13.5 45 C16 47 18 46 19 44 L45 44 C46 46 48 47 50.5 45 C52 41 50 36 50 29 C50 19 44 11 32 11 Z"/>
-    <path d="M20 40 H44 L50 61 H14 Z"/>
-    <path d="M26 15 C24 9 21 6 17 5.5" fill="none"/><path d="M38 15 C40 9 43 6 47 5.5" fill="none"/>
-    <circle cx="16.5" cy="5.5" r="3.2"/><circle cx="47.5" cy="5.5" r="3.2"/>
+    <ellipse cx="11" cy="31" rx="9.5" ry="6" transform="rotate(-20 11 31)"/>
+    <ellipse cx="53" cy="31" rx="9.5" ry="6" transform="rotate(20 53 31)"/>
+    <path d="M32 11 C20 11 15.5 19 15.5 28 C15.5 36 14 44 15 50 L20 50 L16 61 H48 L44 50 L49 50 C50 44 48.5 36 48.5 28 C48.5 19 44 11 32 11 Z"/>
+    <path d="M27 14 C25 8.5 22 6 18.5 5.8" fill="none"/><path d="M37 14 C39 8.5 42 6 45.5 5.8" fill="none"/>
+    <circle cx="18" cy="5.8" r="3"/><circle cx="46" cy="5.8" r="3"/>
   </g>
   {/* antennae */}
-  <path d="M26 15 C24 9 21 6 17 5.5" stroke="#1C1522" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
-  <path d="M38 15 C40 9 43 6 47 5.5" stroke="#1C1522" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
-  <circle cx="16.5" cy="5.5" r="2.8" fill="#FFC62E" stroke="#1C1522" strokeWidth="1.6"/>
-  <circle cx="47.5" cy="5.5" r="2.8" fill="#FFC62E" stroke="#1C1522" strokeWidth="1.6"/>
+  <path d="M27 14 C25 8.5 22 6 18.5 5.8" stroke="#2A1D24" strokeWidth="2" fill="none" strokeLinecap="round"/>
+  <path d="M37 14 C39 8.5 42 6 45.5 5.8" stroke="#2A1D24" strokeWidth="2" fill="none" strokeLinecap="round"/>
+  <circle cx="18" cy="5.8" r="2.5" fill="#FFD24A" stroke="#2A1D24" strokeWidth="1.4"/>
+  <circle cx="46" cy="5.8" r="2.5" fill="#FFD24A" stroke="#2A1D24" strokeWidth="1.4"/>
   {/* wings */}
-  <ellipse cx="11.5" cy="29" rx="10" ry="6.5" fill="#FDEAF3" stroke="#1C1522" strokeWidth="1.8" transform="rotate(-20 11.5 29)"/>
-  <ellipse cx="52.5" cy="29" rx="10" ry="6.5" fill="#FDEAF3" stroke="#1C1522" strokeWidth="1.8" transform="rotate(20 52.5 29)"/>
-  {/* long wavy hair (behind) */}
-  <path d="M32 11 C20 11 14 19 14 29 C14 36 12 41 13.5 45 C16 47 18 46 19 44 C17 41 18 38 19.5 36 L44.5 36 C46 38 47 41 45 44 C46 46 48 47 50.5 45 C52 41 50 36 50 29 C50 19 44 11 32 11 Z" fill="#7A4130" stroke="#1C1522" strokeWidth="1.8" strokeLinejoin="round"/>
-  {/* hair waves */}
-  <path d="M17 31 C15.5 34 17.5 36.5 15.8 39.5 C14.8 41.5 15.8 43.5 17.5 44" stroke="#B0715A" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
-  <path d="M47 31 C48.5 34 46.5 36.5 48.2 39.5 C49.2 41.5 48.2 43.5 46.5 44" stroke="#B0715A" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
-  <path d="M13.8 44.6 C12.6 46.6 13.6 48.4 15.6 48 C17 47.6 17.2 46 16 45.5" fill="#7A4130" stroke="#1C1522" strokeWidth="1.4" strokeLinejoin="round"/>
-  <path d="M50.2 44.6 C51.4 46.6 50.4 48.4 48.4 48 C47 47.6 46.8 46 48 45.5" fill="#7A4130" stroke="#1C1522" strokeWidth="1.4" strokeLinejoin="round"/>
-  {/* dress skirt (A-line, flares past body) */}
-  <path d="M20 42 C25 40.5 28 43 32 41.5 C36 43 39 40.5 44 42 L49.5 60 C44 61.5 38 61 32 61.5 C26 61 20 61.5 14.5 60 Z" fill={`url(#${grad})`} stroke="#1C1522" strokeWidth="1.8" strokeLinejoin="round"/>
-  {/* face / upper body */}
-  <g clipPath={`url(#${clip})`}>
-    <rect x="17" y="14" width="30" height="40" fill="#FFD24A"/>
-    {/* side-swept bangs */}
-    <path d="M15 12 H49 V26 C46.5 22 44.5 19 43.5 17.5 C40 21 34 22.5 29 20.5 C26 22.5 22 24 18.5 23.5 C17.5 25 16 26 15 27 Z" fill="#7A4130"/>
-    <path d="M22.5 18.2 C27 15.6 33 15.2 38 16.6" stroke="#B0715A" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-    {/* bodice */}
-    <path d="M15 41.5 C22 39 27 42.5 32 40.5 C37 42.5 42 39 49 41.5 V56 H15 Z" fill={`url(#${grad})`}/>
-    <path d="M24.5 38.4 C28.5 40.4 35.5 40.4 39.5 38.4" stroke="#E7C57A" strokeWidth="1" fill="none"/>
-    <circle cx="32" cy="40" r="1.3" fill="#EEF7FF" stroke="#D4AF6A" strokeWidth="0.7"/>
-  </g>
-  <rect x="17" y="14" width="30" height="40" rx="15" fill="none" stroke="#1C1522" strokeWidth="2.4"/>
-  {/* waist ribbon */}
-  <path d="M19.5 50 C26 51.5 38 51.5 44.5 50" stroke="#E7C57A" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
-  {/* sparkles */}
-  <g fill="#FBE3A4"><circle cx="23" cy="56" r="0.9"/><circle cx="30" cy="58.5" r="0.7"/><circle cx="37" cy="55.5" r="0.9"/><circle cx="43" cy="58" r="0.7"/><circle cx="27" cy="47" r="0.6"/><circle cx="38" cy="46" r="0.6"/></g>
-  {/* hair accessory */}
-  <g transform="translate(40.5 16.5)">
-    <path d="M0 -3.2 L0.9 -0.9 L3.2 0 L0.9 0.9 L0 3.2 L-0.9 0.9 L-3.2 0 L-0.9 -0.9 Z" fill="#F6D98E" stroke="#1C1522" strokeWidth="0.9" strokeLinejoin="round"/>
-  </g>
+  <ellipse cx="11" cy="31" rx="9.5" ry="6" fill="#FFF3F7" stroke="#2A1D24" strokeWidth="1.6" transform="rotate(-20 11 31)"/>
+  <ellipse cx="53" cy="31" rx="9.5" ry="6" fill="#FFF3F7" stroke="#2A1D24" strokeWidth="1.6" transform="rotate(20 53 31)"/>
+  {/* back hair: long, straight with soft inward ends */}
+  <path d="M32 11 C20 11 15.5 19 15.5 28 C15.5 36 14 44 15.5 50 C18 51.5 21 50.5 22 48 L22 36 L42 36 L42 48 C43 50.5 46 51.5 48.5 50 C50 44 48.5 36 48.5 28 C48.5 19 44 11 32 11 Z" fill={`url(#${hair})`} stroke="#2A1D24" strokeWidth="1.6" strokeLinejoin="round"/>
+  {/* dress (A-line, no body outline across it) */}
+  <path d="M23 39.5 C26 41.5 29 42 32 42 C35 42 38 41.5 41 39.5 L43 46 L47.5 60.5 C42 61.8 37 62 32 62 C27 62 22 61.8 16.5 60.5 L21 46 Z" fill={`url(#${grad})`} stroke="#2A1D24" strokeWidth="1.6" strokeLinejoin="round"/>
+  {/* dress details */}
+  <path d="M21.6 46.5 C26 48 38 48 42.4 46.5" stroke="#FFFFFF" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.9"/>
+  <path d="M29 49 C28 53 27 57 25.5 60.8 M35 49 C36 53 37 57 38.5 60.8" stroke="#E29AB0" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+  {/* small bow at waist */}
+  <path d="M32 47.2 L28.8 45.4 L28.8 49 Z M32 47.2 L35.2 45.4 L35.2 49 Z" fill="#FFFFFF" stroke="#2A1D24" strokeWidth="0.8" strokeLinejoin="round"/>
+  <circle cx="32" cy="47.2" r="0.9" fill="#E29AB0"/>
   {/* face */}
-  <ellipse cx="26.5" cy="30" rx="2.8" ry="3.3" fill="#1C1522"/>
-  <ellipse cx="37.5" cy="30" rx="2.8" ry="3.3" fill="#1C1522"/>
-  <circle cx="27.5" cy="28.7" r="1.2" fill="#FFFFFF"/><circle cx="38.5" cy="28.7" r="1.2" fill="#FFFFFF"/>
-  <circle cx="25.7" cy="31.4" r="0.5" fill="#FFFFFF"/><circle cx="36.7" cy="31.4" r="0.5" fill="#FFFFFF"/>
-  <path d="M23.7 28.1 L22 27 M24.2 26.8 L22.9 25.3" stroke="#1C1522" strokeWidth="1.2" strokeLinecap="round"/>
-  <path d="M40.3 28.1 L42 27 M39.8 26.8 L41.1 25.3" stroke="#1C1522" strokeWidth="1.2" strokeLinecap="round"/>
-  <path d="M29.8 35 C31 36.1 33 36.1 34.2 35" stroke="#B23A62" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-  <circle cx="22.6" cy="34" r="2.2" fill="#F48FAE" opacity="0.85"/>
-  <circle cx="41.4" cy="34" r="2.2" fill="#F48FAE" opacity="0.85"/>
+  <path d="M32 14.5 C24 14.5 19.5 20 19.5 27.5 C19.5 35 25 40 32 40 C39 40 44.5 35 44.5 27.5 C44.5 20 40 14.5 32 14.5 Z" fill="#FFD95E" stroke="#2A1D24" strokeWidth="1.8"/>
+  {/* pearl necklace */}
+  <path d="M26.5 41.2 C29.5 43 34.5 43 37.5 41.2" stroke="#FFFFFF" strokeWidth="1.3" strokeDasharray="0.1 1.8" strokeLinecap="round" fill="none"/>
+  {/* front bangs: soft center-part curtain bangs */}
+  <path d="M32 14 C25.5 14 20.4 18.2 19.5 26.5 C21.8 22.6 25.6 20.3 29.6 19.8 C30.9 18.3 31.7 16.3 32 14 Z" fill={`url(#${hair})`} stroke="#2A1D24" strokeWidth="1.4" strokeLinejoin="round"/>
+  <path d="M32 14 C38.5 14 43.6 18.2 44.5 26.5 C42.2 22.6 38.4 20.3 34.4 19.8 C33.1 18.3 32.3 16.3 32 14 Z" fill={`url(#${hair})`} stroke="#2A1D24" strokeWidth="1.4" strokeLinejoin="round"/>
+  <path d="M23.5 18.6 C25.5 16.8 28 16 30 16" stroke="#C99270" strokeWidth="1" fill="none" strokeLinecap="round"/>
+  <path d="M40.5 18.6 C38.5 16.8 36 16 34 16" stroke="#C99270" strokeWidth="1" fill="none" strokeLinecap="round"/>
+  {/* side locks framing face */}
+  <path d="M19.6 26 C18.8 31 19.5 36 21.5 39.5" stroke="#2A1D24" strokeWidth="1.4" fill={`url(#${hair})`} strokeLinejoin="round"/>
+  <path d="M44.4 26 C45.2 31 44.5 36 42.5 39.5" stroke="#2A1D24" strokeWidth="1.4" fill={`url(#${hair})`} strokeLinejoin="round"/>
+  {/* pearl hair clip */}
+  <g fill="#FFFFFF" stroke="#2A1D24" strokeWidth="0.8">
+    <circle cx="39.6" cy="19.2" r="1.3"/><circle cx="41.6" cy="20.6" r="1.1"/><circle cx="37.8" cy="18.2" r="1"/>
+  </g>
+  {/* eyes: big, gentle */}
+  <ellipse cx="26.6" cy="29.2" rx="2.7" ry="3.2" fill="#3A2530"/>
+  <ellipse cx="37.4" cy="29.2" rx="2.7" ry="3.2" fill="#3A2530"/>
+  <ellipse cx="26.6" cy="30.4" rx="1.8" ry="1.5" fill="#7A4A5A"/>
+  <ellipse cx="37.4" cy="30.4" rx="1.8" ry="1.5" fill="#7A4A5A"/>
+  <circle cx="27.6" cy="27.9" r="1.15" fill="#FFFFFF"/><circle cx="38.4" cy="27.9" r="1.15" fill="#FFFFFF"/>
+  <circle cx="25.7" cy="31" r="0.45" fill="#FFFFFF"/><circle cx="36.5" cy="31" r="0.45" fill="#FFFFFF"/>
+  {/* upper lash line + one soft flick */}
+  <path d="M23.6 27.6 C24.8 25.6 28.4 25.4 29.6 27.2" stroke="#2A1D24" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+  <path d="M40.4 27.6 C39.2 25.6 35.6 25.4 34.4 27.2" stroke="#2A1D24" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+  <path d="M23.7 27.5 L22.6 26.8 M40.3 27.5 L41.4 26.8" stroke="#2A1D24" strokeWidth="1" strokeLinecap="round"/>
+  {/* soft brows */}
+  <path d="M24.6 23.9 C25.8 23.3 27.2 23.3 28.3 23.7" stroke="#8A5A40" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+  <path d="M39.4 23.9 C38.2 23.3 36.8 23.3 35.7 23.7" stroke="#8A5A40" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+  {/* smile, cheeks */}
+  <path d="M30.4 34.6 C31.3 35.5 32.7 35.5 33.6 34.6" stroke="#C0506E" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+  <ellipse cx="23.4" cy="33.2" rx="2.2" ry="1.4" fill="#F7A3B8" opacity="0.75"/>
+  <ellipse cx="40.6" cy="33.2" rx="2.2" ry="1.4" fill="#F7A3B8" opacity="0.75"/>
 
     </svg>
   );

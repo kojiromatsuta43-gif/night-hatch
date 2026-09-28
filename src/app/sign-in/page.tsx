@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import BeeLogo from "@/components/BeeLogo";
-import { HatchPair } from "@/components/MascotProvider";
+import BeeGirl from "@/components/BeeGirl";
 import Illust from "@/components/Illust";
 
 export default function SignInPage() {
@@ -58,7 +58,7 @@ export default function SignInPage() {
           </div>
         </div>
         <div className="relative hidden items-end gap-3 md:flex">
-          <HatchPair className="h-24 w-24" />
+          <BeeGirl className="h-24 w-24 animate-bee-float" />
           <div className="mb-4 rounded-2xl border border-gold-300 bg-ink-800 px-4 py-2.5 text-sm font-bold text-hive-900">おはようございます！</div>
         </div>
       </div>
