@@ -5,6 +5,7 @@ import { useMe } from "@/components/AppShell";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TikTokGlyph from "@/components/TikTokGlyph";
+import TikTokPlayer, { useTikTokPreconnect } from "@/components/TikTokPlayer";
 import Illust from "@/components/Illust";
 import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
@@ -73,14 +74,14 @@ export default function OrderPage() {
   const canOrder = me?.role !== "freelancer";
   const router = useRouter();
   const [accounts, setAccounts] = useState<RefAccount[]>([]);
+  // 動画を押す前に TikTok への接続を張っておく（最初の1本を速くする）
+  useTikTokPreconnect();
   const [industry, setIndustry] = useState("すべて");
   const [industries, setIndustries] = useState<Industry[]>([]);
   const [requested, setRequested] = useState<string[]>([]);
   const [requesting, setRequesting] = useState(false);
   const [selected, setSelected] = useState<RefAccount | null>(null);
   const [video, setVideo] = useState<RefVideo | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [videoSort, setVideoSort] = useState<VideoSort>("views");
@@ -300,7 +301,7 @@ export default function OrderPage() {
                     key={t.id}
                     onClick={() => {
                       const acc = accounts.find((a) => a.id === t.account_id);
-                      if (acc) void openAccount(acc).then(() => { setVideo(t); setPlaying(false); setPlayerReady(false); });
+                      if (acc) void openAccount(acc).then(() => { setVideo(t); });
                     }}
                     className="group relative w-32 shrink-0 overflow-hidden rounded-xl text-left"
                     style={{ aspectRatio: "9/16", background: `linear-gradient(160deg, hsl(${t.hue}, 45%, 30%), hsl(${t.hue + 30}, 50%, 15%))` }}
@@ -376,7 +377,7 @@ export default function OrderPage() {
         </>
       ) : (
         <>
-          <button onClick={() => { setSelected(null); setVideo(null); setPlaying(false); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
+          <button onClick={() => { setSelected(null); setVideo(null); }} className="mb-4 rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100">
             ← アカウント一覧に戻る
           </button>
           <div className="mb-6 flex items-center gap-4 rounded-xl border border-night-200 bg-night-50/50 px-5 py-4">
@@ -425,7 +426,7 @@ export default function OrderPage() {
             {sortedVideos.map((v) => (
               <button
                 key={v.id}
-                onClick={() => { setVideo(v); setPlaying(false); setPlayerReady(false); }}
+                onClick={() => { setVideo(v); }}
                 className="group relative aspect-[9/16] overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02]"
                 style={{ background: `linear-gradient(160deg, hsl(${v.hue}, 45%, 30%), hsl(${v.hue + 30}, 50%, 15%))` }}
               >
@@ -458,32 +459,23 @@ export default function OrderPage() {
       )}
 
       {video && selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => { setVideo(null); setPlaying(false); }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => { setVideo(null); }}>
           <div className="w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-start justify-between">
               <h3 className="text-sm font-bold">動画プレビュー</h3>
-              <button onClick={() => { setVideo(null); setPlaying(false); }} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => { setVideo(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
-            {tiktokVideoId(video.url) && playing ? (
-              <div className="relative mx-auto h-[480px] w-[270px]">
-                {!playerReady && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-slate-100 text-xs text-slate-500">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-night-500" />
-                    TikTokを読み込んでいます…
-                  </div>
-                )}
-                <iframe
-                  src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(video.url)}`}
-                  className="h-full w-full rounded-xl border-0"
-                  allow="encrypted-media; fullscreen; autoplay"
-                  onLoad={() => setPlayerReady(true)}
-                  title={video.caption}
-                />
-              </div>
+            {tiktokVideoId(video.url) ? (
+              // 開いた時点で読み込み・自動再生する（押し直し不要）
+              <TikTokPlayer
+                videoId={tiktokVideoId(video.url)!}
+                poster={thumbUrl(video.id)}
+                title={video.caption}
+                className="mx-auto h-[min(480px,62vh)] w-[min(270px,35vh)] rounded-xl"
+              />
             ) : (
               <button
                 type="button"
-                onClick={() => tiktokVideoId(video.url) && setPlaying(true)}
                 className="group relative mx-auto flex aspect-[9/16] w-[270px] items-end overflow-hidden rounded-xl p-3"
                 style={{ background: `linear-gradient(160deg, hsl(${video.hue}, 45%, 30%), hsl(${video.hue + 30}, 50%, 15%))` }}
               >

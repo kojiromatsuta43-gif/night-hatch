@@ -1,5 +1,6 @@
 "use client";
 
+import TikTokPlayer from "@/components/TikTokPlayer";
 import { useState } from "react";
 import { api } from "@/lib/client";
 import AiUsage from "@/components/AiUsage";
@@ -104,12 +105,7 @@ export default function VideoAnalysisPage() {
           {(result.thumbnail || tiktokVideoId(url)) && (
             <div className="flex flex-wrap items-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
               {tiktokVideoId(url) ? (
-                <iframe
-                  src={`https://www.tiktok.com/embed/v2/${tiktokVideoId(url)}`}
-                  className="h-[420px] w-[240px] shrink-0 rounded-xl border-0"
-                  allow="encrypted-media; fullscreen"
-                  title="元の動画"
-                />
+<TikTokPlayer videoId={tiktokVideoId(url)!} title="元の動画" className="h-[420px] w-[240px] shrink-0 rounded-xl" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={result.thumbnail} alt="" className="h-40 w-auto shrink-0 rounded-lg border border-slate-200 object-cover" />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { retryImage } from "@/lib/client-img";
+import TikTokPlayer, { useTikTokPreconnect } from "@/components/TikTokPlayer";
 
 export type GridVideo = {
   key: string;
@@ -18,12 +19,13 @@ const fmtViews = (n: number) => (n >= 10000 ? `${(n / 10000).toFixed(1)}万回` 
 
 /**
  * お店の TikTok 動画。はじめはサムネイルだけ（遅延読み込み）で、押したときに TikTok の公式埋め込み
- * （www.tiktok.com/embed/v2/…。ツールのお手本動画と同じ）を重ねて開く。スマホでもページが重くならない。
+ * （TikTok 公式の軽い再生専用プレイヤー player/v1。開いたらすぐ自動再生）を重ねて開く。スマホでもページが重くならない。
  * layout="strip" は横スクロール（トップの「今週の動画」）。
  */
 export default function VideoGrid({ videos, layout = "grid" }: { videos: GridVideo[]; layout?: "grid" | "strip" }) {
   const [open, setOpen] = useState<GridVideo | null>(null);
-  const [ready, setReady] = useState(false);
+  // 動画を押す前に TikTok への接続を張っておく（最初の1本を速くする）
+  useTikTokPreconnect();
 
   useEffect(() => {
     if (!open) return;
@@ -49,10 +51,7 @@ export default function VideoGrid({ videos, layout = "grid" }: { videos: GridVid
           <li key={v.key}>
             <button
               type="button"
-              onClick={() => {
-                setReady(false);
-                setOpen(v);
-              }}
+              onClick={() => setOpen(v)}
               className="group relative block aspect-[9/16] w-full overflow-hidden rounded-xl border border-gold-200/60 bg-gradient-to-br from-night-200 via-ink-700 to-ink-900 text-left"
               aria-label={`${v.store ? v.store.name + "の" : ""}動画を再生`}
             >
@@ -94,21 +93,7 @@ export default function VideoGrid({ videos, layout = "grid" }: { videos: GridVid
                 閉じる ✕
               </button>
             </div>
-            <div className="relative h-[min(600px,76vh)] w-full overflow-hidden rounded-xl bg-ink-900">
-              {!ready && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs text-hive-500">
-                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-gold-500" />
-                  TikTokを読み込んでいます…
-                </div>
-              )}
-              <iframe
-                src={`https://www.tiktok.com/embed/v2/${open.tiktokId}`}
-                className="relative h-full w-full border-0"
-                allow="encrypted-media; fullscreen; autoplay"
-                onLoad={() => setReady(true)}
-                title="TikTok動画"
-              />
-            </div>
+            <TikTokPlayer videoId={open.tiktokId} poster={open.thumb ?? undefined} title="TikTok動画" className="h-[min(600px,76vh)] w-full rounded-xl" />
             <a href={open.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-center text-xs text-white/70 underline-offset-2 hover:underline">
               TikTokのアプリ・サイトで見る
             </a>
