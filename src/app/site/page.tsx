@@ -124,7 +124,7 @@ export default async function SiteTop() {
                 layout="strip"
                 videos={videos.map((v) => ({
                   ...v,
-                  store: { name: v.store.store_name, href: `${base}/stores/${v.store.slug}`, label: `${v.store.genre}・${v.store.area}` },
+                  store: { name: v.store.store_name, href: `${base}/stores/${v.store.slug}`, label: [v.store.genre, v.store.area].filter(Boolean).join("・") },
                 }))}
               />
             </div>

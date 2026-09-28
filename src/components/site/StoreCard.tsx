@@ -15,7 +15,7 @@ export default function StoreCard({ l, base, variant = "drink" }: { l: Listing; 
           <StoreCover photo={l.photos[0]} genre={l.genre} alt={l.store_name} />
         </div>
         <span className="absolute left-3 top-3 rounded-full border border-gold-300/40 bg-ink-950/75 px-2.5 py-1 text-[11px] font-bold text-gold-600 backdrop-blur">
-          {l.genre}・{l.area}
+          {[l.genre, l.area].filter(Boolean).join("・")}
         </span>
         {variant === "work" && wage && (
           <span className="absolute bottom-3 left-3 max-w-[85%] truncate rounded-lg bg-night-500 px-2.5 py-1 text-[12px] font-bold text-white shadow-lg">
