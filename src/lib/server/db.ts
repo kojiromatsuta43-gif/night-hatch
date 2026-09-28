@@ -113,6 +113,24 @@ export const TIKTOK_SEARCH_SEED: [string, string][] = [
   ["ナイトワーク 求人", "キャバクラ"],
 ];
 
+/**
+ * 2回目の初期値（2026-09-28）: お店の公式アカウントを拾いやすい検索語・タグ。
+ * 例として名前の挙がった JUNGLE TOKYO（歌舞伎町）も入れておく。
+ */
+export const TIKTOK_STORE_SEED: ["search" | "hashtag", string, string][] = [
+  ["search", "ジャングル東京", "キャバクラ"],
+  ["hashtag", "jungletokyo", "キャバクラ"],
+  ["search", "キャバクラ 公式", "キャバクラ"],
+  ["search", "歌舞伎町 キャバクラ 公式", "キャバクラ"],
+  ["search", "キャバクラ 店内紹介", "キャバクラ"],
+  ["search", "ラウンジ 公式", "ラウンジ"],
+  ["search", "会員制ラウンジ 店内", "ラウンジ"],
+  ["search", "ガールズバー 公式", "ガールズバー"],
+  ["search", "スナック 公式", "スナック"],
+  ["search", "バー 店内紹介", "バー"],
+  ["search", "オーセンティックバー", "バー"],
+];
+
 // デプロイ先では永続ボリュームのパスを DATA_DIR で指定する（例: /data）
 export const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
@@ -652,6 +670,13 @@ function seedIndustries(db: Database.Database) {
     const insQuery = db.prepare("INSERT OR IGNORE INTO tiktok_queries (id, kind, value, industry) VALUES (?, 'search', ?, ?)");
     for (const [value, industry] of TIKTOK_SEARCH_SEED) insQuery.run(crypto.randomUUID(), value, industry);
     db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_queries_seeded_for', ?)").run(BRAND.id);
+  }
+  // お店の公式アカウント向けの検索語・タグ（2回目の初期値）。1回だけ入れる。
+  const storeSeeded = db.prepare("SELECT value FROM app_meta WHERE key = 'tiktok_store_queries_v1'").get() as { value: string } | undefined;
+  if (!storeSeeded) {
+    const insStore = db.prepare("INSERT OR IGNORE INTO tiktok_queries (id, kind, value, industry) VALUES (?, ?, ?, ?)");
+    for (const [kind, value, industry] of TIKTOK_STORE_SEED) insStore.run(crypto.randomUUID(), kind, value, industry);
+    db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES ('tiktok_store_queries_v1', '1')").run();
   }
   // 参考アカウント側にしかない業種名は、取りこぼさないよう自動で末尾に足す
   db.prepare(
