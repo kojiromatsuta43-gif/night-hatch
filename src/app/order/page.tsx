@@ -10,6 +10,7 @@ import { api } from "@/lib/client";
 import { BRAND, catalogGroups, type CatalogItem } from "@/lib/brand";
 import { retryImage, iconUrl } from "@/lib/client-img";
 import Illust, { GROUP_ILLUST } from "@/components/Illust";
+import MainService from "@/components/MainService";
 import { seasonalPick } from "@/lib/seasonal";
 
 type RefAccount = { id: string; name: string; handle: string; icon_url: string; followers: number };
@@ -62,6 +63,27 @@ function SimpleOrderTop() {
         </div>
       </div>
 
+      {/* メインサービス: TikTokショート動画の編集（2択） */}
+      <div className="mb-4"><MainService showRefLink={false} /></div>
+
+      {/* お手本からまねる／ハッチに相談（下にあると見落とすので上に） */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2">
+        <Link href="/order/reference" className="group flex items-center gap-4 rounded-2xl bg-night-500 px-6 py-5 text-white shadow-sm transition-colors hover:bg-night-600">
+          <span className="hex flex h-12 w-12 shrink-0 items-center justify-center bg-honey-400 text-xl text-ink-900" aria-hidden="true">▶</span>
+          <span>
+            <span className="block font-display text-lg">伸びている夜のお店の動画をまねる</span>
+            <span className="mt-1 block text-xs text-white/80">お手本の動画を選ぶと、台本と動画編集の発注にそのまま進めます</span>
+          </span>
+        </Link>
+        <Link href="/agent" className="group flex items-center gap-4 rounded-2xl border border-gold-200 bg-white px-6 py-5 shadow-sm transition-colors hover:bg-night-50">
+          <Mascot className="h-12 w-12 shrink-0" />
+          <span>
+            <span className="block font-display text-lg text-hive-900">{mascot.consult}</span>
+            <span className="mt-1 block text-xs text-hive-500">「求人原稿を作りたい」「イベントの告知を考えたい」など、話しかけるだけで整理します</span>
+          </span>
+        </Link>
+      </div>
+
       {/* 今月のおすすめ */}
       {(() => {
         const pick = seasonalPick(new Date().getMonth() + 1);
@@ -82,7 +104,7 @@ function SimpleOrderTop() {
         <h1 className="text-2xl text-hive-900">メニュー</h1>
         <span className="font-latin text-xs text-gold-500">MENU</span>
       </div>
-      <p className="page-sub mb-5">いちばん近い困りごとを押すと、頼めるメニューと値段が出ます。迷ったら下の「ハッチに相談」へ。</p>
+      <p className="page-sub mb-5">いちばん近い困りごとを押すと、頼めるメニューと値段が出ます。迷ったら上の「ハッチに相談」へ。</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {BRAND.groups.map((g, i) => {
           const tone = GROUP_TONES[g.name] ?? GROUP_TONES["運営"];
@@ -113,22 +135,6 @@ function SimpleOrderTop() {
         })}
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <Link href="/order/reference" className="group flex items-center gap-4 rounded-2xl bg-night-500 px-6 py-5 text-white shadow-sm transition-colors hover:bg-night-600">
-          <span className="hex flex h-12 w-12 shrink-0 items-center justify-center bg-honey-400 text-xl text-ink-900" aria-hidden="true">▶</span>
-          <span>
-            <span className="block font-display text-lg">伸びている夜のお店の動画をまねる</span>
-            <span className="mt-1 block text-xs text-white/80">お手本の動画を選ぶと、台本と動画編集の発注にそのまま進めます</span>
-          </span>
-        </Link>
-        <Link href="/agent" className="group flex items-center gap-4 rounded-2xl border border-gold-200 bg-white px-6 py-5 shadow-sm transition-colors hover:bg-night-50">
-          <Mascot className="h-12 w-12 shrink-0" />
-          <span>
-            <span className="block font-display text-lg text-hive-900">{mascot.consult}</span>
-            <span className="mt-1 block text-xs text-hive-500">「求人原稿を作りたい」「イベントの告知を考えたい」など、話しかけるだけで整理します</span>
-          </span>
-        </Link>
-      </div>
     </div>
   );
 }

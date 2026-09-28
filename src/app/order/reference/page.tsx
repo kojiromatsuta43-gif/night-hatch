@@ -7,7 +7,7 @@ import Link from "next/link";
 import Illust from "@/components/Illust";
 import { api } from "@/lib/client";
 import PlatformIcon from "@/components/PlatformIcon";
-import { DEFAULT_SCRIPT_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
+import { DEFAULT_SET_CATEGORY, DEFAULT_VIDEO_CATEGORY, POINTS_BY_CATEGORY } from "@/lib/data";
 import { PointInline } from "@/components/MascotProvider";
 import { retryImage, thumbUrl, iconUrl } from "@/lib/client-img";
 
@@ -520,13 +520,14 @@ export default function OrderPage() {
               <>
                 <p className="mt-4 text-center text-sm font-medium">この動画を参考に発注しますか？</p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
-                  <button onClick={() => order(DEFAULT_SCRIPT_CATEGORY)} className="rounded-lg bg-night-500 py-2.5 text-sm font-medium text-white hover:bg-night-600">
-                    台本作成で発注
-                    <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_SCRIPT_CATEGORY]}<PointInline /></span>
+                  <button onClick={() => order(DEFAULT_VIDEO_CATEGORY)} className="rounded-lg border border-gold-300 bg-ink-700 py-2.5 text-sm font-medium text-hive-900 hover:bg-ink-600">
+                    動画の編集
+                    <span className="block text-[10px] font-normal opacity-80">撮った素材を送るだけ・{POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}<PointInline /></span>
                   </button>
-                  <button onClick={() => order(DEFAULT_VIDEO_CATEGORY)} className="rounded-lg bg-emerald-500 py-2.5 text-sm font-medium text-white hover:brightness-110">
-                    動画編集で発注
-                    <span className="block text-[10px] font-normal opacity-80">{POINTS_BY_CATEGORY[DEFAULT_VIDEO_CATEGORY]}<PointInline /></span>
+                  <button onClick={() => order(DEFAULT_SET_CATEGORY)} className="relative rounded-lg bg-night-500 py-2.5 text-sm font-medium text-white hover:bg-night-600">
+                    <span className="absolute -top-2 right-2 rounded-full bg-honey-400 px-2 py-0.5 text-[9px] font-black text-ink-900">おすすめ</span>
+                    台本作成＋動画の編集
+                    <span className="block text-[10px] font-normal opacity-80">何を撮るかから・{POINTS_BY_CATEGORY[DEFAULT_SET_CATEGORY]}<PointInline /></span>
                   </button>
                 </div>
               </>

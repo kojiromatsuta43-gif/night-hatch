@@ -19,6 +19,8 @@ export const isVideoCategory = (c: string) => VIDEO_CATEGORIES.includes(c);
 /** 発注トップや台本からの導線で使う既定カテゴリ */
 export const DEFAULT_SCRIPT_CATEGORY = "台本作成（ショート）";
 export const DEFAULT_VIDEO_CATEGORY = "ショート動画編集";
+/** メインサービスの2択のもう一方: 台本づくりから編集まで（台本5＋編集10） */
+export const DEFAULT_SET_CATEGORY = "台本＋動画編集（ショート）";
 
 export const MEDIA_OPTIONS = ["TikTok", "Instagramリール", "YouTubeショート／本編", "LINE VOOM", "その他"];
 export const DURATION_OPTIONS = ["15秒以内", "30秒以内", "1分以内", "3分以内", "指定なし"];

@@ -15,6 +15,7 @@ import { Project } from "@/lib/data";
 import { Mascot, PointInline, useMascot } from "@/components/MascotProvider";
 import HoneyCells from "@/components/HoneyCells";
 import AdminDashboard from "@/components/AdminDashboard";
+import MainService from "@/components/MainService";
 import { seasonalPick } from "@/lib/seasonal";
 import { thumbUrl, retryImage } from "@/lib/client-img";
 
@@ -148,6 +149,9 @@ export default function Home() {
           )}
         </Link>
       </section>
+
+      {/* メインサービス: TikTokショート動画の編集（2択） */}
+      <MainService />
 
       {/* 今月のおすすめ */}
       <Link href={`/order/menu?group=${encodeURIComponent(pick.group)}`} className="group flex items-center gap-4 rounded-2xl border border-gold-300 bg-gold-50 px-5 py-4 shadow-sm transition-colors hover:bg-gold-100">

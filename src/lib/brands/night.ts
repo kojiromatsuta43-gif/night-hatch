@@ -200,6 +200,17 @@ const catalog: CatalogItem[] = [
 
   // ── SNS・動画 ──
   { name: "ショート動画編集", points: 10, group: "SNS・動画", size: "TikTok・リール・ショート", days: "3日〜", questions: VIDEO_QUESTIONS, agreements: AGREE_VIDEO },
+  { name: "台本＋動画編集（ショート）", points: 15, group: "SNS・動画", size: "何を撮るかの台本から編集まで。撮って送るだけ", days: "5日〜",
+    questions: [
+      { key: "媒体", label: "使う媒体", type: "multi", required: true, options: ["TikTok", "Instagramリール", "YouTubeショート", "X"] },
+      q.purpose(["新規のお客さまを増やす", "指名・リピートを増やす", "イベントを知らせる", "キャスト・スタッフの採用", "お店の格・雰囲気を伝える"]),
+      { key: "題材", label: "題材にしたいこと", type: "textarea", required: true, placeholder: "例: 開店前の準備、バーテンダーのカクテルづくり、周年イベントの告知" },
+      { key: "雰囲気", label: "雰囲気", type: "multi", options: ["上品・落ち着き", "明るい・親しみ", "ストーリー仕立て", "笑い", "職人・こだわり"] },
+      { key: "字幕", label: "字幕", type: "select", options: ["セリフすべて表示", "要点のみ表示", "テロップ不要"] },
+      q.ref("参考にしたい動画（URL）"),
+      q.ng(),
+    ],
+    agreements: [...AGREE_VIDEO, "台本が届いたら、その通りにスマホで撮影して「担当とのやりとり」から素材を送ってください。素材が届いてから編集に入ります"] },
   { name: "台本作成（ショート）", points: 5, group: "SNS・動画", size: "撮れば同じ動画になるレベルの台本", days: "2日〜",
     questions: [
       { key: "媒体", label: "使う媒体", type: "multi", required: true, options: ["TikTok", "Instagramリール", "YouTubeショート", "X"] },
@@ -431,7 +442,7 @@ export const night: Brand = {
     { name: "運営", sub: "お店の運営をラクにしたい", examples: ["お礼の定型文", "口コミ返信", "接客マニュアル"] },
   ],
   orderable: [
-    "ショート動画編集", "台本作成（ショート）", "キャスト求人原稿", "体入・求人ショート動画",
+    "ショート動画編集", "台本＋動画編集（ショート）", "台本作成（ショート）", "キャスト求人原稿", "体入・求人ショート動画",
     "出勤・イベント告知テンプレ", "投稿文＋画像", "イベント企画", "料金システム表（明朗会計）", "口コミ返信文（10件）",
   ],
   agent: {
