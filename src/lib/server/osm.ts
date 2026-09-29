@@ -137,15 +137,34 @@ export async function importOsmBars(): Promise<{ total: number; placed: number }
   }
 }
 
-/** 地図用: エリアごとのバーの数 */
-export function osmBarStats(): { area: string; count: number }[] {
-  return getDb().prepare("SELECT area, COUNT(*) AS count FROM osm_bars WHERE area <> '' GROUP BY area").all() as { area: string; count: number }[];
+/**
+ * 名前から業態をざっくり分ける（OpenStreetMap には「バー・パブ・ナイトクラブ」しか無いため）。
+ * 例: 「スナック◯◯」→ スナック、「◯◯ ガールズバー」→ ガールズバー
+ */
+const GENRE_SQL = `CASE
+  WHEN name LIKE '%スナック%' OR name LIKE '%snack%' THEN 'スナック'
+  WHEN name LIKE '%ガールズ%' OR name LIKE '%girls%' OR name LIKE '%girl''s%' THEN 'ガールズバー'
+  WHEN name LIKE '%キャバ%' OR name LIKE '%cabaret%' OR name LIKE '%キャバクラ%' THEN 'キャバクラ'
+  WHEN name LIKE '%ホスト%' OR name LIKE '%host club%' THEN 'ホストクラブ'
+  WHEN name LIKE '%ラウンジ%' OR name LIKE '%lounge%' THEN 'ラウンジ'
+  WHEN kind = 'パブ' THEN 'パブ'
+  WHEN kind = 'ナイトクラブ' THEN 'ナイトクラブ'
+  ELSE 'バー' END`;
+
+/** 地図用: エリア×業態ごとのバーの数 */
+export function osmBarStats(): { area: string; genre: string; count: number }[] {
+  return getDb()
+    .prepare(`SELECT area, ${GENRE_SQL} AS genre, COUNT(*) AS count FROM osm_bars WHERE area <> '' GROUP BY area, genre`)
+    .all() as { area: string; genre: string; count: number }[];
 }
 
-export type OsmBar = { osm_id: string; name: string; kind: string; lat: number; lon: number; website: string; hours: string };
+export type OsmBar = { osm_id: string; name: string; kind: string; genre: string; lat: number; lon: number; website: string; hours: string };
 
-export function osmBarsIn(area: string, limit = 300): OsmBar[] {
+export function osmBarsIn(area: string, genre = "", limit = 300): OsmBar[] {
   return getDb()
-    .prepare("SELECT osm_id, name, kind, lat, lon, website, hours FROM osm_bars WHERE area = ? ORDER BY kind, name LIMIT ?")
-    .all(area, limit) as OsmBar[];
+    .prepare(
+      `SELECT * FROM (SELECT osm_id, name, kind, ${GENRE_SQL} AS genre, lat, lon, website, hours FROM osm_bars WHERE area = ?)
+        WHERE (? = '' OR genre = ?) ORDER BY genre, name LIMIT ?`
+    )
+    .all(area, genre, genre, limit) as OsmBar[];
 }

@@ -311,25 +311,26 @@ export function publicListings(f: PublicFilter = {}): Listing[] {
   return [...real, ...demo];
 }
 
-/** 地図用: エリアごとの件数（飲みに行く＝全店、働く＝求人中） */
-export function areaStats(demo = false): { area: string; drink: number; work: number }[] {
-  const m = new Map<string, { drink: number; work: number }>();
+/** 地図用: エリア×業態ごとの件数（飲みに行く＝全店、働く＝求人中） */
+export function areaStats(demo = false): { area: string; genre: string; drink: number; work: number }[] {
+  const m = new Map<string, { area: string; genre: string; drink: number; work: number }>();
   for (const l of publicListings({ demo })) {
     const a = canonicalArea(l.area);
     if (!a) continue;
-    const c = m.get(a) ?? { drink: 0, work: 0 };
+    const k = `${a}\t${l.genre}`;
+    const c = m.get(k) ?? { area: a, genre: l.genre, drink: 0, work: 0 };
     c.drink++;
     if (l.recruit_hiring) c.work++;
-    m.set(a, c);
+    m.set(k, c);
   }
-  return Array.from(m, ([area, c]) => ({ area, ...c }));
+  return Array.from(m.values());
 }
 
 /** 公開中のお店があるエリア（件数つき）。検索の選択肢に使う */
 export function publicAreas(demo = false): { area: string; count: number }[] {
-  return areaStats(demo)
-    .map((a) => ({ area: a.area, count: a.drink }))
-    .sort((a, b) => b.count - a.count || a.area.localeCompare(b.area));
+  const m = new Map<string, number>();
+  for (const a of areaStats(demo)) m.set(a.area, (m.get(a.area) ?? 0) + a.drink);
+  return Array.from(m, ([area, count]) => ({ area, count })).sort((a, b) => b.count - a.count || a.area.localeCompare(b.area));
 }
 
 /**
