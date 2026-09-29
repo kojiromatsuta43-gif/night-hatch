@@ -209,7 +209,7 @@ export default function NightMap({ stats, barStats = [], base, initialMode = "dr
             </span>
           ))}
         </nav>
-        <div className="flex rounded-full border border-gold-300/60 p-0.5 text-[13px] font-bold">
+        <div className="flex w-full rounded-full border border-gold-300/60 p-0.5 text-[13px] font-bold sm:w-auto [&>button]:flex-1 sm:[&>button]:flex-none">
           {(barStats.length > 0 ? (["drink", "work", "bars"] as const) : (["drink", "work"] as const)).map((m) => (
             <button key={m} type="button" onClick={() => { setMode(m); setPicked(null); setGenre(""); }} className={`rounded-full px-3 py-1.5 transition-colors sm:px-4 ${mode === m ? "bg-night-500 text-white" : "text-hive-700 hover:text-hive-900"}`}>
               {m === "drink" ? "飲みに行く" : m === "work" ? "働く" : "全国のバー"}

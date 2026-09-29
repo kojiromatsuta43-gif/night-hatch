@@ -39,7 +39,7 @@ export default function StoreList({
       )}
 
       <div className="mt-6 rounded-2xl border border-gold-200/60 bg-ink-800 p-4">
-        <FilterBar path={path} genre={genre} area={area} areas={areas} mapHref={`${base}/map${work ? "?for=work" : ""}`} />
+        <FilterBar path={path} genre={genre} area={area} areas={areas} mapHref={`${base}/map?for=${work ? "work" : "drink"}`} />
       </div>
 
       <p className="mt-6 text-[13px] text-hive-500">

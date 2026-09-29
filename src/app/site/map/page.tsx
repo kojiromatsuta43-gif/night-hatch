@@ -19,7 +19,9 @@ export default async function MapPage({ searchParams }: { searchParams: Search }
   const sp = await searchParams;
   const demo = await demoVisible();
   const f = one(sp.for);
-  const mode = f === "work" ? "work" : f === "bars" && demo ? "bars" : "drink";
+  const bars = demo ? osmBarStats() : [];
+  // 社内（ログイン中）で全国のバーが入っていれば、件数の多い「全国のバー」を最初に出す
+  const mode = f === "work" ? "work" : f === "drink" ? "drink" : bars.length > 0 ? "bars" : "drink";
   const r = one(sp.r);
   const initialView = REGIONS.some((x) => x.id === r) ? (r as (typeof REGIONS)[number]["id"]) : "japan";
   return (
@@ -28,7 +30,7 @@ export default async function MapPage({ searchParams }: { searchParams: Search }
       <h1 className="mt-1 font-display text-3xl text-hive-900 sm:text-4xl">地域から選ぶ</h1>
       <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-hive-700">光っているところほど、お店が多い街です。押すとその地域に寄って、エリアごとのお店が見られます。</p>
       <div className="mt-6">
-        <NightMap stats={areaStats(demo)} barStats={demo ? osmBarStats() : []} base={base} initialMode={mode} initialView={initialView} />
+        <NightMap stats={areaStats(demo)} barStats={bars} base={base} initialMode={mode} initialView={initialView} />
       </div>
     </div>
   );
