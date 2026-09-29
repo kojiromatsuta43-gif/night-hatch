@@ -12,7 +12,8 @@ import { AREAS, JAPAN_VIEW, REGIONS, bboxToView, project, regionById, type Regio
 
 type Stat = { area: string; drink: number; work: number };
 type View = "japan" | RegionId;
-type Mode = "drink" | "work";
+type Mode = "drink" | "work" | "bars";
+type Bar = { osm_id: string; name: string; kind: string; lat: number; lon: number; website: string; hours: string };
 type VB = [number, number, number, number];
 
 const DURATION = 950;
@@ -35,7 +36,7 @@ function viewFor(v: View): VB {
   return bboxToView(r.bbox);
 }
 
-export default function NightMap({ stats, base, initialMode = "drink", initialView = "japan" }: { stats: Stat[]; base: string; initialMode?: Mode; initialView?: View }) {
+export default function NightMap({ stats, barStats = [], base, initialMode = "drink", initialView = "japan" }: { stats: Stat[]; barStats?: { area: string; count: number }[]; base: string; initialMode?: Mode; initialView?: View }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [view, setView] = useState<View>(initialView);
   const [vb, setVb] = useState<VB>(() => viewFor(initialView));
@@ -74,9 +75,11 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
     return () => cancelAnimationFrame(raf);
   }, [view]);
 
-  const count = (s: Stat) => (mode === "drink" ? s.drink : s.work);
+  const count = (s: Stat) => (mode === "drink" ? s.drink : mode === "work" ? s.work : 0);
   const byArea = useMemo(() => new Map(stats.map((s) => [s.area, s])), [stats]);
+  const barsByArea = useMemo(() => new Map(barStats.map((b) => [b.area, b.count])), [barStats]);
   const areaCount = (name: string) => {
+    if (mode === "bars") return barsByArea.get(name) ?? 0;
     const s = byArea.get(name);
     return s ? count(s) : 0;
   };
@@ -85,7 +88,21 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
     REGIONS.filter((r) => r.parent === id).reduce((n, r) => n + regionCount(r.id), 0);
   const known = useMemo(() => new Set(AREAS.map((a) => a.name)), []);
   const others = stats.filter((s) => !known.has(s.area) && count(s) > 0);
-  const total = stats.reduce((n, s) => n + count(s), 0);
+  const total = mode === "bars" ? barStats.reduce((n, b) => n + b.count, 0) : stats.reduce((n, s) => n + count(s), 0);
+
+  // 「全国のバー」でエリアを押したときの一覧（社内リサーチ用・OpenStreetMap）
+  const [bars, setBars] = useState<{ area: string; list: Bar[] } | null>(null);
+  useEffect(() => {
+    if (mode !== "bars" || !picked) return;
+    let alive = true;
+    fetch(`/api/site/osm?area=${encodeURIComponent(picked)}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list: Bar[]) => alive && setBars({ area: picked, list }))
+      .catch(() => alive && setBars({ area: picked, list: [] }));
+    return () => {
+      alive = false;
+    };
+  }, [mode, picked]);
 
   // 1画面ピクセル → SVG 単位
   // （preserveAspectRatio=meet なので、縦横のうち余る方ではなく、きつい方の倍率で決まる）
@@ -166,9 +183,9 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
           ))}
         </nav>
         <div className="flex rounded-full border border-gold-300/60 p-0.5 text-[13px] font-bold">
-          {(["drink", "work"] as const).map((m) => (
-            <button key={m} type="button" onClick={() => setMode(m)} className={`rounded-full px-4 py-1.5 transition-colors ${mode === m ? "bg-night-500 text-white" : "text-hive-700 hover:text-hive-900"}`}>
-              {m === "drink" ? "飲みに行く" : "働く"}
+          {(barStats.length > 0 ? (["drink", "work", "bars"] as const) : (["drink", "work"] as const)).map((m) => (
+            <button key={m} type="button" onClick={() => { setMode(m); setPicked(null); }} className={`rounded-full px-3 py-1.5 transition-colors sm:px-4 ${mode === m ? "bg-night-500 text-white" : "text-hive-700 hover:text-hive-900"}`}>
+              {m === "drink" ? "飲みに行く" : m === "work" ? "働く" : "全国のバー"}
             </button>
           ))}
         </div>
@@ -229,7 +246,7 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
                     {l.label}
                   </text>
                   <text x={l.x} y={l.y + r * 0.9 + fs * 0.9} textAnchor="middle" fontSize={fs * 0.85} fontWeight={800} fill="#FFD27A" stroke="#121733" strokeWidth={fs * 0.26} paintOrder="stroke">
-                    {l.n}店{l.big ? " ›" : ""}
+                    {l.n}{mode === "bars" ? "軒" : "店"}{l.big ? " ›" : ""}
                   </text>
                 </g>
               );
@@ -248,8 +265,42 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
           </button>
         )}
 
+        {/* 「全国のバー」: エリアのバー一覧（社内リサーチ用） */}
+        {picked && mode === "bars" && (
+          <div className="absolute inset-x-3 bottom-3 flex max-h-[70%] flex-col rounded-2xl border border-gold-300/60 bg-[#0f0c17]/95 p-4 backdrop-blur sm:left-auto sm:right-4 sm:w-96">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="kicker">Bars · OpenStreetMap</p>
+                <p className="font-display text-2xl text-hive-900">{picked} <span className="text-base text-gold-500">{areaCount(picked)}軒</span></p>
+              </div>
+              <button type="button" onClick={() => setPicked(null)} className="rounded-full px-2 py-1 text-hive-500 hover:text-hive-900" aria-label="閉じる">✕</button>
+            </div>
+            <ul className="mt-2 min-h-0 flex-1 divide-y divide-gold-200/30 overflow-y-auto pr-1 text-[13px]">
+              {bars?.area !== picked && <li className="py-3 text-hive-500">読み込み中…</li>}
+              {bars?.area === picked && bars.list.length === 0 && <li className="py-3 text-hive-500">見つかりませんでした</li>}
+              {bars?.area === picked &&
+                bars.list.map((b) => (
+                  <li key={b.osm_id} className="py-2">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="min-w-0 truncate font-bold text-hive-900">{b.name}</span>
+                      <span className="shrink-0 text-[11px] text-gold-500">{b.kind}</span>
+                    </div>
+                    <div className="mt-0.5 flex flex-wrap gap-x-3 text-[11px] text-hive-500">
+                      {b.hours && <span className="truncate">{b.hours}</span>}
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${b.name} ${b.lat},${b.lon}`)}`} target="_blank" rel="noopener noreferrer" className="text-gold-600 hover:underline">地図</a>
+                      {b.website && <a href={b.website} target="_blank" rel="noopener noreferrer" className="text-gold-600 hover:underline">公式サイト</a>}
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+        {mode === "bars" && (
+          <p className="pointer-events-none absolute bottom-1 left-2 text-[10px] text-white/60">バーの位置: © OpenStreetMap contributors</p>
+        )}
+
         {/* エリアを押したときのカード */}
-        {picked && (
+        {picked && mode !== "bars" && (
           <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-gold-300/60 bg-[#0f0c17]/95 p-4 backdrop-blur sm:left-auto sm:right-4 sm:w-80">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -286,13 +337,13 @@ export default function NightMap({ stats, base, initialMode = "drink", initialVi
             </li>
           ))}
       </ul>
-      {view === "japan" && others.length > 0 && (
+      {view === "japan" && mode !== "bars" && others.length > 0 && (
         <p className="text-[12px] text-hive-500">
           地図にないエリア:{" "}
           {others.map((o, i) => (
             <span key={o.area}>
               {i > 0 && "・"}
-              <Link href={`${base}/${mode}?area=${encodeURIComponent(o.area)}`} className="text-gold-600 hover:underline">{o.area}（{count(o)}）</Link>
+              <Link href={`${base}/${mode === "work" ? "work" : "drink"}?area=${encodeURIComponent(o.area)}`} className="text-gold-600 hover:underline">{o.area}（{count(o)}）</Link>
             </span>
           ))}
         </p>

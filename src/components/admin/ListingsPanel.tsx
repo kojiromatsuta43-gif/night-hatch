@@ -21,6 +21,25 @@ export default function ListingsPanel() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [demo, setDemo] = useState(false);
+  const [osm, setOsm] = useState<{ running: boolean; total: number; placed: number; lastRun: string; lastError: string } | null>(null);
+  const loadOsm = useCallback(() => {
+    api<NonNullable<typeof osm>>("/api/admin/osm").then(setOsm).catch(() => {});
+  }, []);
+  useEffect(loadOsm, [loadOsm]);
+  useEffect(() => {
+    if (!osm?.running) return;
+    const t = setInterval(loadOsm, 5000);
+    return () => clearInterval(t);
+  }, [osm?.running, loadOsm]);
+  const startOsm = async () => {
+    setErr("");
+    try {
+      await api("/api/admin/osm", { method: "POST" });
+      setTimeout(loadOsm, 800);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "開始できませんでした");
+    }
+  };
 
   const load = useCallback(() => {
     api<{ rows: Row[]; demo: boolean }>("/api/admin/listings")
@@ -72,6 +91,23 @@ export default function ListingsPanel() {
         </div>
         <button onClick={toggleDemo} className={`rounded-full px-4 py-2 text-xs font-bold ${demo ? "border border-white/40 text-white hover:bg-white/10" : "bg-[#25F4EE] text-black hover:opacity-90"}`}>
           {demo ? "OFF にする" : "ON にする"}
+        </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-night-200 bg-white p-4 text-sm">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-hive-900">全国のバー（社内リサーチ用・OpenStreetMap）</p>
+          <p className="mt-1 text-xs text-hive-500">
+            地図の「全国のバー」に出すバー・パブ・ナイトクラブを、OpenStreetMap（誰でも使える地図データ）から取り込みます。デモ表示が ON のとき、ログインしている人だけに見えます。
+            {osm && (
+              <span className="mt-1 block">
+                {osm.running ? "取り込み中…（数分かかります）" : osm.total > 0 ? `取り込み済み ${osm.total.toLocaleString()} 軒（うち地図の街に入ったもの ${osm.placed.toLocaleString()} 軒）` : "まだ取り込んでいません"}
+                {osm.lastError && <span className="ml-2 font-bold text-rose-500">{osm.lastError}</span>}
+              </span>
+            )}
+          </p>
+        </div>
+        <button onClick={startOsm} disabled={osm?.running} className="rounded-full bg-night-500 px-4 py-2 text-xs font-bold text-white hover:bg-night-600 disabled:opacity-50">
+          {osm?.running ? "取り込み中…" : osm && osm.total > 0 ? "取り込み直す" : "全国のバーを取り込む"}
         </button>
       </div>
       {err && <p className="text-sm font-bold text-rose-500">{err}</p>}

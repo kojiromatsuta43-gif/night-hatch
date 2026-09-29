@@ -666,6 +666,19 @@ function init(db: Database.Database) {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_listing_clicks ON listing_clicks (listing_id, created_at);
+    -- 社内リサーチ用: OpenStreetMap（ODbL）から取り込んだ全国のバー・パブ・ナイトクラブ。お店の掲載とは別物
+    CREATE TABLE IF NOT EXISTS osm_bars (
+      osm_id TEXT PRIMARY KEY,
+      name TEXT NOT NULL DEFAULT '',
+      kind TEXT NOT NULL DEFAULT '',
+      lat REAL NOT NULL,
+      lon REAL NOT NULL,
+      area TEXT NOT NULL DEFAULT '',
+      website TEXT NOT NULL DEFAULT '',
+      hours TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_osm_bars_area ON osm_bars (area);
   `);
 
   // 参考アカウント・動画の初期データは入れない（FOOD 時代の飲食店アカウントは syncRefAccounts で掃除する）。

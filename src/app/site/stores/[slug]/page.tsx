@@ -11,6 +11,17 @@ import { genreStyle, listingStatus, mapsUrl, splitBenefits, splitPriceLine, type
 
 type Params = Promise<{ slug: string }>;
 
+/** デモ表示用: 業態ごとの料金の目安（見本）。実在のお店の料金としては出さない */
+const SAMPLE_PRICE: Record<string, [string, string][]> = {
+  バー: [["チャージ", "500〜1,000円"], ["カクテル・ウイスキー", "800円〜"], ["サービス料", "なし〜10%"]],
+  ガールズバー: [["飲み放題（60分）", "3,000〜4,000円"], ["延長（30分）", "1,500〜2,000円"], ["キャストドリンク", "1,000円〜"], ["TAX", "10〜20%"]],
+  スナック: [["セット（60〜90分）", "3,000〜5,000円"], ["ボトルキープ", "5,000円〜"], ["TAX", "10〜20%"]],
+  キャバクラ: [["セット料金（60分）", "6,000〜10,000円"], ["延長（30分）", "3,000〜5,000円"], ["指名料", "2,000〜3,000円"], ["場内指名", "1,000〜2,000円"], ["TAX・サービス料", "20〜35%"]],
+  ラウンジ: [["セット料金", "10,000〜20,000円"], ["指名料", "2,000〜5,000円"], ["TAX・サービス料", "20〜30%"]],
+  クラブ: [["お一人さま（目安）", "30,000円〜"], ["TAX・サービス料", "30%前後"]],
+  ホストクラブ: [["初回（60〜90分）", "1,000〜5,000円"], ["指名料", "2,000〜5,000円"], ["TAX・サービス料", "20〜40%"]],
+};
+
 async function load(slug: string): Promise<{ l: Listing; preview: boolean; demo: boolean } | null> {
   const user = await currentUser().catch(() => null);
   const l = listingBySlug(slug, user ? { userId: user.id, role: user.role } : undefined, await demoVisible());
@@ -59,10 +70,28 @@ export default async function StorePage({ params }: { params: Params }) {
 
       {/* ── 表紙 ── */}
       <header className="relative">
-        <div className="relative h-[240px] overflow-hidden sm:h-[360px]">
-          <StoreCover photo={l.photos[0]} genre={l.genre} alt={l.store_name} eager big />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0C17] via-[#0F0C17]/40 to-transparent" aria-hidden="true" />
-        </div>
+        {demo && l.photos[0]?.startsWith("thumb:") ? (
+          // デモ（TikTokのお手本アカウント）: 縦長のサムネイルを横に引き伸ばさず、縦のまま並べる
+          <div className="relative h-[260px] overflow-hidden sm:h-[380px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/api/site/thumbs/${l.photos[0].slice(6)}`} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl" aria-hidden="true" />
+            <div className="absolute inset-0 flex items-start justify-center gap-2 px-4 pt-4 sm:justify-end sm:gap-3 sm:px-10 sm:pt-6">
+              {videos
+                .filter((v) => v.thumb)
+                .slice(0, 4)
+                .map((v, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={v.key} src={v.thumb!} alt="" className={`aspect-[9/16] h-[150px] rounded-xl border border-white/15 object-cover shadow-2xl sm:h-[250px] ${i >= 2 ? "hidden sm:block" : ""}`} />
+                ))}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F0C17] via-[#0F0C17]/55 to-transparent" aria-hidden="true" />
+          </div>
+        ) : (
+          <div className="relative h-[240px] overflow-hidden sm:h-[360px]">
+            <StoreCover photo={l.photos[0]} genre={l.genre} alt={l.store_name} eager big />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F0C17] via-[#0F0C17]/40 to-transparent" aria-hidden="true" />
+          </div>
+        )}
         <div className="relative mx-auto -mt-24 max-w-4xl px-4 sm:-mt-28 sm:px-6">
           <nav className="text-[12px] text-hive-500" aria-label="現在地">
             <Link href={`${base}/drink?genre=${encodeURIComponent(l.genre)}`} className="hover:text-gold-600">{l.genre}</Link>
@@ -125,6 +154,27 @@ export default async function StorePage({ params }: { params: Params }) {
             <p className="kicker">About</p>
             <h2 id="d-h" className="mt-1 text-2xl text-hive-900">お店のこと</h2>
             <p className="mt-3 whitespace-pre-line text-[15px] leading-loose text-hive-800">{l.description}</p>
+          </section>
+        )}
+
+        {/* ── 料金システム（デモ: 業態ごとの相場の見本。このお店の料金ではない） ── */}
+        {demo && prices.length === 0 && SAMPLE_PRICE[l.genre] && (
+          <section aria-labelledby="ps-h" className="rounded-2xl border border-dashed border-gold-300/60 bg-ink-800 p-5 sm:p-7">
+            <p className="kicker">Price System</p>
+            <h2 id="ps-h" className="mt-1 flex flex-wrap items-center gap-2 text-2xl text-hive-900">
+              料金システム
+              <span className="rounded-full bg-[#25F4EE] px-2.5 py-0.5 text-[11px] font-black text-black">見本</span>
+            </h2>
+            <dl className="mt-4 space-y-2.5">
+              {SAMPLE_PRICE[l.genre].map(([k, v]) => (
+                <div key={k} className="flex items-baseline gap-2 text-[15px]">
+                  <dt className="max-w-[55%] shrink-0 text-hive-800">{k}</dt>
+                  <span className="min-w-4 flex-1 translate-y-[-3px] border-b border-dotted border-gold-300/50" aria-hidden="true" />
+                  <dd className="min-w-0 max-w-[60%] break-words text-right font-bold text-hive-900">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 text-[12px] text-hive-500">社内確認用の見本です。{l.genre}の一般的な料金の目安で、このお店の料金ではありません。掲載店は、お店が入力した実際の料金がここに出ます。</p>
           </section>
         )}
 
