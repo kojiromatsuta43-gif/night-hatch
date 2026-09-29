@@ -100,7 +100,7 @@ export async function importOsmBars(): Promise<{ total: number; placed: number }
     let total = 0;
     let placed = 0;
     db.transaction(() => {
-      db.prepare("DELETE FROM osm_bars").run();
+      // 取れなかった地域の分を消さないよう、全部は消さずに上書きする
       const seen = new Set<string>();
       for (const el of json.elements) {
         if (seen.has(`${el.type}/${el.id}`)) continue;
