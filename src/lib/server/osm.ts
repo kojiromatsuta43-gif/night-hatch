@@ -147,7 +147,7 @@ const GENRE_SQL = `CASE
   WHEN name LIKE '%キャバ%' OR name LIKE '%cabaret%' OR name LIKE '%キャバクラ%' THEN 'キャバクラ'
   WHEN name LIKE '%ホスト%' OR name LIKE '%host club%' THEN 'ホストクラブ'
   WHEN name LIKE '%ラウンジ%' OR name LIKE '%lounge%' THEN 'ラウンジ'
-  WHEN kind = 'パブ' THEN 'パブ'
+  WHEN kind = 'パブ' THEN '居酒屋・パブ'
   WHEN kind = 'ナイトクラブ' THEN 'ナイトクラブ'
   ELSE 'バー' END`;
 
