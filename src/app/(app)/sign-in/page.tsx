@@ -21,7 +21,9 @@ export default function SignInPage() {
       body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
-      window.location.href = "/";
+      // ?next=/site/map のように戻り先があればそこへ（自分のサイトの中だけ）
+      const next = new URLSearchParams(window.location.search).get("next") ?? "";
+      window.location.href = next.startsWith("/") && !next.startsWith("//") ? next : "/";
     } else {
       const data = await res.json();
       setError(data.error ?? "ログインに失敗しました");

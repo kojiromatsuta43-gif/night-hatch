@@ -33,7 +33,10 @@ export default function SiteFooter({ base }: { base: string }) {
           <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-gold-500" aria-hidden="true" />18歳未満の方はご応募いただけません</li>
         </ul>
         <div className="mt-6 flex flex-col gap-1 text-[11px] text-hive-500 sm:flex-row sm:justify-between">
-          <span>運営: {SITE_OPERATOR}</span>
+          <span>
+            運営: {SITE_OPERATOR}
+            <a href="/sign-in?next=/site/map" className="ml-4 text-hive-500 underline-offset-2 hover:text-gold-600 hover:underline">関係者ログイン</a>
+          </span>
           <span className="font-latin !tracking-[0.14em]">© {new Date().getFullYear()} {SITE_NAME}</span>
         </div>
       </div>
