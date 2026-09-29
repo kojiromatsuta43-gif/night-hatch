@@ -7,14 +7,14 @@
  * 本番サーバー（Railway）から Overpass API を呼ぶ。数分かかるので裏で動かし、状態は app_meta に残す。
  */
 import { getDb } from "./db";
-import { AREAS, type NightArea } from "../nightAreas";
+import { AREAS, REGIONS, type NightArea } from "../nightAreas";
 
 const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
-const QUERY = `[out:json][timeout:300];
-area["ISO3166-1"="JP"][admin_level=2]->.jp;
+// 日本全体を一度に聞くと重くて空で返ることがあるので、地域ごとの範囲に分けて聞く
+const queryFor = ([w, s, e, n]: [number, number, number, number]) => `[out:json][timeout:180];
 (
-  node["amenity"~"^(bar|pub|nightclub)$"](area.jp);
-  way["amenity"~"^(bar|pub|nightclub)$"](area.jp);
+  node["amenity"~"^(bar|pub|nightclub)$"](${s},${w},${n},${e});
+  way["amenity"~"^(bar|pub|nightclub)$"](${s},${w},${n},${e});
 );
 out center tags;`;
 
@@ -59,27 +59,39 @@ export async function importOsmBars(): Promise<{ total: number; placed: number }
   const db = getDb();
   const setMeta = (k: string, v: string) => db.prepare("INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?)").run(k, v);
   try {
-    let json: { elements?: El[] } | null = null;
-    let lastErr = "";
-    for (const url of ENDPOINTS) {
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "NIGHT-HATCH/1.0 (internal research)" },
-          body: "data=" + encodeURIComponent(QUERY),
-          signal: AbortSignal.timeout(330_000),
-        });
-        if (!res.ok) {
-          lastErr = `${url} HTTP ${res.status}`;
-          continue;
+    const elements: El[] = [];
+    const errors: string[] = [];
+    for (const r of REGIONS.filter((x) => !x.parent)) {
+      let got = false;
+      for (const url of ENDPOINTS) {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "NIGHT-HATCH/1.0 (internal research)" },
+            body: "data=" + encodeURIComponent(queryFor(r.bbox)),
+            signal: AbortSignal.timeout(200_000),
+          });
+          if (!res.ok) {
+            errors.push(`${r.name}: HTTP ${res.status}`);
+            continue;
+          }
+          const j = (await res.json()) as { elements?: El[]; remark?: string };
+          if (j.remark && !(j.elements ?? []).length) {
+            errors.push(`${r.name}: ${j.remark.slice(0, 80)}`);
+            continue;
+          }
+          elements.push(...(j.elements ?? []));
+          got = true;
+          break;
+        } catch (e) {
+          errors.push(`${r.name}: ${e instanceof Error ? e.message : String(e)}`);
         }
-        json = await res.json();
-        break;
-      } catch (e) {
-        lastErr = `${url} ${e instanceof Error ? e.message : String(e)}`;
       }
+      if (!got) continue;
+      await new Promise((ok) => setTimeout(ok, 1500)); // 相手のサーバーに優しく
     }
-    if (!json?.elements) throw new Error(`OpenStreetMap から取得できませんでした（${lastErr}）`);
+    if (elements.length === 0) throw new Error(`OpenStreetMap から取得できませんでした（${errors.slice(0, 3).join(" / ") || "結果が0件"}）`);
+    const json = { elements };
 
     const ins = db.prepare(
       `INSERT OR REPLACE INTO osm_bars (osm_id, name, kind, lat, lon, area, website, hours, updated_at)
@@ -89,7 +101,10 @@ export async function importOsmBars(): Promise<{ total: number; placed: number }
     let placed = 0;
     db.transaction(() => {
       db.prepare("DELETE FROM osm_bars").run();
-      for (const el of json!.elements!) {
+      const seen = new Set<string>();
+      for (const el of json.elements) {
+        if (seen.has(`${el.type}/${el.id}`)) continue;
+        seen.add(`${el.type}/${el.id}`);
         const lat = el.lat ?? el.center?.lat;
         const lon = el.lon ?? el.center?.lon;
         const t = el.tags ?? {};
@@ -112,7 +127,7 @@ export async function importOsmBars(): Promise<{ total: number; placed: number }
       }
     })();
     setMeta("osm_last_run", new Date().toISOString());
-    setMeta("osm_last_error", "");
+    setMeta("osm_last_error", errors.length ? `一部の地域で失敗: ${errors.slice(0, 3).join(" / ")}` : "");
     return { total, placed };
   } catch (e) {
     setMeta("osm_last_error", e instanceof Error ? e.message : String(e));
